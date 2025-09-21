@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm install && npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "npm install && npm run build && rm -rf public && cp -R dist public",
+  "outputDirectory": "public",
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }
