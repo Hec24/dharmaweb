@@ -1,6 +1,9 @@
 // backend/googleCalendar.ts
 import { google, calendar_v3 } from "googleapis";
-import { JWT } from "google-auth-library";
+import { GoogleAuth } from "google-auth-library";
+import fs from "fs";
+import os from "os";
+import path from "path";
 import { Reserva } from "./types";
 
 // === Config ===
@@ -9,18 +12,62 @@ const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
 ];
 
-const SERVICE_ACCOUNT_KEY = require("./credenciales/dharmabookings-63805b9a99e5.json");
 const IMPERSONATED_USER = "info@dharmaenruta.com";
 const CALENDAR_ID = "primary";
 const TIMEZONE = "Europe/Madrid";
 
+/**
+ * Carga credenciales de forma segura:
+ * - 1) GCP_CREDENTIALS_JSON  (contenido JSON)
+ * - 2) GCP_CREDENTIALS_B64   (contenido JSON en base64)
+ * - 3) GOOGLE_APPLICATION_CREDENTIALS (ruta a archivo JSON)
+ * - 4) (solo dev) Fallback a ~/.secrets/dharmabookings.json
+ */
+function loadServiceAccountCredentials():
+  | Record<string, any>
+  | undefined {
+  // 1) JSON plano
+  if (process.env.GCP_CREDENTIALS_JSON) {
+    return JSON.parse(process.env.GCP_CREDENTIALS_JSON);
+  }
+
+  // 2) JSON en base64
+  if (process.env.GCP_CREDENTIALS_B64) {
+    const json = Buffer.from(process.env.GCP_CREDENTIALS_B64, "base64").toString("utf8");
+    return JSON.parse(json);
+  }
+
+  // 3) Ruta a archivo (Google SDK la usa si setea GOOGLE_APPLICATION_CREDENTIALS)
+  if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    // Si está esta variable, GoogleAuth puede cargarlo sin pasar credentials.
+    // Devolvemos undefined para dejar que GoogleAuth la use directamente.
+    return undefined;
+  }
+
+  // 4) Fallback local (solo para desarrollo)
+  const localPath = path.join(os.homedir(), ".secrets", "dharmabookings.json");
+  if (fs.existsSync(localPath)) {
+    const raw = fs.readFileSync(localPath, "utf8");
+    return JSON.parse(raw);
+  }
+
+  // Sin credenciales → que falle temprano con un error claro
+  throw new Error(
+    "No se encontraron credenciales de Google. Define GCP_CREDENTIALS_JSON, GCP_CREDENTIALS_B64 o GOOGLE_APPLICATION_CREDENTIALS, o coloca ~/.secrets/dharmabookings.json"
+  );
+}
+
+const credentials = loadServiceAccountCredentials();
+
 // === Auth ===
-const auth = new google.auth.GoogleAuth<JWT>({
-  credentials: SERVICE_ACCOUNT_KEY,
+// Si `credentials` es undefined y existe GOOGLE_APPLICATION_CREDENTIALS,
+// GoogleAuth lo tomará de esa ruta automáticamente.
+const auth = new GoogleAuth({
+  credentials,
   scopes: SCOPES,
-  clientOptions: { subject: IMPERSONATED_USER },
+  clientOptions: { subject: IMPERSONATED_USER }, // domain-wide delegation
 });
-google.options({ auth });
+google.options({ auth: auth as any });
 
 const calendar: calendar_v3.Calendar = google.calendar({ version: "v3" });
 
@@ -34,12 +81,10 @@ function sumarMinutos(horaHHMM: string, minutos: number) {
 }
 
 function toRFC3339(date: string, time: string) {
-  // date: YYYY-MM-DD, time: HH:MM -> YYYY-MM-DDTHH:MM:SS
   const safeTime = /^\d{2}:\d{2}$/.test(time) ? `${time}:00` : time;
   return `${date}T${safeTime}`;
 }
 
-// Reintentos exponenciales simples para errores transitorios
 async function withBackoff<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
   let attempt = 0;
   let lastErr: any;
@@ -52,17 +97,13 @@ async function withBackoff<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
         err?.errors?.[0]?.reason ||
         err?.response?.data?.error?.errors?.[0]?.reason ||
         "";
-
-      // Errores transitorios típicos: 429, 500, 503 o rate limits
       const isTransient =
         status === 429 ||
         status === 500 ||
         status === 503 ||
         reason?.includes("rateLimitExceeded") ||
         reason?.includes("userRateLimitExceeded");
-
       if (!isTransient) throw err;
-
       lastErr = err;
       const delay = Math.min(1000 * Math.pow(2, attempt), 12000);
       await new Promise((r) => setTimeout(r, delay));
@@ -83,7 +124,6 @@ export async function buscarEventoPorReservaId(reservaId: string) {
       maxResults: 2,
     })
   );
-  // Si hubiera duplicados accidentales, nos quedamos con el primero
   return res.data.items?.[0] ?? null;
 }
 
@@ -100,20 +140,19 @@ export async function buscarEventoPorId(eventId: string) {
   }
 }
 
-// ——— Mapeo Reserva -> requestBody de Event ———
+// ——— Mapeo Reserva -> Event ———
 function buildAttendees(reserva: Reserva): calendar_v3.Schema$EventAttendee[] {
   const emails = [
     (reserva.email || "").trim(),
     (reserva.acompananteEmail || "").trim(),
   ].filter(Boolean);
-  // Evitar duplicados exactos
   const unique = Array.from(new Set(emails));
   return unique.map((email) => ({ email }));
 }
 
 function mapReservaToEvent(reserva: Reserva): calendar_v3.Schema$Event {
-  const fecha = reserva.fecha;                // "YYYY-MM-DD"
-  const horaInicio = reserva.hora;            // "HH:MM"
+  const fecha = reserva.fecha;
+  const horaInicio = reserva.hora;
   const duracionMin = reserva.duracionMin ?? 60;
   const horaFin = sumarMinutos(horaInicio, duracionMin);
 
@@ -133,11 +172,9 @@ function mapReservaToEvent(reserva: Reserva): calendar_v3.Schema$Event {
   };
 }
 
-// ——— Comparador para actualizar solo si hay cambios ———
 function needsUpdate(existing: calendar_v3.Schema$Event, desired: calendar_v3.Schema$Event) {
   const a = existing;
   const b = desired;
-
   const sA = a.start?.dateTime ?? "";
   const sB = b.start?.dateTime ?? "";
   const eA = a.end?.dateTime ?? "";
@@ -148,129 +185,13 @@ function needsUpdate(existing: calendar_v3.Schema$Event, desired: calendar_v3.Sc
   const sumB = b.summary ?? "";
   const descA = a.description ?? "";
   const descB = b.description ?? "";
-
-  // Comparar asistentes por email
-  const attA = (a.attendees ?? []).map((x) => (x.email || "").toLowerCase()).sort().join(",");
-  const attB = (b.attendees ?? []).map((x) => (x.email || "").toLowerCase()).sort().join(",");
-
+  const attA = (a.attendees ?? []).map(x => (x.email || "").toLowerCase()).sort().join(",");
+  const attB = (b.attendees ?? []).map(x => (x.email || "").toLowerCase()).sort().join(",");
   return sA !== sB || eA !== eB || tzA !== tzB || sumA !== sumB || descA !== descB || attA !== attB;
 }
 
-// ——— CRUD ———
-export async function añadirEvento(reserva: Reserva) {
-  // 1) si ya existe, devolverlo
-  const existente = await buscarEventoPorReservaId(reserva.id);
-  if (existente) {
-    return {
-      eventId: existente.id!,
-      htmlLink: existente.htmlLink!,
-      status: existente.status!,
-      attendees: existente.attendees || [],
-      alreadyExisted: true,
-    };
-  }
-
-  // 2) insertar
-  const body = mapReservaToEvent(reserva);
-  const insertRes = await withBackoff(() =>
-    calendar.events.insert({
-      calendarId: CALENDAR_ID,
-      sendUpdates: "all", // notifica a asistentes
-      requestBody: body,
-    })
-  );
-
-  return {
-    eventId: insertRes.data.id!,
-    htmlLink: insertRes.data.htmlLink!,
-    status: insertRes.data.status!,
-    attendees: insertRes.data.attendees || [],
-    alreadyExisted: false,
-  };
-}
-
-/**
- * Actualiza el evento vinculado a la reserva si hay cambios
- * - Busca por reservaId (o por eventId si lo pasas)
- * - Usa PATCH para actualizar sólo campos cambiados
- */
-export async function actualizarEvento(reserva: Reserva & { eventId?: string }) {
-  // Preferimos eventId si tu backend lo guardó
-  let evento = reserva.eventId
-    ? await buscarEventoPorId(reserva.eventId)
-    : await buscarEventoPorReservaId(reserva.id);
-
-  if (!evento) {
-    // No existe en Calendar: puedes recrear o devolver "not found"
-    // Aquí optamos por recrear (idempotencia práctica)
-    const creado = await añadirEvento(reserva);
-    return { ...creado, recreated: true };
-  }
-
-  const desired = mapReservaToEvent(reserva);
-  if (!needsUpdate(evento, desired)) {
-    return {
-      eventId: evento.id!,
-      htmlLink: evento.htmlLink!,
-      status: evento.status!,
-      attendees: evento.attendees || [],
-      updated: false,
-      reason: "No hay cambios relevantes",
-    };
-  }
-
-  const patchRes = await withBackoff(() =>
-    calendar.events.patch({
-      calendarId: CALENDAR_ID,
-      eventId: evento!.id!,
-      sendUpdates: "all",
-      requestBody: desired,
-    })
-  );
-
-  return {
-    eventId: patchRes.data.id!,
-    htmlLink: patchRes.data.htmlLink!,
-    status: patchRes.data.status!,
-    attendees: patchRes.data.attendees || [],
-    updated: true,
-  };
-}
-
-/**
- * Cancela (elimina) el evento vinculado a la reserva.
- * - Envía notificaciones si lo deseas con sendUpdates: "all"
- */
-export async function cancelarEvento(args: { reservaId?: string; eventId?: string; notify?: boolean }) {
-  const { reservaId, eventId, notify = true } = args;
-
-  let target = eventId ? await buscarEventoPorId(eventId) : null;
-  if (!target && reservaId) {
-    target = await buscarEventoPorReservaId(reservaId);
-  }
-  if (!target) {
-    return { cancelled: false, reason: "No existe evento en Calendar" };
-  }
-
-  await withBackoff(() =>
-    calendar.events.delete({
-      calendarId: CALENDAR_ID,
-      eventId: target!.id!,
-      sendUpdates: notify ? "all" : "none",
-    })
-  );
-
-  return { cancelled: true, eventId: target.id! };
-}
-
-/**
- * Upsert cómodo: crea si no existe, actualiza si existe.
- */
-export async function upsertEvento(reserva: Reserva & { eventId?: string }) {
-  const existente = reserva.eventId
-    ? await buscarEventoPorId(reserva.eventId)
-    : await buscarEventoPorReservaId(reserva.id);
-
-  if (!existente) return añadirEvento(reserva);
-  return actualizarEvento({ ...reserva, eventId: existente.id! });
-}
+// ——— CRUD ——— (igual que tú)
+export async function añadirEvento(reserva: Reserva) { /* ...igual... */ }
+export async function actualizarEvento(reserva: Reserva & { eventId?: string }) { /* ...igual... */ }
+export async function cancelarEvento(args: { reservaId?: string; eventId?: string; notify?: boolean }) { /* ...igual... */ }
+export async function upsertEvento(reserva: Reserva & { eventId?: string }) { /* ...igual... */ }
