@@ -1,0 +1,153 @@
+@import "tailwindcss";
+
+
+@font-face {
+    font-family: "gotu";
+    src: url("../src/fonts/Gotu-Regular.ttf");
+}
+
+@font-face {
+    font-family: "degular";
+    src: url("https://fonts.adobe.com/fonts/degular-variable");
+    
+}
+
+@font-face {
+    font-family: "arapey";
+    src: url("../src/fonts/Arapey-Italic.ttf");
+}
+
+
+@theme {
+ --color-asparragus: #4B5348;
+ --color-gold: #EFB88F;
+--color-mossgreen: #A4D65E;
+--color-pale: #bb9c7d;
+--color-raw: #d18652;
+--color-linen: #fcf1e7;
+--color-raw-100: #D8B4A0;
+--color-asparragus-800: #3A4C2D;
+--font-gotu: "gotu", sans-serif;
+--font-degular: "degular", sans-serif;
+--font-arapey: "arapey", sans-serif;
+--breakpoint-sm: 640px;
+--breakpoint-md: 768px;
+--breakpoint-lg: 1025px;   
+--breakpoint-xl: 1280px;
+--breakpoint-2xl: 1536px;
+--spacing-navbar-link:1.25rem;
+--spacing-fluid: clamp(1rem, 5vw, 3rem)
+
+}
+
+
+
+@layer utilities {
+  .separador-linen {
+    background-image: url("data:image/svg+xml,%3Csvg width='1200' height='80' viewBox='0 0 1200 80' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0H1200V40C1050 65 900 75 750 70C600 65 450 45 300 30C150 15 0 15 0 15V0Z' fill='%23fcf1e7'/%3E%3C/svg%3E");
+  }
+  
+  .separador-linen-invert {
+    background-image: url("data:image/svg+xml,%3Csvg width='1200' height='80' viewBox='0 0 1200 80' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 40H1200V0C1050 15 900 15 750 30C600 45 450 65 300 70C150 75 0 65 0 40V0Z' fill='%23fcf1e7'/%3E%3C/svg%3E");
+  }
+}
+
+
+
+
+
+
+/* Animaciones */
+/* Transiciones suaves */
+.transition-all {
+  transition-property: all;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.ease-in-out {
+  transition-timing-function: ease-in-out;
+} 
+
+/* Sombras */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-xl {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+}
+
+/* Asegura contraste y elegancia en los links */
+.nav-link-contrast {
+  text-shadow:
+    0 2px 8px rgba(0,0,0,0.14),
+    0 1px 2px rgba(0,0,0,0.10);
+}
+.nav-link-contrast:hover {
+  color: #EFB88F !important; 
+  text-shadow:
+    0 2px 20px rgba(239,184,143,0.12),
+    0 1px 2px rgba(0,0,0,0.12);
+  transition: color 0.21s;
+} 
+
+/* Para el efecto de acordeón */
+.max-h-0 {
+  max-height: 0;
+}
+
+.overflow-hidden {
+  overflow: hidden;
+} 
+/* 
+Responsive Navbar */
+ @media (max-width: 1439px) and (min-width: 1024px) {
+          .nav-logo-desktop {
+            max-height: 4.5rem !important;
+          }
+        }
+ @media (max-width: 1279px) and (min-width: 1024px) {
+         .nav-logo-desktop {
+            max-height: 3.5rem !important;
+          }
+          .nav-link-contrast {
+            font-size: 1rem !important;
+            gap: 1.5rem !important;
+          }
+        }
+  @media (max-width: 1100px) and (min-width: 1024px) {
+          .nav-link-contrast {
+            font-size: 0.95rem !important;
+            gap: 1.2rem !important;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+          }
+        }
+        
+  @media (max-width: 1200px) and (min-width: 1024px) {
+          .lg\\:flex > .flex-1 {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.3rem !important;
+          }
+        }
+      
+
+@layer base {
+  /* baseline normal (16px) */
+  html { font-size: 16px; }
+
+  /* modo compacto (~-6%) */
+  /* html.compact { font-size: 14px; } */
+
+  /* si quieres aún más compacto (~-12%) cambia a 14px */
+  /* html.compact { font-size: 14px; } */
+}
