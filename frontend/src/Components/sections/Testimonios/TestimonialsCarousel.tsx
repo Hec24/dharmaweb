@@ -1,4 +1,4 @@
-// src/Components/landing/TestimonialsCarousel/TestimonialsCarousel.tsx
+// src/Components/sections/TestimonialsCarousel.tsx
 import React, { useId, useMemo, useState } from "react";
 import { FiArrowRight } from "react-icons/fi";
 import { testimonialsData, programFilters } from "../../../data/testimonios";
@@ -26,7 +26,7 @@ const TestimonialsCarousel: React.FC = () => {
       className="relative bg-linen overflow-hidden"
       aria-labelledby={headingId}
     >
-      {/* SOLO overlay superior (escalón oscuro). Sin hairline arriba. */}
+      {/* Overlay superior */}
       <div
         aria-hidden
         className="pointer-events-none absolute top-0 left-0 right-0 h-5 md:h-6 bg-gradient-to-b from-black/15 to-transparent"
@@ -68,7 +68,9 @@ const TestimonialsCarousel: React.FC = () => {
           </ul>
         </nav>
 
-        {/* Carrusel */}
+        {/* Carrusel:
+            - MÓVIL (hasta <1024px): SIEMPRE 1 tarjeta por slide (una columna)
+            - DESKTOP (>=1024px): 2 tarjetas por slide */}
         <div
           role="region"
           aria-label="Carrusel de testimonios"
@@ -76,8 +78,15 @@ const TestimonialsCarousel: React.FC = () => {
         >
           <CarouselBase
             items={filteredTestimonials}
-            itemsToShow={2}
-            breakpoints={{ 0: 1, 768: 2 }}
+            itemsToShow={1}
+            breakpoints={{
+              0: 1,        // xs
+              360: 1,      // small phones
+              480: 1,      // phones
+              640: 1,      // sm
+              768: 1,      // md (tablets aún 1 columna)
+              1024: 2,     // lg (desktop) -> 2 columnas
+            }}
             renderItem={(testimonial: Testimonial) => (
               <TestimonialCard
                 key={testimonial.id}
@@ -112,15 +121,9 @@ const TestimonialsCarousel: React.FC = () => {
         </div>
       </div>
 
-      {/* Hairline inferior (transición fina hacia la siguiente sección) */}
-       <div
-        aria-hidden
-        className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
-      />
-       <div
-        aria-hidden
-        className="mt-12 md:mt-16 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
-      />
+      {/* Hairlines inferiores */}
+      <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+      <div aria-hidden className="mt-12 md:mt-16 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
     </section>
   );
 };
