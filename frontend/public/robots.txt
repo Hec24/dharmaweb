@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /pagoDatos/
+Disallow: /pagoPasarela/
+Disallow: /editar-reserva/
+Allow: /
+
+Sitemap: https://dharmaenruta.com/sitemap.xml
