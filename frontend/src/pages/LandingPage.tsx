@@ -15,24 +15,52 @@ import TituloEscuela from "../Components/sections/HeaderSection/TituloEscuela";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
+const ORG_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Dharma en Ruta",
+  "url": "https://dharmaenruta.com/",
+  "logo": "https://dharmaenruta.com/og/logo.png",
+  "sameAs": [
+    "https://www.instagram.com/dharmaenruta", // ajusta si procede
+    "https://www.youtube.com/@dharmaenruta"   // ajusta si procede
+  ]
+};
+
 export const LandingPage: React.FC = () => {
+  const title = "Dharma en Ruta — Escuela online de yoga, autoconocimiento y viajes conscientes";
+  const description =
+    "Cursos de yoga y bienestar, acompañamientos 1:1 y yogui viajes. Aprende, practica y vive en coherencia con tu camino.";
+  const canonical = "https://dharmaenruta.com/";
+  const ogImage = "https://dharmaenruta.com/og/home.jpg";
+
   return (
     <>
       <Helmet>
-        <title>Dharma en Ruta | Escuela de Vida y Realización Personal</title>
-        <meta
-          name="description"
-          content="Descubre cursos, herramientas y acompañamiento para tu autoconocimiento y bienestar integral en Dharma en Ruta."
-        />
-        <meta
-          property="og:title"
-          content="Dharma en Ruta | Escuela de Vida y Realización Personal"
-        />
-        <meta
-          property="og:description"
-          content="Descubre cursos, herramientas y acompañamiento para tu autoconocimiento y bienestar integral en Dharma en Ruta."
-        />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+
+        {/* Canonical */}
+        <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* JSON-LD Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify(ORG_JSON_LD)}
+        </script>
       </Helmet>
 
       <Header
