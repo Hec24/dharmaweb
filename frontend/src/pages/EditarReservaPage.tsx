@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import GenericNav from "../Components/shared/GenericNav";
 import ReservaWizard from "../Components/reservas/ReservaWizard";
+import { Helmet} from "react-helmet"
 
 const HERO_IMG = "/img/Backgrounds/background5.jpg"; // ajusta la ruta si quieres
 
@@ -17,6 +18,11 @@ export default function EditarReservaPage() {
 
   return (
     <>
+
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
+      
       {/* NAV como en el resto: header absolute top-0, sin offsets extra */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav

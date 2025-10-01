@@ -32,40 +32,48 @@ export default function CursosPage() {
     });
   }, [q, area, level, tag]);
 
-  // A11y: anunciar número de resultados cuando cambian los filtros
   useEffect(() => {
     if (!resultsLiveRef.current) return;
     resultsLiveRef.current.textContent =
       filtered.length === 1 ? "1 curso encontrado" : `${filtered.length} cursos encontrados`;
   }, [filtered.length]);
 
-  // Lista de áreas (para el bloque “Explora otras áreas”)
   const allAreas = useMemo(
     () => Object.entries(AREAS).map(([slug, cfg]) => ({ slug, nombre: cfg.nombre })),
     []
   );
 
-  const seoTitle = "Todos los cursos · Dharma en Ruta";
+  const seoTitle = "Cursos de yoga y bienestar | Dharma en Ruta";
   const seoDesc =
-    "Explora el catálogo completo de cursos de Dharma en Ruta: yoga, filosofía, autoconocimiento y más. Filtra por área y nivel para encontrar tu próxima formación.";
-  const heroImg = "/img/Backgrounds/background5.jpg";
+    "Explora el catálogo de cursos: yoga, anatomía aplicada, meditación y vida consciente. Filtra por área y nivel para encontrar tu próxima formación.";
+  const canonical = "https://dharmaenruta.com/cursos";
+  const heroImg = "https://dharmaenruta.com/og/cursos.jpg";
 
   return (
     <>
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDesc} />
+
+        <link rel="canonical" href={canonical} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
         <meta property="og:image" content={heroImg} />
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={`${window.location.origin}/cursos`} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        <meta name="twitter:image" content={heroImg} />
       </Helmet>
 
-      {/* NAV fijo arriba */}
+      {/* NAV */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
-          title="Dharma En Ruta"
+          title="Dharma en Ruta"
           logoSrc="/img/Logos/Logos-08.png"
           leftLinks={leftLinks}
           rightLinks={rightLinks}

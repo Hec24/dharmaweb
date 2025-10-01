@@ -8,7 +8,7 @@ import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 import CursoCard from "../Components/ui/CursoCard";
 import SectionHeader from "../Components/ui/SectionHeader";
-import AreaHero from "../Components/ui/AeraHero"; // ← conserva tu import actual
+import AreaHero from "../Components/ui/AeraHero";
 
 import { AREAS } from "../config/areas.config";
 import { withUTM } from "../utils/utm";
@@ -40,9 +40,10 @@ export default function AreaPage() {
     );
   }
 
-  const seoTitle = `${area.nombre} · Dharma en Ruta`;
-  const seoDesc = area.descripcion || `Cursos y herramientas del área ${area.nombre}.`;
-  const heroImg = area.heroImg || "/img/Backgrounds/background5.jpg";
+  const seoTitle = `${area.nombre} | Dharma en Ruta`;
+  const seoDesc = area.descripcion || `Cursos y herramientas del área ${area.nombre} para avanzar a tu ritmo.`;
+  const heroImg = area.heroImg || "https://dharmaenruta.com/og/area.jpg";
+  const canonical = `https://dharmaenruta.com/areas/${slug}`;
 
   const allAreas = Object.entries(AREAS).map(([k, v]) => ({ slug: k, nombre: v.nombre }));
   const cursos = Array.isArray(area.cursos) ? area.cursos : [];
@@ -52,12 +53,22 @@ export default function AreaPage() {
       <Helmet>
         <title>{seoTitle}</title>
         <meta name="description" content={seoDesc} />
+
+        <link rel="canonical" href={canonical} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
         <meta property="og:title" content={seoTitle} />
         <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
         {heroImg && <meta property="og:image" content={heroImg} />}
-        <meta property="og:type" content="website" />
-        <link rel="canonical" href={`${window.location.origin}/areas/${slug}`} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        {heroImg && <meta name="twitter:image" content={heroImg} />}
       </Helmet>
+
 
       {/* NAV sobre el hero (transparente) */}
       <header className="absolute inset-x-0 top-0 z-40">

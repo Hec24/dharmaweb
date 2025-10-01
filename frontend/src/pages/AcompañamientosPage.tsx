@@ -23,7 +23,6 @@ const AcompañamientosPage: React.FC = () => {
 
   const { hash } = useLocation();
 
-  // Scroll a ancla si hay #hash
   React.useEffect(() => {
     if (!hash) return;
     const el = document.getElementById(hash.slice(1));
@@ -48,20 +47,31 @@ const AcompañamientosPage: React.FC = () => {
     setModalOpen(false);
   }, []);
 
+  const title = "Acompañamientos 1:1 de yoga y autoconocimiento | Dharma en Ruta";
+  const description =
+    "Diseña tu práctica de yoga, lecturas de carta natal y procesos de bienestar guiados. Trabajo cercano, práctico y alineado contigo.";
+  const canonical = "https://dharmaenruta.com/acompanamientos";
+  const ogImage = "https://dharmaenruta.com/og/acompanamientos.jpg";
+
   return (
     <>
       <Helmet>
-        <title>Acompañamiento Espiritual Personalizado | Dharma en Ruta</title>
-        <meta
-          name="description"
-          content="Encuentra la guía perfecta para tu camino interior con nuestros acompañamientos espirituales personalizados."
-        />
-        <meta property="og:title" content="Acompañamiento Espiritual Personalizado | Dharma en Ruta" />
-        <meta
-          property="og:description"
-          content="Encuentra la guía perfecta para tu camino interior con nuestros acompañamientos espirituales personalizados."
-        />
+        <title>{title}</title>
+        <meta name="description" content={description} />
+
+        <link rel="canonical" href={canonical} />
+
         <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={ogImage} />
       </Helmet>
 
       {/* HERO */}

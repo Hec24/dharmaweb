@@ -4,6 +4,7 @@ import Button from "../Components/ui/Button";
 import GenericNav from "../Components/shared/GenericNav";
 import { api } from "../lib/api";
 import type { Sesion } from "../data/types";
+import { Helmet} from "react-helmet"
 
 type ReservaDto = {
   id: string;
@@ -179,6 +180,10 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
 
   return (
     <>
+
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
           title="Dharma En Ruta"
