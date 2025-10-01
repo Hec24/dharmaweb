@@ -5,6 +5,7 @@ import { Helmet } from "react-helmet";
 import Header from "../Components/shared/Header";
 import GenericNav from "../Components/shared/GenericNav";
 
+import IntroEscuela from "../Components/sections/IntroEscuela/IntroEscuela";
 import SeccionCursos from "../Components/sections/CursosSection/SeccionCursos";
 import RuedaVida from "../Components/sections/RuedaVidaSection/RuedaVida";
 import LeadMagnet from "../Components/sections/LeadMagnetSection/LeadMagnet";
@@ -62,6 +63,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Resto de secciones */}
       <section className="flex flex-col">
+        <IntroEscuela />
         <SeccionCursos />
       </section>
 
