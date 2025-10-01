@@ -5,6 +5,7 @@ import GenericNav from "../shared/GenericNav"; // ← si lo tienes en "shared", 
 import Button from "../../Components/ui/Button"
 import { api } from "../../lib/api"
 import type { Sesion } from "../../data/types";
+import { Helmet} from "react-helmet"
 
 // DTO mínimo de tu backend
 type ReservaDto = {
@@ -134,6 +135,10 @@ export default function PasarelaPago(): React.ReactElement {
 
   return (
     <>
+
+      <Helmet>
+        <meta name="robots" content="noindex,nofollow" />
+      </Helmet>
       {/* NAV igual que en otras páginas */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
