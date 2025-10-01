@@ -26,7 +26,7 @@ const TituloEscuela: React.FC = () => {
             {/* Línea 1 con subrayado */}
             <span className="relative inline-block">
               <span className="relative z-10 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                Escuela de Vida
+                Una Escuela Nómada
               </span>
               <span
                 aria-hidden="true"
@@ -43,7 +43,7 @@ const TituloEscuela: React.FC = () => {
             {/* Línea 2 con subrayado */}
             <span className="relative inline-block mt-1 sm:mt-2">
               <span className="relative z-10 font-medium drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
-                y Realización Personal
+                Para Vivir Con Libertad y Coherencia
               </span>
               <span
                 aria-hidden="true"
