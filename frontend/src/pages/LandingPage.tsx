@@ -69,7 +69,7 @@ export const LandingPage: React.FC = () => {
   
         nav={
           <GenericNav
-            title="Dharma En Ruta"
+            title="Dharma en Ruta"
             logoSrc="/img/Logos/Logos-08.png"
             leftLinks={leftLinks}
             rightLinks={rightLinks}

@@ -186,7 +186,7 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
       </Helmet>
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
-          title="Dharma En Ruta"
+          title="Dharma en Ruta"
           logoSrc="/img/Logos/Logos-08.png"
           variant="transparent"
           mode="logoOnly"

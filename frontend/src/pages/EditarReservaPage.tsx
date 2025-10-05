@@ -26,7 +26,7 @@ export default function EditarReservaPage() {
       {/* NAV como en el resto: header absolute top-0, sin offsets extra */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
-          title="Dharma En Ruta"
+          title="Dharma en Ruta"
           logoSrc="/img/Logos/Logos-08.png"
           variant="transparent"
           mode="logoOnly"
