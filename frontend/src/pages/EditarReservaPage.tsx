@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import GenericNav from "../Components/shared/GenericNav";
 import ReservaWizard from "../Components/reservas/ReservaWizard";
-import { Helmet} from "react-helmet"
+import { Helmet} from "react-helmet-async"
 
 const HERO_IMG = "/img/Backgrounds/background5.jpg"; // ajusta la ruta si quieres
 

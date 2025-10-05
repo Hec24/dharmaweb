@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { areaSlugFromName } from "../utils/areas";
 import GenericNav from "../Components/shared/GenericNav";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import SectionHeader from "../Components/ui/SectionHeader";
 import { AREAS } from "../config/areas.config";
 

@@ -1,6 +1,6 @@
 // src/Components/legal/LegalLayout.tsx
 import React from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import GenericNav from "../shared/GenericNav";
 import Header from "../shared/Header";
 import SectionHeader from "../ui/SectionHeader";

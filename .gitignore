@@ -29,3 +29,5 @@ dist-ssr
 /pnpm-lock.yaml
 /yarn.lock
 /node_modules
+/.vercel
+/frontend/.vercel

@@ -1,7 +1,7 @@
 // src/pages/AcompañamientosPage.tsx
 import React from "react";
 import { FiArrowRight, FiChevronDown, FiChevronUp } from "react-icons/fi";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 
 import GenericNav from "../Components/shared/GenericNav";
