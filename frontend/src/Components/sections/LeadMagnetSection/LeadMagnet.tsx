@@ -64,7 +64,7 @@ const LeadMagnet: React.FC = () => {
                 error={error}
                 setStatus={setStatus}
                 variant="leadmagnet"
-                buttonText="Quiero entrar en la DharmaLetter"
+                buttonText="Unirme a la DharmaLetter"
                 showTerms={true}
               />
             </div>
