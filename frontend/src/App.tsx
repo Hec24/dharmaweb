@@ -19,6 +19,7 @@ import TerminosPage from "./pages/TerminosPage";
 import PoliticaPrivacidadPage from "./pages/PoliticaPrivacidadPage";
 import AvisoLegalPage from "./pages/AvisoLegalPage";
 import CookiesPage from "./pages/CookiesPage";
+import OrigenPage from "./pages/OrigenPage";
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
 function RootWithScroll() {
@@ -49,7 +50,8 @@ const router = createBrowserRouter([
       { path: "terminos", element: <TerminosPage /> },
       { path: "politica-privacidad", element: <PoliticaPrivacidadPage /> },
       { path: "aviso-legal", element: <AvisoLegalPage /> },
-      { path: "cookies", element: <CookiesPage /> }
+      { path: "cookies", element: <CookiesPage /> },
+      { path: "origen", element: <OrigenPage /> }
     ],
   },
 ]);
