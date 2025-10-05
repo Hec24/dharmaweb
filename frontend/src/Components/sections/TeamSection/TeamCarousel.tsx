@@ -27,13 +27,11 @@ const TeamCarousel: React.FC = () => {
       
       
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 md:pt-12 pb-12 md:pb-14">
-        <h2 id={headingId} className="sr-only">
-          Conoce a nuestro equipo
-        </h2>
+        
 
         <SectionHeader
           title="Conoce a nuestro equipo"
-          subtitle="Los expertos que te guiarán en tu camino hacia el autoconocimiento."
+          subtitle="Conoce a las personas que te guiarán en tu camino de autoconocimiento y libertad"
           subtitleClassName="text-sm md:text-base max-w-xl mx-auto text-asparragus/80 mt-2"
           align="center"
           size="md"

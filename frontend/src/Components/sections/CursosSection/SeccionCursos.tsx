@@ -73,8 +73,8 @@ const SeccionCursos: React.FC = () => {
         </h2>
 
         <SectionHeader
-          title="Cursos Top Ventas"
-          subtitle="Programas claros y prácticos para avanzar en autoconocimiento y bienestar."
+          title="Cursos Más Vistos"
+          subtitle="Aquí encuentras las herramientas para conocerte, crecer y transformar tu vida."
           subtitleClassName="text-sm md:text-base max-w-2xl mx-auto text-asparragus/80 mt-2"
           align="center"
           size="md"
