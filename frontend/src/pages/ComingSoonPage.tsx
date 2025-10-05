@@ -28,7 +28,7 @@ const ComingSoonPage: React.FC = () => {
       </Helmet>
 
       {/* HERO con imagen de fondo + degradado suave */}
-      <header className="relative isolate min-h-[100vh] flex flex-col">
+      <header className="relative isolate min-h-[100svh] flex flex-col">
         {/* Fondo imagen */}
         <div
           className="absolute inset-0 -z-10 bg-center bg-cover"
@@ -55,8 +55,11 @@ const ComingSoonPage: React.FC = () => {
           />
         </div>
 
-        {/* Contenido central */}
-        <main className="flex-1 flex items-center justify-center px-4 sm:px-6">
+        {/* 👇 Espaciador bajo el NAV para que en mobile no quede pegado arriba */}
+        <div className="h-16 sm:h-20" aria-hidden="true" />
+
+        {/* Contenido centrado */}
+        <main className="flex-1 grid place-items-center px-4 sm:px-6 py-10 sm:py-14">
           <div className="w-full max-w-3xl">
             {/* Tarjeta principal */}
             <section

@@ -86,7 +86,7 @@ const ProfesorCard: React.FC<ProfesorCardProps> = ({
           
             <ButtonLink
             as="button"
-            size="lg" 
+            size="md" 
             variant="primary" 
             icon={<FiChevronRight/>}
             onClick={() => onAgendar?.()}
