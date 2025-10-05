@@ -4,7 +4,7 @@ import Button from "../Components/ui/Button";
 import GenericNav from "../Components/shared/GenericNav";
 import { api } from "../lib/api";
 import type { Sesion } from "../data/types";
-import { Helmet} from "react-helmet"
+import { Helmet} from "react-helmet-async"
 
 type ReservaDto = {
   id: string;

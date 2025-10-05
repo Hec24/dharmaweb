@@ -5,7 +5,7 @@ import GenericNav from "../shared/GenericNav"; // ← si lo tienes en "shared", 
 import Button from "../../Components/ui/Button"
 import { api } from "../../lib/api"
 import type { Sesion } from "../../data/types";
-import { Helmet} from "react-helmet"
+import { Helmet} from "react-helmet-async"
 
 // DTO mínimo de tu backend
 type ReservaDto = {

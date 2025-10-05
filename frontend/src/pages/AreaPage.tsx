@@ -1,7 +1,7 @@
 // src/pages/AreaPage.tsx
 import React, { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 import GenericNav from "../Components/shared/GenericNav";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";

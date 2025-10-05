@@ -24,4 +24,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.vercel
+.vercel/package.json
+/package-lock.json
+/pnpm-lock.yaml
+/yarn.lock
+/node_modules
+/.vercel
+/frontend/.vercel

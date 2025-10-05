@@ -1,6 +1,6 @@
 // src/pages/FaqsPage.tsx
 import React from "react";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import SimplePageLayout from "../layouts/SimplePageLayout";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { faqs } from "../data/faqs";
