@@ -24,7 +24,7 @@ export default function SimplePageLayout({
       <header className="w-full shadow-sm bg-linen">
         <div className="max-w-[110rem] mx-auto px-[min(6vw,3rem)]">
           <GenericNav
-            title="Dharma En Ruta"
+            title="Dharma en Ruta"
             logoSrc="/img/Logos/Logos-08.png"
             leftLinks={leftLinks}
             rightLinks={rightLinks}
