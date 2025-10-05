@@ -142,7 +142,7 @@ export default function PasarelaPago(): React.ReactElement {
       {/* NAV igual que en otras páginas */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
-          title="Dharma En Ruta"
+          title="Dharma en Ruta"
           logoSrc="/img/Logos/Logos-08.png"
           variant="transparent"
           mode="logoOnly"
