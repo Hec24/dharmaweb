@@ -12,9 +12,9 @@ const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
 ];
 
-const IMPERSONATED_USER = "info@dharmaenruta.com";
-const CALENDAR_ID = "primary";
-const TIMEZONE = "Europe/Madrid";
+const IMPERSONATED_USER = process.env.GCAL_IMPERSONATED_USER || "info@dharmaenruta.com";
+const CALENDAR_ID = process.env.GCAL_CALENDAR_ID || "primary";
+const TIMEZONE = process.env.GCAL_TIMEZONE || "Europe/Madrid";
 
 /**
  * Carga credenciales de forma segura:

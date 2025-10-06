@@ -20,31 +20,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 const app = express();
 
-// ========= CORS =========
-// Middleware CORS global (para peticiones normales)
+// ====== CORS ======
+const ORIGINS = (process.env.CORS_ORIGINS || FRONTEND_URL || "").split(",").map(s => s.trim()).filter(Boolean);
 app.use(cors({
-  origin: [FRONTEND_URL, ALT_FRONTEND],
+  origin(origin, cb) {
+    if (!origin) return cb(null, true); // permite Postman/CLI
+    return cb(ORIGINS.includes(origin) ? null : new Error("Not allowed by CORS"), ORIGINS.includes(origin));
+  },
   credentials: false,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
+  allowedHeaders: ["Content-Type","Authorization"],
   optionsSuccessStatus: 204,
 }));
-
-// Handler universal de OPTIONS (preflight) — SIN wildcards en la ruta
-const allowedOrigins = new Set([FRONTEND_URL, ALT_FRONTEND]);
-app.use((req, res, next) => {
-  if (req.method === "OPTIONS") {
-    const origin = req.headers.origin as string | undefined;
-    if (origin && allowedOrigins.has(origin)) {
-      res.header("Access-Control-Allow-Origin", origin);
-      res.header("Vary", "Origin");
-    }
-    res.header("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
-    return res.sendStatus(204);
-  }
-  next();
-});
 
 // (Opcional) logs de NO-GET
 app.use((req, _res, next) => {
@@ -96,13 +83,13 @@ app.post(
             ...actualizada,
             duracionMin: actualizada.duracionMin ?? 60,
           };
-          const result = await upsertEvento(normalized);
-          if (result?.eventId) {
+          const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
+          if (result && typeof result === "object" && "eventId" in result && result.eventId) {
             updateReserva(actualizada.id, { eventId: result.eventId });
           }
           console.log("Reserva confirmada y evento Calendar ok:", {
             reservaId,
-            eventId: result?.eventId,
+            eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
           });
         } catch (err: any) {
           console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
@@ -250,7 +237,7 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
         ...actualizada,
         duracionMin: actualizada.duracionMin ?? 60,
       };
-      const result = await upsertEvento(normalized);
+      const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
       if (result?.eventId) {
         updateReserva(actualizada.id, { eventId: result.eventId });
         actualizada.eventId = result.eventId;
