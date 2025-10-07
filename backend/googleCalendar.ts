@@ -370,11 +370,7 @@ export async function _debugImpersonationAndAccess() {
   try {
     log.info("Impersonando como:", IMPERSONATED_USER);
 
-    // userinfo (requiere oauth2 “v2” con el auth ya configurado)
-    const me = await withBackoff(() => google.oauth2("v2").userinfo.get({}));
-    log.info("Userinfo:", (me?.data as any)?.email || me?.data);
-
-    // lista calendarios visibles
+    // 1) Lista de calendarios visibles por el usuario impersonado
     const list = await withBackoff(() => calendar.calendarList.list({ maxResults: 20 }));
     const calendars = (list.data.items || []).map(i => ({
       id: i.id,
@@ -384,14 +380,15 @@ export async function _debugImpersonationAndAccess() {
     }));
     log.info("Calendars visibles:", calendars);
 
-    // acceso al calendarId configurado
+    // 2) Acceso al CALENDAR_ID configurado
     const cal = await withBackoff(() => calendar.calendars.get({ calendarId: CALENDAR_ID }));
     log.info("Acceso OK a CALENDAR_ID:", CALENDAR_ID, "→", cal.data.summary);
 
-    return { ok: true, user: (me?.data as any)?.email, calendars, calendarId: CALENDAR_ID };
+    return { ok: true, calendars, calendarId: CALENDAR_ID };
   } catch (err) {
     const e = explainGoogleError(err);
     log.error("DEBUG impersonation error:", e);
     return { ok: false, error: e };
   }
 }
+
