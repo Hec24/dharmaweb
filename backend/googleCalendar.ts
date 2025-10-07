@@ -101,8 +101,10 @@ async function withBackoff<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
         status === 429 ||
         status === 500 ||
         status === 503 ||
-        reason?.includes("rateLimitExceeded") ||
-        reason?.includes("userRateLimitExceeded");
+        (typeof reason === "string" && (
+          reason.includes("rateLimitExceeded") ||
+          reason.includes("userRateLimitExceeded")
+        ));
       if (!isTransient) throw err;
       lastErr = err;
       const delay = Math.min(1000 * Math.pow(2, attempt), 12000);
@@ -111,6 +113,20 @@ async function withBackoff<T>(fn: () => Promise<T>, tries = 5): Promise<T> {
     }
   }
   throw lastErr;
+}
+
+// === Logs y helpers ===
+const LOG_PREFIX = "[GCAL]";
+const log = {
+  info: (...a: any[]) => console.log(LOG_PREFIX, ...a),
+  warn: (...a: any[]) => console.warn(LOG_PREFIX, ...a),
+  error: (...a: any[]) => console.error(LOG_PREFIX, ...a),
+};
+
+function explainGoogleError(err: any) {
+  const status = err?.code || err?.response?.status;
+  const data = err?.response?.data || err?.errors || err?.message;
+  return { status, data };
 }
 
 // ——— Búsquedas ———
@@ -190,8 +206,192 @@ function needsUpdate(existing: calendar_v3.Schema$Event, desired: calendar_v3.Sc
   return sA !== sB || eA !== eB || tzA !== tzB || sumA !== sumB || descA !== descB || attA !== attB;
 }
 
-// ——— CRUD ——— (igual que tú)
-export async function añadirEvento(reserva: Reserva) { /* ...igual... */ }
-export async function actualizarEvento(reserva: Reserva & { eventId?: string }) { /* ...igual... */ }
-export async function cancelarEvento(args: { reservaId?: string; eventId?: string; notify?: boolean }) { /* ...igual... */ }
-export async function upsertEvento(reserva: Reserva & { eventId?: string }) { /* ...igual... */ }
+// ——— CRUD ———
+export async function añadirEvento(reserva: Reserva) {
+  const event = mapReservaToEvent(reserva);
+
+  log.info("Añadir evento ←", {
+    reservaId: reserva.id,
+    start: event.start?.dateTime,
+    end: event.end?.dateTime,
+    attendees: (event.attendees || []).map(a => a.email),
+  });
+
+  try {
+    const res = await withBackoff(() =>
+      calendar.events.insert({
+        calendarId: CALENDAR_ID,
+        requestBody: event,
+        sendUpdates: "all", // notifica a asistentes
+      })
+    );
+    log.info("Evento creado →", { eventId: res.data.id, htmlLink: res.data.htmlLink });
+    return res.data;
+  } catch (err) {
+    log.error("Error creando evento:", explainGoogleError(err));
+    throw err;
+  }
+}
+
+export async function actualizarEvento(reserva: Reserva & { eventId?: string }) {
+  log.info("Actualizar evento ←", { reservaId: reserva.id, eventId: reserva.eventId });
+
+  let existing: calendar_v3.Schema$Event | null = null;
+
+  try {
+    if (reserva.eventId) {
+      existing = await buscarEventoPorId(reserva.eventId);
+    } else {
+      existing = await buscarEventoPorReservaId(reserva.id);
+    }
+  } catch (err) {
+    log.error("Error buscando evento para actualizar:", explainGoogleError(err));
+    throw err;
+  }
+
+  if (!existing) {
+    log.warn("No hay evento existente → creamos nuevo");
+    return añadirEvento(reserva);
+  }
+
+  const desired = mapReservaToEvent(reserva);
+  const mustUpdate = needsUpdate(existing, desired);
+
+  if (!mustUpdate) {
+    log.info("Sin cambios en el evento. No se actualiza.", { eventId: existing.id });
+    return existing;
+  }
+
+  try {
+    const res = await withBackoff(() =>
+      calendar.events.update({
+        calendarId: CALENDAR_ID,
+        eventId: existing!.id!,
+        requestBody: {
+          ...existing,
+          ...desired,
+          extendedProperties: {
+            private: {
+              ...(existing.extendedProperties?.private || {}),
+              reservaId: reserva.id,
+            },
+          },
+        },
+        sendUpdates: "all",
+      })
+    );
+    log.info("Evento actualizado →", { eventId: res.data.id });
+    return res.data;
+  } catch (err) {
+    log.error("Error actualizando evento:", explainGoogleError(err));
+    throw err;
+  }
+}
+
+export async function cancelarEvento(args: { reservaId?: string; eventId?: string; notify?: boolean }) {
+  const { reservaId, eventId, notify = true } = args;
+  log.info("Cancelar evento ←", { reservaId, eventId, notify });
+
+  let id = eventId;
+  if (!id && reservaId) {
+    const existing = await buscarEventoPorReservaId(reservaId);
+    id = existing?.id || undefined;
+  }
+
+  if (!id) {
+    log.warn("No se encontró eventId para cancelar.");
+    return { ok: true, skipped: true };
+  }
+
+  try {
+    await withBackoff(() =>
+      calendar.events.delete({
+        calendarId: CALENDAR_ID,
+        eventId: id!,
+        sendUpdates: notify ? "all" : "none",
+      })
+    );
+    log.info("Evento cancelado →", { eventId: id });
+    return { ok: true, eventId: id };
+  } catch (err) {
+    log.error("Error cancelando evento:", explainGoogleError(err));
+    throw err;
+  }
+}
+
+export async function upsertEvento(reserva: Reserva & { eventId?: string }) {
+  log.info("Upsert evento ←", { reservaId: reserva.id, eventId: reserva.eventId });
+
+  try {
+    const existing =
+      reserva.eventId
+        ? await buscarEventoPorId(reserva.eventId)
+        : await buscarEventoPorReservaId(reserva.id);
+
+    if (!existing) {
+      log.info("No había evento → crear");
+      return await añadirEvento(reserva);
+    }
+
+    const desired = mapReservaToEvent(reserva);
+    if (!needsUpdate(existing, desired)) {
+      log.info("Evento ya coincide → sin cambios", { eventId: existing.id });
+      return existing;
+    }
+
+    const res = await withBackoff(() =>
+      calendar.events.update({
+        calendarId: CALENDAR_ID,
+        eventId: existing.id!,
+        requestBody: {
+          ...existing,
+          ...desired,
+          extendedProperties: {
+            private: {
+              ...(existing.extendedProperties?.private || {}),
+              reservaId: reserva.id,
+            },
+          },
+        },
+        sendUpdates: "all",
+      })
+    );
+
+    log.info("Upsert → actualizado", { eventId: res.data.id });
+    return res.data;
+  } catch (err) {
+    log.error("Error en upsert:", explainGoogleError(err));
+    throw err;
+  }
+}
+
+// ——— DEBUG: impersonación y acceso ———
+export async function _debugImpersonationAndAccess() {
+  try {
+    log.info("Impersonando como:", IMPERSONATED_USER);
+
+    // userinfo (requiere oauth2 “v2” con el auth ya configurado)
+    const me = await withBackoff(() => google.oauth2("v2").userinfo.get({}));
+    log.info("Userinfo:", (me?.data as any)?.email || me?.data);
+
+    // lista calendarios visibles
+    const list = await withBackoff(() => calendar.calendarList.list({ maxResults: 20 }));
+    const calendars = (list.data.items || []).map(i => ({
+      id: i.id,
+      primary: i.primary,
+      accessRole: i.accessRole,
+      summary: i.summary,
+    }));
+    log.info("Calendars visibles:", calendars);
+
+    // acceso al calendarId configurado
+    const cal = await withBackoff(() => calendar.calendars.get({ calendarId: CALENDAR_ID }));
+    log.info("Acceso OK a CALENDAR_ID:", CALENDAR_ID, "→", cal.data.summary);
+
+    return { ok: true, user: (me?.data as any)?.email, calendars, calendarId: CALENDAR_ID };
+  } catch (err) {
+    const e = explainGoogleError(err);
+    log.error("DEBUG impersonation error:", e);
+    return { ok: false, error: e };
+  }
+}

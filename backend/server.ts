@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-import { upsertEvento, cancelarEvento } from "./googleCalendar";
+import { upsertEvento, cancelarEvento, _debugImpersonationAndAccess } from "./googleCalendar";
 import { Reserva } from "./types";
 
 // ========= Config =========
@@ -15,17 +15,25 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const ALT_FRONTEND = "http://127.0.0.1:5173"; // por si el navegador usa 127.0.0.1
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 
+// Protege la ruta de debug si quieres: /api/debug/gcal?token=XYZ
+const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
+
 // Usa la versión por defecto de tu cuenta de Stripe (estable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 const app = express();
 
 // ====== CORS ======
-const ORIGINS = (process.env.CORS_ORIGINS || FRONTEND_URL || "").split(",").map(s => s.trim()).filter(Boolean);
+const ORIGINS = (process.env.CORS_ORIGINS || FRONTEND_URL || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
 app.use(cors({
   origin(origin, cb) {
     if (!origin) return cb(null, true); // permite Postman/CLI
-    return cb(ORIGINS.includes(origin) ? null : new Error("Not allowed by CORS"), ORIGINS.includes(origin));
+    const allowed = ORIGINS.includes(origin) || origin === ALT_FRONTEND;
+    return cb(allowed ? null : new Error("Not allowed by CORS"), allowed);
   },
   credentials: false,
   methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
@@ -48,6 +56,23 @@ app.set("trust proxy", 1);
 
 // ========= Healthcheck =========
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
+
+// ========= Ruta de DEBUG GCAL =========
+// Llama en producción: GET /api/debug/gcal?token=TU_TOKEN
+app.get("/api/debug/gcal", async (req: Request, res: Response) => {
+  if (ADMIN_TOKEN && req.query.token !== ADMIN_TOKEN) {
+    return res.status(401).json({ ok: false, error: "unauthorized" });
+  }
+  try {
+    console.log("[GCAL] IMPERSONATED_USER:", process.env.GCAL_IMPERSONATED_USER || "(no definido)");
+    console.log("[GCAL] CALENDAR_ID:", process.env.GCAL_CALENDAR_ID || "primary");
+    const out = await _debugImpersonationAndAccess();
+    return res.json(out);
+  } catch (e: any) {
+    console.error("[GCAL] /api/debug/gcal error:", e?.message || e);
+    return res.status(500).json({ ok: false, error: String(e?.message || e) });
+  }
+});
 
 // ========= Stripe webhook (RAW antes del json) =========
 app.post(
@@ -83,6 +108,18 @@ app.post(
             ...actualizada,
             duracionMin: actualizada.duracionMin ?? 60,
           };
+
+          // 🔎 Log antes de sincronizar con Calendar
+          console.log("[GCAL] WEBHOOK upsertEvento() ←", {
+            reservaId,
+            fecha: normalized.fecha,
+            hora: normalized.hora,
+            email: normalized.email,
+            acompanante: normalized.acompanante,
+            acompananteEmail: normalized.acompananteEmail,
+            duracionMin: normalized.duracionMin,
+          });
+
           const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
           if (result && typeof result === "object" && "eventId" in result && result.eventId) {
             updateReserva(actualizada.id, { eventId: result.eventId });
@@ -237,6 +274,20 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
         ...actualizada,
         duracionMin: actualizada.duracionMin ?? 60,
       };
+
+      // 🔎 Log antes de sincronizar con Calendar
+      console.log("[GCAL] PATCH upsertEvento() ←", {
+        reservaId: normalized.id,
+        fecha: normalized.fecha,
+        hora: normalized.hora,
+        email: normalized.email,
+        acompanante: normalized.acompanante,
+        acompananteEmail: normalized.acompananteEmail,
+        duracionMin: normalized.duracionMin,
+        justPaid,
+        relevantChanges,
+      });
+
       const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
       if (result?.eventId) {
         updateReserva(actualizada.id, { eventId: result.eventId });
@@ -266,4 +317,10 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Servidor Express en puerto ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Servidor Express en puerto ${PORT}`);
+  // Logs rápidos del entorno GCAL (útiles para verificar que Render está leyendo bien las vars)
+  console.log("[GCAL] IMPERSONATED_USER:", process.env.GCAL_IMPERSONATED_USER || "(no definido)");
+  console.log("[GCAL] CALENDAR_ID:", process.env.GCAL_CALENDAR_ID || "primary");
+  console.log("[CORS] ORIGINS:", ORIGINS);
+});
