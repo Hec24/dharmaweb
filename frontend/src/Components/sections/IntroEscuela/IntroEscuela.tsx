@@ -1,6 +1,6 @@
 // src/Components/landing/IntroEscuela.tsx
 import React from "react";
-import SectionHeader from "../../ui/SectionHeader";
+import SectionHeader from "../../../Components/ui/SectionHeader";
 
 const IntroEscuela: React.FC = () => {
   return (
@@ -13,8 +13,17 @@ const IntroEscuela: React.FC = () => {
       <div className="absolute inset-x-0 top-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" />
       <div className="absolute inset-x-0 bottom-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 lg:py-16">
-        {/* Cabecera centrada con SectionHeader */}
+      <div
+        className="
+          max-w-7xl mx-auto
+          px-5 sm:px-6 lg:px-8
+          max-[360px]:px-6
+          pt-12 sm:pt-12 lg:pt-16
+          max-[375px]:pt-14
+          pb-10 sm:pb-12 lg:pb-16
+        "
+      >
+        {/* 💡 Mobile-first: alineado a la IZQUIERDA en mobile, centrado desde sm+ */}
         <SectionHeader
           title={
             <span id="intro-escuela-heading" className="block">
@@ -36,16 +45,16 @@ const IntroEscuela: React.FC = () => {
               </span>
             </>
           }
-          align="center"
+          align="left"                      
           size="custom"
           color="asparragus"
-          titleClassName="text-2xl sm:text-3xl md:text-4xl mb-3"
-          subtitleClassName="text-asparragus/90 font-degular max-w-3xl mx-auto text-[15px] sm:text-base md:text-[17px] leading-relaxed"
-          className="max-w-none"
-          decoration={<span className="h-px w-16 bg-asparragus/30 mx-auto" aria-hidden="true" />}
+          titleClassName="text-2xl sm:text-3xl md:text-4xl mb-3 text-left sm:text-center"
+          subtitleClassName="text-asparragus/90 font-degular max-w-3xl text-[15px] sm:text-base md:text-[17px] leading-relaxed text-left sm:text-center sm:mx-auto"
+          className="max-w-none sm:items-center sm:text-center"
+          decoration={<span className="h-px w-16 bg-asparragus/30 mx-0 sm:mx-auto" aria-hidden="true" />}
         />
 
-        {/* Grid de pilares centrados con emoji arriba */}
+        {/* Grid de pilares */}
         <div
           className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5"
           role="list"
@@ -89,7 +98,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ emoji, title, subtitle }) => 
       className="rounded-2xl bg-white/80 p-5 sm:p-6 ring-1 ring-black/5 shadow-sm text-center"
       role="listitem"
     >
-      {/* Emoji en pastilla centrado */}
       <span
         className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--color-linen)] ring-1 ring-black/5 select-none mx-auto"
         aria-hidden="true"
@@ -99,7 +107,6 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ emoji, title, subtitle }) => 
         </span>
       </span>
 
-      {/* Título y subtítulo */}
       <h3 className="mt-3 font-gotu text-lg sm:text-xl text-asparragus leading-snug">
         {title}
       </h3>
@@ -111,3 +118,4 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ emoji, title, subtitle }) => 
 };
 
 export default IntroEscuela;
+
