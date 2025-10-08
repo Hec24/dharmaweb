@@ -14,7 +14,19 @@ const SCOPES = [
 
 const IMPERSONATED_USER = process.env.GCAL_IMPERSONATED_USER || "info@dharmaenruta.com";
 const CALENDAR_ID = process.env.GCAL_CALENDAR_ID || "primary";
-const TIMEZONE = process.env.GCAL_TIMEZONE || "Europe/Madrid";
+
+function resolveTimezone() {
+  const raw = (process.env.GCAL_TIMEZONE ?? "Europe/Madrid").trim();
+  // Valida con Intl: si no es IANA válido, caemos a Europe/Madrid
+  try {
+    new Intl.DateTimeFormat("es-ES", { timeZone: raw });
+    return raw;
+  } catch {
+    console.warn("[GCAL] TIMEZONE inválido en GCAL_TIMEZONE:", raw, "→ usando Europe/Madrid");
+    return "Europe/Madrid";
+  }
+}
+const TIMEZONE = resolveTimezone();
 
 /**
  * Carga credenciales de forma segura:
@@ -213,8 +225,9 @@ export async function añadirEvento(reserva: Reserva) {
   log.info("Añadir evento ←", {
     reservaId: reserva.id,
     start: event.start?.dateTime,
-    end: event.end?.dateTime,
-    attendees: (event.attendees || []).map(a => a.email),
+    end:   event.end?.dateTime,
+    tz:    event.start?.timeZone,
+    attendees: (event.attendees ?? []).map(a => a.email),
   });
 
   try {
@@ -234,7 +247,14 @@ export async function añadirEvento(reserva: Reserva) {
 }
 
 export async function actualizarEvento(reserva: Reserva & { eventId?: string }) {
-  log.info("Actualizar evento ←", { reservaId: reserva.id, eventId: reserva.eventId });
+  const event = mapReservaToEvent(reserva);
+  log.info("Actualizar evento←", {
+    reservaId: reserva.id,
+    start: event.start?.dateTime,
+    end:   event.end?.dateTime,
+    tz:    event.start?.timeZone,
+    attendees: (event.attendees ?? []).map(a => a.email),
+  });
 
   let existing: calendar_v3.Schema$Event | null = null;
 
