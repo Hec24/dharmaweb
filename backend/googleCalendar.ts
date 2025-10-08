@@ -235,7 +235,7 @@ export async function añadirEvento(reserva: Reserva) {
       calendar.events.insert({
         calendarId: CALENDAR_ID,
         requestBody: event,
-        sendUpdates: "none", // notifica a asistentes
+        sendUpdates: "all", // notifica a asistentes
       })
     );
     log.info("Evento creado →", { eventId: res.data.id, htmlLink: res.data.htmlLink });
