@@ -53,18 +53,15 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
         className="pointer-events-none absolute top-0 left-0 right-0 h-5 md:h-6 bg-gradient-to-b from-black/10 to-transparent"
       />
 
-      <h2 id={headingId} className="sr-only">
-        Tu Rueda de Vida Ideal
-      </h2>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeader
           title={
             <>
-              Tu <span className="text-gold">Rueda de Vida</span> Ideal
+              Tu <span className="text-gold">Rueda de la Vida</span> Ideal
             </>
           }
-          subtitle="Descubre las 8 áreas esenciales para crear una vida equilibrada y plena."
+          subtitle="Descubre en qué área estás hoy"
           subtitleClassName="text-sm md:text-base max-w-lg mx-auto text-asparragus/80 mt-2"
           align="center"
           size="md"
@@ -128,11 +125,11 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
                 size="md"
                 variant="secondary"
                 icon={<FiArrowRight aria-hidden />}
-                aria-label="Comienza tu evaluación de Rueda de Vida"
+                aria-label="Descarga Gratis tu Mapa del Dharma"
                 href={evalHref}
                 className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
               >
-                Comienza tu evaluación
+                Descarga Gratis tu Mapa del Dharma
               </ButtonLink>
 
             </div>

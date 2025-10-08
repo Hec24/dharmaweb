@@ -47,7 +47,7 @@ export default function CursosPage() {
   const seoDesc =
     "Explora el catálogo de cursos: yoga, anatomía aplicada, meditación y vida consciente. Filtra por área y nivel para encontrar tu próxima formación.";
   const canonical = "https://dharmaenruta.com/cursos";
-  const heroImg = "https://dharmaenruta.com/og/cursos.jpg";
+  const heroImg = "/img/Backgrounds/background5.jpg";
 
   return (
     <>
@@ -99,9 +99,6 @@ export default function CursosPage() {
         />
         <div className="absolute inset-0 bg-asparragus/65" aria-hidden />
         <div className="relative z-10 w-full px-6 pb-10 sm:pb-12 md:pb-14 2xl:pb-16 min-[2560px]:pb-24">
-          <h1 id="cursos-hero-heading" className="sr-only">
-            Todos los cursos
-          </h1>
           <SectionHeader
             title="Todos los cursos"
             subtitle="Explora por áreas de conocimiento, niveles y palabras clave."
