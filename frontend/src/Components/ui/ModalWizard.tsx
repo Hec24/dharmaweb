@@ -5,6 +5,7 @@
 import React from "react";
 import { FiX, FiShoppingCart } from "react-icons/fi";
 import Button from "./Button";
+import { useState } from "react";
 
 interface ModalWizardProps {
   open: boolean;
@@ -19,7 +20,7 @@ interface ModalWizardProps {
   onNext?: () => void;
   onBack?: () => void;
   puedeContinuar?: boolean | string;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
 }
 
 const ModalWizard: React.FC<ModalWizardProps> = ({
@@ -37,10 +38,28 @@ const ModalWizard: React.FC<ModalWizardProps> = ({
   puedeContinuar = true,
   onConfirm = () => {},
 }) => {
+  const [submitting, setSubmitting] = useState(false);
+
   if (!open) return null;
 
   const isDisabled =
     typeof puedeContinuar === "boolean" ? !puedeContinuar : !!puedeContinuar;
+
+  const isLast = step === totalSteps - 1;
+
+  const handlePrimaryClick = async () => {
+    if (isLast) {
+      if (submitting) return;
+      try {
+        setSubmitting(true);
+        await onConfirm?.(); // 👈 si onConfirm devuelve promesa, esperamos
+      } finally {
+        setSubmitting(false);
+      }
+    } else {
+      onNext?.();
+    }
+  };
 
   return (
     <div
@@ -178,22 +197,29 @@ const ModalWizard: React.FC<ModalWizardProps> = ({
                 onClick={onBack}
                 className="min-w-[96px] px-3 py-2 text-[0.9rem]"
                 type="button"
-                disabled={step === 0}
-                aria-disabled={step === 0}
+                disabled={step === 0 || submitting}
+                aria-disabled={step === 0 || submitting}
               >
                 ← Volver
               </Button>
               <Button
                 variant="primary"
                 size="md"
-                onClick={step === totalSteps - 1 ? onConfirm : onNext}
+                onClick={handlePrimaryClick}
                 className="min-w-[120px] px-3 py-2 text-[0.9rem]"
-                disabled={step !== totalSteps - 1 && isDisabled}
-                aria-disabled={step !== totalSteps - 1 && isDisabled}
+                disabled={
+                submitting || (!isLast && isDisabled)        // 👈 bloquea si enviando
+              }
+              aria-disabled={
+                submitting || (!isLast && isDisabled)
+              }
+              aria-busy={submitting ? true : undefined}
                 type="button"
               >
                 {step === totalSteps - 1 ? "Confirmar sesión" : "Siguiente →"}
+                
               </Button>
+              
             </div>
           </footer>
         </main>

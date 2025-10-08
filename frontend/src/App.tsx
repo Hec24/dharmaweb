@@ -1,5 +1,8 @@
 import React from "react";
-import './App.css'
+import "./App.css";
+ 
+
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import ScrollToTop from "./Components/shared/ScrollToTop"; // 👈
@@ -20,6 +23,7 @@ import PoliticaPrivacidadPage from "./pages/PoliticaPrivacidadPage";
 import AvisoLegalPage from "./pages/AvisoLegalPage";
 import CookiesPage from "./pages/CookiesPage";
 import OrigenPage from "./pages/OrigenPage";
+import PrewarmBackend from "./Components/PrewarmBackend";
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
 function RootWithScroll() {
@@ -27,6 +31,7 @@ function RootWithScroll() {
     <>
       <ScrollToTop />
       <MainLayout />
+      <PrewarmBackend />
     </>
   );
 }

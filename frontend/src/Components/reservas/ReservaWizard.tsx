@@ -11,7 +11,9 @@ import ConfirmacionReserva from "./ConfirmacionReserva";
 
 import { profesores } from "../../data/profesores";
 import { validarDatos } from "../../utils/validacion";
-import { api } from "../../lib/api";
+
+
+import { postWithRetry, patchWithRetry } from "../../lib/net";
 
 import type { Profesor, Sesion, FechaHora, FormValues, Servicio } from "../../data/types";
 
@@ -176,58 +178,62 @@ export default function ReservaWizard({
 
   // ✅ Confirmar sesión: crea/edita y pasa el carrito al checkout
   const handleConfirmSesion = React.useCallback(async () => {
-    if (!profesor || !fechaHora) return;
+  if (!profesor || !fechaHora) return;
 
-    try {
-      const sesiones: Sesion[] =
-        carrito.length > 0
-          ? carrito
-          : [
-              {
-                id: Date.now().toString(),
-                profesor: profesor.name,
-                fecha: `${fechaHora.fecha} ${fechaHora.hora}`,
-                servicio: normalizeServicio(servicio),
-                precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
-              },
-            ];
+  try {
+    // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual)
+    const sesiones: Sesion[] =
+      carrito.length > 0
+        ? carrito
+        : [
+            {
+              id: Date.now().toString(),
+              profesor: profesor.name,
+              fecha: `${fechaHora.fecha} ${fechaHora.hora}`,
+              servicio: normalizeServicio(servicio),
+              precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
+            },
+          ];
 
       // EDICIÓN
+     
       if (resume && reservaId && sesiones[0]) {
-        const [f, h] = sesiones[0].fecha.split(" ");
-        const patch = {
-          nombre: datos.nombre,
-          apellidos: datos.apellidos,
-          email: datos.email,
-          telefono: datos.telefono,
-          acompanante: profesor.name,
-          acompananteEmail: profesor.acompananteEmail ?? "",
-          fecha: f,
-          hora: h,
-        };
-        await api.patch(`/reservas/${reservaId}`, patch);
+      const [f, h] = sesiones[0].fecha.split(" ");
+      const patchBody = {
+        nombre: datos.nombre,
+        apellidos: datos.apellidos,
+        email: datos.email,
+        telefono: datos.telefono,
+        acompanante: profesor.name,
+        acompananteEmail: profesor.acompananteEmail ?? "",
+        fecha: f,
+        hora: h,
+      };
+        await patchWithRetry(`/reservas/${reservaId}`, patchBody);
         resetWizard();
         onClose();
         navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones } });
         return;
       }
 
+
       // CREACIÓN
-      const ids: string[] = [];
-      for (const s of sesiones) {
-        const [f, h] = s.fecha.split(" ");
-        const payload = {
-          nombre: datos.nombre,
-          apellidos: datos.apellidos,
-          email: datos.email,
-          telefono: datos.telefono,
-          acompanante: s.profesor,
-          acompananteEmail: profesor.acompananteEmail ?? "",
-          fecha: f,
-          hora: h,
-        };
-        const { data } = await api.post<{ id: string }>("/reservas", payload);
-        ids.push(data.id);
+        const ids: string[] = [];
+    for (const s of sesiones) {
+      const [f, h] = s.fecha.split(" ");
+      const body = {
+        nombre: datos.nombre,
+        apellidos: datos.apellidos,
+        email: datos.email,
+        telefono: datos.telefono,
+        acompanante: s.profesor,
+        acompananteEmail: profesor.acompananteEmail ?? "",
+        fecha: f,
+        hora: h,
+      };
+
+      const resp = await postWithRetry<{ id: string }>("/reservas", body);
+      ids.push(resp.data.id);
       }
 
       resetWizard();
