@@ -295,8 +295,10 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
       }
       calendar = result;
     } catch (err: any) {
-      console.error("Error sincronizando con Google Calendar:", err?.message || err);
-      calendarError = "No se pudo sincronizar el evento en Google Calendar.";
+      const status = err?.code || err?.response?.status;
+      const data = err?.response?.data || err?.errors || err?.message || err;
+      console.error("Error sincronizando con Google Calendar:", { status, data });
+      calendarError = JSON.stringify({ status, data });
     }
   }
 
