@@ -43,7 +43,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({
           */
           className="
             w-full px-4 text-center
-            max-[767px]:-translate-y-2
+            max-[767px]:-translate-y-8
             md:-translate-y-4
             motion-safe:transition-transform motion-safe:duration-300 will-change-transform
           "
