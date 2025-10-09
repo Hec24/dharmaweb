@@ -40,7 +40,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type","Authorization"],
   optionsSuccessStatus: 204,
 }));
-app.options("*", cors());
+
 
 // (Opcional) logs de NO-GET
 app.use((req, _res, next) => {
