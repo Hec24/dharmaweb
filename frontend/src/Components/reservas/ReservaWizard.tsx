@@ -17,6 +17,8 @@ import {
   loadWizardCarrito,
   saveWizardCarrito,
   clearWizardCarritoTemp,
+  loadWizardDatos,
+  saveWizardDatos,
 } from "../../lib/wizardSession";
 
 import type { Profesor, Sesion, FechaHora, FormValues, Servicio } from "../../data/types";
@@ -100,10 +102,22 @@ export default function ReservaWizard({
     }
 
     // --- NUEVO: hidratar carrito si existe en sessionStorage
-    const saved = loadWizardCarrito();
-    if (saved && Array.isArray(saved) && saved.length > 0) {
-      setCarrito(saved as Sesion[]);
-      console.log("[Wizard] Carrito restaurado desde sessionStorage (len=%d)", saved.length);
+    const savedCarrito = loadWizardCarrito();
+    if (savedCarrito && Array.isArray(savedCarrito) && savedCarrito.length > 0) {
+      setCarrito(savedCarrito as Sesion[]);
+      console.log("[Wizard] Carrito restaurado desde sessionStorage (len=%d)", savedCarrito.length);
+    }
+
+    // --- NUEVO: hidratar datos (nombre, email, etc.)
+    const savedDatos = loadWizardDatos();
+    if (savedDatos) {
+      setDatos(prev => ({
+        nombre: savedDatos.nombre ?? prev.nombre,
+        apellidos: savedDatos.apellidos ?? prev.apellidos,
+        email: savedDatos.email ?? prev.email,
+        telefono: savedDatos.telefono ?? prev.telefono,
+      }));
+      console.log("[Wizard] Datos personales restaurados");
     }
 
     // --- NUEVO: si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
@@ -376,7 +390,18 @@ export default function ReservaWizard({
         />
       )}
 
-      {step === 3 && <FormDatosPersonales value={datos} onChange={setDatos} />}
+      {step === 3 && 
+      <FormDatosPersonales 
+      value={datos} 
+      onChange={(v) =>{
+        setDatos(v);
+        saveWizardDatos({
+          nombre: v.nombre,
+          apellidos: v.apellidos,
+          email: v.email,
+          telefono: v.telefono,
+        }) // --- NUEVO: persistir datos al cambiar
+      }} />}
 
       {step === 4 && (
         <CarritoReserva

@@ -1,11 +1,12 @@
+// src/pages/PagoDatos.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "../Components/ui/Button";
 import GenericNav from "../Components/shared/GenericNav";
 import { api } from "../lib/api";
 import type { Sesion } from "../data/types";
-import { Helmet} from "react-helmet-async"
-import { saveWizardCarrito } from "../lib/wizardSession";
+import { Helmet } from "react-helmet-async";
+import { saveWizardCarrito, saveWizardDatos, loadWizardDatos } from "../lib/wizardSession";
 
 type ReservaDto = {
   id: string;
@@ -117,6 +118,24 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
     };
   }, [reservaId]);
 
+  // Rehidratación de datos de facturación desde sessionStorage (si existen)
+  useEffect(() => {
+    const saved = loadWizardDatos();
+    if (saved) {
+      setDatosFacturacion((prev) => ({
+        nombre: saved.nombre ?? prev.nombre,
+        apellidos: saved.apellidos ?? prev.apellidos,
+        email: saved.email ?? prev.email,
+        telefono: saved.telefono ?? prev.telefono,
+        direccion: saved.direccion ?? prev.direccion,
+        pais: saved.pais ?? prev.pais,
+        poblacion: saved.poblacion ?? prev.poblacion,
+        zipCode: saved.zipCode ?? prev.zipCode,
+      }));
+      console.log("[PagoDatos] datos rehidratados desde sessionStorage");
+    }
+  }, []);
+
   // Construye el resumen
   const lineItems: LineItem[] = useMemo(() => {
     if (carrito.length > 0) {
@@ -178,34 +197,44 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
     }
   };
 
-  // --- NUEVO: llevar al Wizard en paso Carrito y persistir carrito actual
+  // --- NUEVO: llevar al Wizard en paso Carrito y persistir carrito + datos
   const handleEditarReserva = () => {
+    if (!reservaId) return;
     try {
-      // Si tienes carrito en memoria, guárdalo para que lo hidrate el Wizard
+      // 1) Persistir carrito para que el Wizard lo pinte en Carrito
       if (carrito && carrito.length) {
         saveWizardCarrito(carrito as Sesion[]);
         console.log("[PagoDatos] Editar -> guardo carrito (len=%d)", carrito.length);
-      } else {
-        // Si no, intenta guardar el resumen derivado (por si venimos de reserva simple)
-        if (lineItems.length) {
-          const fallback = lineItems.map(li => ({
-            id: li.id,
-            profesor: li.profesor || "Acompañante",
-            fecha: li.fecha || "",
-            precio: li.precio,
-            servicio: li.label,
-          }));
-          saveWizardCarrito(fallback as Sesion[]);
-          console.log("[PagoDatos] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
-        }
+      } else if (lineItems.length) {
+        // Fallback desde lineItems (reserva simple)
+        const fallback = lineItems.map((li) => ({
+          id: li.id,
+          profesor: li.profesor || "Acompañante",
+          fecha: li.fecha || "",
+          precio: li.precio,
+          servicio: li.label,
+        }));
+        saveWizardCarrito(fallback as Sesion[]);
+        console.log("[PagoDatos] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
       }
+
+      // 2) Persistir datos de facturación para no perderlos al editar
+      saveWizardDatos({
+        nombre: datosFacturacion.nombre,
+        apellidos: datosFacturacion.apellidos,
+        email: datosFacturacion.email,
+        telefono: datosFacturacion.telefono,
+        direccion: datosFacturacion.direccion,
+        pais: datosFacturacion.pais,
+        poblacion: datosFacturacion.poblacion,
+        zipCode: datosFacturacion.zipCode,
+      });
     } catch (e) {
-      console.warn("[PagoDatos] No se pudo persistir carrito para edición", e);
+      console.warn("[PagoDatos] No se pudo persistir estado antes de editar", e);
     }
-    if (reservaId) {
-      // Navega al Wizard directamente en el paso Carrito
-      navigate(`/editar-reserva/${reservaId}?step=carrito`);
-    }
+
+    // 3) Navegar al Wizard directamente al paso Carrito y en modo edición
+    navigate(`/editar-reserva/${reservaId}?step=carrito&resume=1`);
   };
 
   return (
