@@ -1,11 +1,11 @@
 // src/pages/PasarelaPago.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
-import GenericNav from "../shared/GenericNav"; // ← si lo tienes en "shared", cambia la ruta
-import Button from "../../Components/ui/Button"
-import { api } from "../../lib/api"
+import GenericNav from "../shared/GenericNav";
+import Button from "../../Components/ui/Button";
+import { api } from "../../lib/api";
 import type { Sesion } from "../../data/types";
-import { Helmet} from "react-helmet-async"
+import { Helmet } from "react-helmet-async";
 
 // DTO mínimo de tu backend
 type ReservaDto = {
@@ -41,8 +41,30 @@ export default function PasarelaPago(): React.ReactElement {
   const { id: reservaId } = useParams<{ id: string }>();
   const location = useLocation();
   const state = (location.state as LocationState) || null;
+
+  // ---- State recibido por navigate (si no hubo refresh)
   const carritoFromState: Sesion[] | undefined = state?.carrito;
   const reservaIdsFromState: string[] | undefined = state?.reservaIds;
+
+  // ---- Fallbacks desde sessionStorage (si hubo refresh o entrada directa)
+  const reservaIdsFromSS: string[] = useMemo(() => {
+    try { return JSON.parse(sessionStorage.getItem("checkout_reserva_ids") || "[]"); }
+    catch { return []; }
+  }, []);
+
+  const carritoFromSS: Sesion[] = useMemo(() => {
+    try { return JSON.parse(sessionStorage.getItem("checkout_carrito") || "[]"); }
+    catch { return []; }
+  }, []);
+
+  // ---- Fuente de verdad final (prioriza state; si no, sessionStorage)
+  const reservaIdsFinal: string[] | undefined =
+    (reservaIdsFromState && reservaIdsFromState.length ? reservaIdsFromState :
+     (reservaIdsFromSS && reservaIdsFromSS.length ? reservaIdsFromSS : undefined));
+
+  const carritoFinal: Sesion[] | undefined =
+    (carritoFromState && carritoFromState.length ? carritoFromState :
+     (carritoFromSS && carritoFromSS.length ? carritoFromSS : undefined));
 
   const [pagando, setPagando] = useState(false);
   const [loadingReserva, setLoadingReserva] = useState(true);
@@ -67,33 +89,38 @@ export default function PasarelaPago(): React.ReactElement {
         if (!cancelled) setLoadingReserva(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [reservaId]);
 
+  // Si el usuario vuelve de Stripe con ?cancelled=1 → libera TODAS las reservas implicadas
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const cancelled = params.get("cancelled") === "1";
-  if (cancelled && reservaId) {
+    const params = new URLSearchParams(window.location.search);
+    const cancelled = params.get("cancelled") === "1";
+    if (!cancelled) return;
+
+    const idsToDelete = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal
+                        : (reservaId ? [reservaId] : []);
+
+    if (!idsToDelete.length) return;
+
     (async () => {
       try {
-        await api.delete(`/reservas/${reservaId}`);
-        // opcional: navegar de vuelta al wizard/selector
-        // navigate("/reservar");  // o donde corresponda
+        await Promise.all(idsToDelete.map(id => api.delete(`/reservas/${id}`)));
+        // Limpia persisted state
+        sessionStorage.removeItem("checkout_reserva_ids");
+        sessionStorage.removeItem("checkout_carrito");
       } catch (e) {
-        console.error("[PasarelaPago] no se pudo cancelar la reserva:", e);
+        console.error("[PasarelaPago] no se pudo cancelar alguna reserva:", e);
       }
     })();
-  }
-}, [reservaId]);
+  }, [reservaId, reservaIdsFinal]);
 
   // Construye el resumen: si hay carrito → varias líneas; si no, 1 línea con la reserva
   const lineItems: LineItem[] = useMemo(() => {
-    if (carritoFromState && carritoFromState.length > 0) {
-      return carritoFromState.map((s) => {
+    if (carritoFinal && carritoFinal.length > 0) {
+      return carritoFinal.map((s) => {
         const precio =
-          Number.isFinite(s.precio) && (s.precio as number) > 0
+          Number.isFinite(s.precio as number) && (s.precio as number) > 0
             ? Number(s.precio)
             : s.servicio === "Pareja"
             ? 80
@@ -119,7 +146,7 @@ export default function PasarelaPago(): React.ReactElement {
       ];
     }
     return [];
-  }, [carritoFromState, reserva]);
+  }, [carritoFinal, reserva]);
 
   const total = useMemo(
     () => lineItems.reduce((acc, li) => acc + (li.precio || 0), 0),
@@ -127,22 +154,32 @@ export default function PasarelaPago(): React.ReactElement {
   );
 
   const handlePagar = async () => {
-    if (!reservaId) {
-      alert("No hay reserva válida");
+    // Solo exigimos reservaId si NO hay multi-ids
+    if (!reservaIdsFinal?.length && !reservaId) {
+      alert("No hay reservas válidas");
       return;
     }
     setPagando(true);
     setErrorMsg(null);
     try {
       const payload =
-    Array.isArray(reservaIdsFromState) && reservaIdsFromState.length > 0
-    ? { reservaIds: reservaIdsFromState }  // multi-reserva
-    : { reservaId };                       // fallback: una sola (lo de siempre)
+        Array.isArray(reservaIdsFinal) && reservaIdsFinal.length > 0
+          ? { reservaIds: reservaIdsFinal }  // multi-reserva
+          : { reservaId };                   // una sola
 
-    await api.post<{ id: string; url: string }>(
-      "/pagos/checkout-session",
-      payload
-    );
+      const { data } = await api.post<{ id: string; url: string }>(
+        "/pagos/checkout-session",
+        payload
+      );
+
+      if (!data?.url) {
+        setPagando(false);
+        alert("Respuesta de pago inválida");
+        return;
+      }
+
+      // Redirige a Stripe
+      window.location.href = data.url;
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al conectar con el backend");
@@ -152,10 +189,10 @@ export default function PasarelaPago(): React.ReactElement {
 
   return (
     <>
-
       <Helmet>
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
+
       {/* NAV igual que en otras páginas */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
@@ -208,9 +245,7 @@ export default function PasarelaPago(): React.ReactElement {
                   Editar reserva
                 </Link>
               )}
-              {reservaId && (
-                <span className="mx-2">·</span>
-              )}
+              {reservaId && <span className="mx-2">·</span>}
               {reservaId && (
                 <Link
                   to={`/pagoDatos/${reservaId}`}
@@ -227,7 +262,7 @@ export default function PasarelaPago(): React.ReactElement {
             <div className="lg:sticky lg:top-28 bg-white shadow-xl rounded-3xl p-6 sm:p-8">
               <h2 className="text-xl font-semibold mb-4">Resumen</h2>
 
-              {loadingReserva && !carritoFromState?.length && (
+              {loadingReserva && !carritoFinal?.length && (
                 <p className="text-sm text-gray-500">Cargando resumen…</p>
               )}
 
