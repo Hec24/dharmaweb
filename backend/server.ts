@@ -88,53 +88,54 @@ app.post(
         process.env.STRIPE_WEBHOOK_SECRET as string
       );
 
-      if (event.type === "checkout.session.completed") {
-        const session = event.data.object as Stripe.Checkout.Session;
-        const reservaId = session.metadata?.reservaId;
-        if (!reservaId) {
-          console.error("Webhook sin reservaId en metadata");
-          return res.json({ received: true });
-        }
-        const r = getReserva(reservaId);
-        if (!r) {
-          console.error("Reserva no encontrada en webhook:", reservaId);
-          return res.json({ received: true });
-        }
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
 
-        const previa = { ...r };
-        const actualizada = updateReserva(reservaId, { estado: "pagada" })!;
-        updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined });
-        console.log("Reserva marcada como PAGADA desde webhook:", reservaId);
+      // 1 ó varias reservas desde metadata
+      const ids: string[] = (() => {
+      const raw = session.metadata?.reservaIds;
+        if (raw) {
+          try { return JSON.parse(raw) as string[]; } catch {}
+        }
+        return session.metadata?.reservaId ? [session.metadata.reservaId] : [];
+        })();
+
+        if (!ids.length) {
+          console.error("Webhook sin reservaId(s) en metadata");
+          return res.json({ received: true });
+        }
+          
+        for (const reservaId of ids) {
+          const r = getReserva(reservaId);
+          if (!r) {
+            console.error("Reserva no encontrada en webhook:", reservaId);
+             continue;
+          }
+
+          const actualizada = updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined })!;
+
         try {
           const normalized: Reserva & { eventId?: string } = {
-            ...actualizada,
-            duracionMin: actualizada.duracionMin ?? 60,
-          };
-
-          // 🔎 Log antes de sincronizar con Calendar
-          console.log("[GCAL] WEBHOOK upsertEvento() ←", {
-            reservaId,
-            fecha: normalized.fecha,
-            hora: normalized.hora,
-            email: normalized.email,
-            acompanante: normalized.acompanante,
-            acompananteEmail: normalized.acompananteEmail,
-            duracionMin: normalized.duracionMin,
-          });
+             ...actualizada,
+              duracionMin: actualizada.duracionMin ?? 60,
+              };
 
           const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
-          if (result && typeof result === "object" && "eventId" in result && result.eventId) {
+        if (result?.eventId) {
             updateReserva(actualizada.id, { eventId: result.eventId });
           }
           console.log("Reserva confirmada y evento Calendar ok:", {
-            reservaId,
-            eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
-          });
+          reservaId,
+          eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
+        });
         } catch (err: any) {
-          console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
+              console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
         }
-      }
+        }
+    }
 
+
+     
       res.json({ received: true });
     } catch (err: any) {
       console.error("Error en webhook Stripe:", err?.message || err);
@@ -261,31 +262,51 @@ setInterval(() => {
 // ========= Pagos =========
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
   try {
-    const { reservaId, precioCts } = req.body as { reservaId: string; precioCts?: number };
-    if (!reservaId) return res.status(400).json({ error: "reservaId requerido" });
+    const { reservaId, reservaIds, precioCts } = req.body as {
+      reservaId?: string;
+      reservaIds?: string[];
+      precioCts?: number;
+    };
 
-    const reserva = getReserva(reservaId);
-    if (!reserva) return res.status(404).json({ error: "Reserva no encontrada" });
+    const ids = Array.isArray(reservaIds) && reservaIds.length
+      ? reservaIds
+      : (reservaId ? [reservaId] : []);
 
-    const amount = Number.isFinite(precioCts) ? Number(precioCts) : 6000;
-    const productName = `Sesión 1:1 (${reserva.duracionMin ?? 60} min) – ${reserva.nombre} ${reserva.apellidos}`;
+    if (!ids.length) return res.status(400).json({ error: "Faltan reservas" });
 
+    const found = ids.map(id => getReserva(id)).filter(Boolean) as Reserva[];
+    if (found.length !== ids.length) {
+      return res.status(404).json({ error: "Alguna reserva no existe" });
+    }
+
+    // Precio por sesión (por defecto 50€ si no pasas precioCts)
+    const unitCts = Number.isFinite(precioCts) ? Number(precioCts) : 5000;
+
+    // ⚠️ Si quieres precios distintos por sesión (Individual/Pareja), cambia aquí:
+    // const unitFor = (r: Reserva) => (r?.servicio === "Pareja" ? 8000 : 5000);
+
+    const line_items = found.map((r) => ({
+      price_data: {
+        currency: "eur",
+        unit_amount: unitCts, // o unitFor(r)
+        product_data: {
+          name: `Sesión 1:1 – ${r.fecha} ${r.hora}`,
+          description: `Acompañamiento con ${r.acompanante}`,
+        },
+      },
+      quantity: 1,
+    }));
+
+    const first = found[0]!;
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       locale: "es",
-      customer_email: reserva.email,
+      customer_email: first.email,
       payment_method_types: ["card"],
-      line_items: [{
-        price_data: {
-          currency: "eur",
-          unit_amount: amount,
-          product_data: { name: productName, description: "Acompañamiento Dharma en Ruta" },
-        },
-        quantity: 1,
-      }],
+      line_items, // ← varias líneas, una por reserva
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_URL}/pasarela/${reserva.id}?cancelled=1`,
-      metadata: { reservaId: reserva.id },
+      cancel_url: `${FRONTEND_URL}/pasarela/${ids[0]}?cancelled=1`,
+      metadata: { reservaIds: JSON.stringify(ids) },
     });
 
     return res.json({ id: session.id, url: session.url });
@@ -294,6 +315,8 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
   }
 });
+
+
 
 app.get("/api/pagos/checkout-session/:id", async (req: Request, res: Response) => {
   try {

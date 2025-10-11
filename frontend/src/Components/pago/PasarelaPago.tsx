@@ -23,6 +23,7 @@ type ReservaDto = {
 
 type LocationState = {
   carrito?: Sesion[];
+  reservaIds?: string[];
 } | null;
 
 type LineItem = {
@@ -41,6 +42,7 @@ export default function PasarelaPago(): React.ReactElement {
   const location = useLocation();
   const state = (location.state as LocationState) || null;
   const carritoFromState: Sesion[] | undefined = state?.carrito;
+  const reservaIdsFromState: string[] | undefined = state?.reservaIds;
 
   const [pagando, setPagando] = useState(false);
   const [loadingReserva, setLoadingReserva] = useState(true);
@@ -132,16 +134,15 @@ export default function PasarelaPago(): React.ReactElement {
     setPagando(true);
     setErrorMsg(null);
     try {
-      // Tu backend crea la sesión de Stripe y devuelve .url
-      const { data } = await api.post<{ id: string; url: string }>(
-        "/pagos/checkout-session",
-        { reservaId }
-      );
-      if (!data?.url) {
-        setPagando(false);
-        return alert("Respuesta de pago inválida");
-      }
-      window.location.href = data.url;
+      const payload =
+    Array.isArray(reservaIdsFromState) && reservaIdsFromState.length > 0
+    ? { reservaIds: reservaIdsFromState }  // multi-reserva
+    : { reservaId };                       // fallback: una sola (lo de siempre)
+
+    await api.post<{ id: string; url: string }>(
+      "/pagos/checkout-session",
+      payload
+    );
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al conectar con el backend");

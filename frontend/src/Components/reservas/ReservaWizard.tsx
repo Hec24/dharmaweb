@@ -212,7 +212,8 @@ export default function ReservaWizard({
         await patchWithRetry(`/reservas/${reservaId}`, patchBody);
         resetWizard();
         onClose();
-        navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones } });
+        const ids: string[] = [reservaId];
+        navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: ids } });
         return;
       }
 

@@ -52,6 +52,21 @@ export default function Gracias() {
           return;
         }
 
+        // tras recuperar la session:
+        const rawIds = (session.metadata as { reservaIds?: string })?.reservaIds;
+        let firstId = session?.metadata?.reservaId || null;
+        try {
+          const ids = rawIds ? JSON.parse(rawIds) as string[] : [];
+          firstId = ids[0] || firstId;
+        } catch {
+          // intentionally ignore JSON parse errors
+        }
+
+        if (firstId) {
+          await api.patch(`/reservas/${firstId}`, { estado: "pagada" }); // idempotente
+        }
+
+
         // 2) Idempotente: marcar pagada (si ya lo hizo el webhook, esto no rompe nada)
         const { data: patchResp } = await api.patch(`/reservas/${rid}`, { estado: "pagada" });
 
@@ -123,10 +138,6 @@ export default function Gracias() {
           Hemos confirmado tu pago y creado el evento en el calendario.
           En unos instantes recibirás los correos de invitación.
         </p>
-
-        {status && (
-          <p className="text-sm text-gray-500">Estado de pago: {status}</p>
-        )}
 
         {calendarLink ? (
           <a
