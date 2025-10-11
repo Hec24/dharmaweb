@@ -42,10 +42,7 @@ const SelectorCalendario: React.FC<Props> = ({
   const selectedFecha = value?.fecha ?? "";
   const selectedHora = value?.hora ?? "";
 
-  const yaOcupada = (fecha: string, hora: string) => {
-  const key = `${fecha} ${hora}`;
-  return sesionesYaReservadas.includes(key) || ocupadosBackend.includes(key);
-  };
+  
   // Refs para navegación por teclado
   const dayRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const slotRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -126,31 +123,59 @@ const SelectorCalendario: React.FC<Props> = ({
 
   const [ocupadosBackend, setOcupadosBackend] = React.useState<string[]>([]); // "YYYY-MM-DD HH:mm"const [ocupadosBackend, setOcupadosBackend] = React.useState<string[]>([]); // "YYYY-MM-DD HH:mm"
 
-useEffect(() => {
-  let cancelled = false;
-  (async () => {
-    if (!profConfig) return;
-    // rango que ya genera tu UI (hoy → hoy + maxDaysAhead)
-    const start = new Date();
-    const end = new Date();
-    end.setDate(end.getDate() + (profConfig.rules.maxDaysAhead ?? 30));
-    const fmt = (d: Date) => d.toISOString().slice(0,10); // YYYY-MM-DD
-
-    try {
-      const { data } = await api.get<{ ocupados: { fecha: string; hora: string }[] }>(
-        "/ocupados",
-        { params: { profesor: profesor.name, from: fmt(start), to: fmt(end) } }
-      );
-      if (cancelled) return;
-      const list = (data?.ocupados ?? []).map(o => `${o.fecha} ${o.hora}`);
-      setOcupadosBackend(list);
-    } catch (e) {
-      console.error("[SelectorCalendario] fallo cargando ocupados:", e);
-      setOcupadosBackend([]);
-    }
-  })();
-  return () => { cancelled = true; };
+// 2) extrae tu fetch a una función reutilizable:
+const fetchOcupados = React.useCallback(async () => {
+  if (!profConfig) return;
+  const start = new Date();
+  const end = new Date();
+  end.setDate(end.getDate() + (profConfig.rules.maxDaysAhead ?? 30));
+  const fmt = (d: Date) => d.toISOString().slice(0,10);
+  try {
+    const { data } = await api.get<{ ocupados: { fecha: string; hora: string }[] }>(
+      "/ocupados",
+      { params: { profesor: profesor.name, from: fmt(start), to: fmt(end) } }
+    );
+    const list = (data?.ocupados ?? []).map(o => `${o.fecha} ${o.hora}`);
+    setOcupadosBackend(list);
+  } catch (e) {
+    console.error("[SelectorCalendario] fallo cargando ocupados:", e);
+    setOcupadosBackend([]);
+  }
 }, [profConfig, profesor.name]);
+
+// 3) primera carga (lo que ya tenías, pero llamando a la función)
+    useEffect(() => {
+      (async () => {
+        await fetchOcupados();
+      })();
+      return () => {};
+    }, [fetchOcupados]);
+
+    // 4) refresco al recuperar el foco de la pestaña
+    useEffect(() => {
+      const onFocus = () => { fetchOcupados(); };
+      window.addEventListener("focus", onFocus);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") fetchOcupados();
+      });
+      return () => {
+        window.removeEventListener("focus", onFocus);
+        document.removeEventListener("visibilitychange", () => {});
+      };
+    }, [fetchOcupados]);
+
+    // 5) polling suave (opcional pero útil si hay varias personas reservando a la vez)
+    useEffect(() => {
+      const id = setInterval(() => { fetchOcupados(); }, 15000); // cada 15s
+      return () => clearInterval(id);
+    }, [fetchOcupados]);
+
+    // 6) tu yaOcupada ahora combina carrito + backend (como ya planteamos)
+    const yaOcupada = (fecha: string, hora: string) => {
+      const key = `${fecha} ${hora}`;
+      return sesionesYaReservadas.includes(key) || ocupadosBackend.includes(key);
+    };
+
   return (
     <div className="min-h-full flex flex-col">
       {/* MISMA ANCHURA QUE EL RESTO: usa el contenedor estándar del proyecto */}

@@ -302,15 +302,19 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   const patch = req.body as Partial<Reserva>;
   const previa = { ...actual };
   const actualizada = updateReserva(actual.id, patch)!;
-  if (patch.estado === "pagada") {
-    updateReserva(actualizada.id, { holdExpiresAt: undefined });
-  }  console.log("PATCH /api/reservas/:id", { id: actualizada.id, patch });
-
+  
   let calendar: any = null;
   let calendarError: string | null = null;
 
   const justPaid = patch.estado === "pagada" && previa.estado !== "pagada";
   const relevantChanges = hasEventRelevantChanges(previa, actualizada);
+
+  if (justPaid) {
+    // Si acaba de pagarse, “consolidamos” el slot: ya no depende del hold.
+    updateReserva(actualizada.id, { holdExpiresAt: undefined });
+    actualizada.holdExpiresAt = undefined;
+  }
+
 
   if (justPaid || relevantChanges) {
     try {
