@@ -228,6 +228,9 @@ export default function ReservaWizard({
   const handleConfirmSesion = React.useCallback(async () => {
     if (!profesor || !fechaHora) return;
 
+    // IMPORTANTE: detectar si ya existía un checkout ANTES de persistir para decidir la navegación final
+    const hadCheckout = !!sessionStorage.getItem("checkout_reserva_ids");
+
     try {
       // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual)
       const sesiones: Sesion[] =
@@ -259,13 +262,25 @@ export default function ReservaWizard({
         try {
           await patchWithRetry(`/reservas/${reservaId}`, patchBody);
 
-          // persistimos y navegamos con 1 id (edición)
+          // persistimos checkout
           persistCheckoutState([reservaId], sesiones);
-          // limpiar temporal de edición (opcional)
+          // limpiar/persistir estado wizard
+          saveWizardCarrito(sesiones);
+          saveWizardDatos({
+            nombre: datos.nombre,
+            apellidos: datos.apellidos,
+            email: datos.email,
+            telefono: datos.telefono,
+          });
           clearWizardCarritoTemp();
           resetWizard();
-          onClose();
-          navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: [reservaId] } });
+
+          // ⚠️ no llamamos a onClose() aquí para no disparar la navegación por defecto del padre
+          const target = hadCheckout
+            ? `/pagoPasarela/${reservaId}`
+            : `/pagoDatos/${reservaId}`;
+
+          navigate(target, { state: { carrito: sesiones, reservaIds: [reservaId] }, replace: true });
           return;
         } catch (e: unknown) {
           // Si el backend perdió la reserva (404), re-crear y continuar
@@ -278,10 +293,21 @@ export default function ReservaWizard({
             const newId = resp.data.id;
 
             persistCheckoutState([newId], sesiones);
+            saveWizardCarrito(sesiones);
+            saveWizardDatos({
+              nombre: datos.nombre,
+              apellidos: datos.apellidos,
+              email: datos.email,
+              telefono: datos.telefono,
+            });
             clearWizardCarritoTemp();
             resetWizard();
-            onClose();
-            navigate(`/pagoDatos/${newId}`, { state: { carrito: sesiones, reservaIds: [newId] } });
+
+            const target = hadCheckout
+              ? `/pagoPasarela/${newId}`
+              : `/pagoDatos/${newId}`;
+
+            navigate(target, { state: { carrito: sesiones, reservaIds: [newId] }, replace: true });
             return;
           }
           throw e;
@@ -309,10 +335,23 @@ export default function ReservaWizard({
 
       // persistimos y navegamos con TODOS los ids
       persistCheckoutState(ids, sesiones);
+      saveWizardCarrito(sesiones);
+      saveWizardDatos({
+        nombre: datos.nombre,
+        apellidos: datos.apellidos,
+        email: datos.email,
+        telefono: datos.telefono,
+      });
       clearWizardCarritoTemp();
       resetWizard();
-      onClose();
-      navigate(`/pagoDatos/${ids[0]}`, { state: { carrito: sesiones, reservaIds: ids } });
+
+      const firstId = ids[0];
+      const target = hadCheckout
+        ? `/pagoPasarela/${firstId}`
+        : `/pagoDatos/${firstId}`;
+
+      // ⚠️ no llamamos a onClose() aquí
+      navigate(target, { state: { carrito: sesiones, reservaIds: ids }, replace: true });
     } catch (e: unknown) {
       console.error("Error guardando reserva:", e);
       alert("Error de conexión al guardar la reserva");
@@ -328,7 +367,6 @@ export default function ReservaWizard({
     datos.apellidos,
     datos.email,
     datos.telefono,
-    onClose,
     resetWizard,
     navigate,
     persistCheckoutState,
