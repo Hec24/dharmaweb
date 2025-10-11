@@ -4,6 +4,7 @@ import SectionHeader from "../ui/SectionHeader";
 import { disponibilidadProfesoresConfig } from "../../data/disponibilidad";
 import { generateAvailability } from "../../utils/availability";
 import type { FechaHora } from "../../data/types"; // { fecha: 'YYYY-MM-DD', hora: 'HH:mm' }
+import { api } from "../../lib/api";
 
 interface Profesor { name: string; }
 
@@ -41,9 +42,10 @@ const SelectorCalendario: React.FC<Props> = ({
   const selectedFecha = value?.fecha ?? "";
   const selectedHora = value?.hora ?? "";
 
-  const yaOcupada = (fecha: string, hora: string) =>
-    sesionesYaReservadas.includes(`${fecha} ${hora}`);
-
+  const yaOcupada = (fecha: string, hora: string) => {
+  const key = `${fecha} ${hora}`;
+  return sesionesYaReservadas.includes(key) || ocupadosBackend.includes(key);
+  };
   // Refs para navegación por teclado
   const dayRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const slotRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -122,6 +124,33 @@ const SelectorCalendario: React.FC<Props> = ({
   const fmtFechaAria = (iso: string) =>
     new Date(iso).toLocaleDateString("es-ES", { weekday: "long", day: "2-digit", month: "long", year: "numeric" });
 
+  const [ocupadosBackend, setOcupadosBackend] = React.useState<string[]>([]); // "YYYY-MM-DD HH:mm"const [ocupadosBackend, setOcupadosBackend] = React.useState<string[]>([]); // "YYYY-MM-DD HH:mm"
+
+useEffect(() => {
+  let cancelled = false;
+  (async () => {
+    if (!profConfig) return;
+    // rango que ya genera tu UI (hoy → hoy + maxDaysAhead)
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + (profConfig.rules.maxDaysAhead ?? 30));
+    const fmt = (d: Date) => d.toISOString().slice(0,10); // YYYY-MM-DD
+
+    try {
+      const { data } = await api.get<{ ocupados: { fecha: string; hora: string }[] }>(
+        "/ocupados",
+        { params: { profesor: profesor.name, from: fmt(start), to: fmt(end) } }
+      );
+      if (cancelled) return;
+      const list = (data?.ocupados ?? []).map(o => `${o.fecha} ${o.hora}`);
+      setOcupadosBackend(list);
+    } catch (e) {
+      console.error("[SelectorCalendario] fallo cargando ocupados:", e);
+      setOcupadosBackend([]);
+    }
+  })();
+  return () => { cancelled = true; };
+}, [profConfig, profesor.name]);
   return (
     <div className="min-h-full flex flex-col">
       {/* MISMA ANCHURA QUE EL RESTO: usa el contenedor estándar del proyecto */}

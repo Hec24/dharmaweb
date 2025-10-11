@@ -19,4 +19,5 @@ export interface Reserva {
   estado: "pendiente" | "pagada" | "cancelada";
   // Sincronización Calendar
   eventId?: string;
+  holdExpiresAt?: number;
 }
