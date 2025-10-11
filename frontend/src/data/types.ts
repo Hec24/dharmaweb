@@ -17,6 +17,11 @@ export interface FormValues {
   apellidos: string;
   email: string;
   telefono: string;
+  direccion?: string;
+  ciudad?: string;
+  codigoPostal?: string;
+  pais?: string;
+  
 }
 export interface Sesion {
   id: string;

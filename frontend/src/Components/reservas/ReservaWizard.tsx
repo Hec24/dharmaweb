@@ -149,15 +149,14 @@ export default function ReservaWizard({
 
     // Hidratar datos (nombre, email, etc.)
     const savedDatos = loadWizardDatos();
-    if (savedDatos) {
-      setDatos((prev) => ({
-        nombre: savedDatos.nombre ?? prev.nombre,
-        apellidos: savedDatos.apellidos ?? prev.apellidos,
-        email: savedDatos.email ?? prev.email,
-        telefono: savedDatos.telefono ?? prev.telefono,
-      }));
-      console.log("[Wizard] Datos personales restaurados");
+      if (savedDatos) {
+        setDatos(prev => ({
+          ...prev,
+          ...savedDatos, // ← merge completo, incluye código postal, dirección, ciudad, país, etc.
+        }));
+        console.log("[Wizard] Datos personales restaurados");
     }
+
 
     // Si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
     if (stepParam === "carrito") {
@@ -313,12 +312,7 @@ export default function ReservaWizard({
           if (shouldHydrate) {
             saveWizardCarrito(sesiones);
           }
-          saveWizardDatos({
-            nombre: datos.nombre,
-            apellidos: datos.apellidos,
-            email: datos.email,
-            telefono: datos.telefono,
-          });
+          saveWizardDatos(datos as FormValues);
           clearWizardCarritoTemp();
           resetWizard();
 
@@ -342,12 +336,7 @@ export default function ReservaWizard({
             if (shouldHydrate) {
               saveWizardCarrito(sesiones);
             }
-            saveWizardDatos({
-              nombre: datos.nombre,
-              apellidos: datos.apellidos,
-              email: datos.email,
-              telefono: datos.telefono,
-            });
+            saveWizardDatos(datos as FormValues);
             clearWizardCarritoTemp();
             resetWizard();
 
@@ -390,12 +379,7 @@ export default function ReservaWizard({
       if (shouldHydrate) {
         saveWizardCarrito(sesiones);
       }
-      saveWizardDatos({
-        nombre: datos.nombre,
-        apellidos: datos.apellidos,
-        email: datos.email,
-        telefono: datos.telefono,
-      });
+      saveWizardDatos(datos as FormValues);
       clearWizardCarritoTemp();
       resetWizard();
 
@@ -491,12 +475,7 @@ export default function ReservaWizard({
           value={datos}
           onChange={(v) => {
             setDatos(v);
-            saveWizardDatos({
-              nombre: v.nombre,
-              apellidos: v.apellidos,
-              email: v.email,
-              telefono: v.telefono,
-            }); // persistir datos al cambiar
+            saveWizardDatos(v as FormValues); // persistir datos al cambiar
           }}
         />
       )}
