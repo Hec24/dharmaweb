@@ -65,6 +65,10 @@ export default function PasarelaPago(): React.ReactElement {
   const carritoFinal: Sesion[] | undefined =
     (carritoFromState && carritoFromState.length ? carritoFromState :
      (carritoFromSS && carritoFromSS.length ? carritoFromSS : undefined));
+     // justo después de calcular reservaIdsFinal y carritoFinal
+    console.log("[Pasarela] reservaIdsFinal =", reservaIdsFinal);
+    console.log("[Pasarela] carritoFinal.length =", carritoFinal?.length);
+
 
   const [pagando, setPagando] = useState(false);
   const [loadingReserva, setLoadingReserva] = useState(true);
@@ -171,6 +175,7 @@ export default function PasarelaPago(): React.ReactElement {
         "/pagos/checkout-session",
         payload
       );
+      console.log("[Pasarela] payload que envío a backend:", payload);
 
       if (!data?.url) {
         setPagando(false);

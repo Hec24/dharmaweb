@@ -278,6 +278,8 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     if (found.length !== ids.length) {
       return res.status(404).json({ error: "Alguna reserva no existe" });
     }
+    console.log("[/checkout-session] ids recibidos:", ids);
+    console.log("[/checkout-session] found:", found.map(r => ({ id: r.id, fecha: r.fecha, hora: r.hora })));
 
     // Precio por sesión (por defecto 50€ si no pasas precioCts)
     const unitCts = Number.isFinite(precioCts) ? Number(precioCts) : 5000;
@@ -296,6 +298,7 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       },
       quantity: 1,
     }));
+    console.log("[/checkout-session] line_items count:", line_items.length);
 
     const first = found[0]!;
     const session = await stripe.checkout.sessions.create({
@@ -305,7 +308,7 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       payment_method_types: ["card"],
       line_items, // ← varias líneas, una por reserva
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_URL}/pasarela/${ids[0]}?cancelled=1`,
+      cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
       metadata: { reservaIds: JSON.stringify(ids) },
     });
 
