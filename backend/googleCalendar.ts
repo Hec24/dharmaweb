@@ -412,3 +412,27 @@ export async function _debugImpersonationAndAccess() {
   }
 }
 
+// Devuelve true si el evento de la reserva sigue existiendo (no cancelado)
+export async function existeEventoParaReserva(reservaId: string): Promise<boolean> {
+  try {
+    // Buscamos por extendedProperties.private.reservaId
+    const res = await calendar.events.list({
+      calendarId: CALENDAR_ID,
+      privateExtendedProperty: [`reservaId=${reservaId}`],
+      showDeleted: true,            // <- importante para ver "cancelled"
+      singleEvents: true,
+      maxResults: 1,
+    });
+
+    const ev = res.data.items?.[0];
+    if (!ev) return false;
+    // Si Google lo marca como cancelado, libéralo.
+    if (ev.status === "cancelled") return false;
+    return true;
+  } catch (e: any) {
+    // 404/410 → no existe
+    const status = e?.code || e?.response?.status;
+    if (status === 404 || status === 410) return false;
+    throw e;
+  }
+}
