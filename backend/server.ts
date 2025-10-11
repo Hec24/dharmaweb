@@ -295,6 +295,16 @@ app.get("/api/reservas/:id", (req: Request, res: Response) => {
   return res.json(r);
 });
 
+app.get("/api/reservas/find", (req, res) => {
+  const { profesor, fecha, hora } = req.query as Record<string, string>;
+  const list = reservas.filter(r =>
+    (!profesor || r.acompanante === profesor) &&
+    (!fecha || r.fecha === fecha) &&
+    (!hora  || r.hora  === hora)
+  );
+  return res.json({ count: list.length, reservas: list });
+});
+
 app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   const actual = getReserva(req.params.id);
   if (!actual) return res.status(404).json({ error: "Reserva no encontrada." });
