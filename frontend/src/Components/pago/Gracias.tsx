@@ -69,23 +69,25 @@ export default function Gracias() {
           return;
         }
 
-        // 💡 El webhook ya debe haber marcado todas las reservas como pagadas y creado los eventos.
-        // Aquí sólo hacemos un PATCH idempotente del primer id como refuerzo/latencia.
-        if (firstId) {
-          try {
-            const { data: patchResp } = await api.patch(`/reservas/${firstId}`, { estado: "pagada" });
-            const link =
-              patchResp?.calendar?.htmlLink ||
-              patchResp?.reserva?.eventHtmlLink ||
-              null;
-            if (link) setCalendarLink(link);
-          } catch (e) {
-            // No bloqueamos la UX: el webhook ya lo habrá hecho.
-            console.warn("[/gracias] PATCH de refuerzo falló (continuamos):", e);
-          }
-        }
+        // 🔁 FAN-OUT: parchar TODAS las reservas (idempotente) para asegurar creación en Calendar
+        try {
+          const idsToPatch = ids.length ? ids : (firstId ? [firstId] : []);
+          const links: string[] = [];
 
-        setError(null);
+          for (const rid of idsToPatch) {
+            const { data: patchResp } = await api.patch(`/reservas/${rid}`, { estado: "pagada" });
+            const link = patchResp?.calendar?.htmlLink || patchResp?.reserva?.eventHtmlLink || null;
+            if (link) links.push(link);
+          }
+
+          // usa el primer link si quieres mostrar sólo uno
+          if (links[0]) setCalendarLink(links[0]);
+          setError(null);
+        } catch (e) {
+          // No bloqueamos la UX: el pago está 'paid' y el webhook pudo hacerlo ya.
+          console.warn("[/gracias] PATCH de refuerzo (multi) falló en alguna reserva:", e);
+          setError(null);
+        }
       } catch (e: unknown) {
         console.error("[/gracias] error confirmando:", e);
         let errorMessage = "No se pudo confirmar el pago.";
