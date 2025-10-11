@@ -214,6 +214,9 @@ export default function ReservaWizard({
         onClose();
         const ids: string[] = [reservaId];
         navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: ids } });
+        sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
+        sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
+
         return;
       }
 
