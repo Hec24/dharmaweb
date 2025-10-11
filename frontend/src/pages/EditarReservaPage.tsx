@@ -11,8 +11,13 @@ export default function EditarReservaPage() {
   const navigate = useNavigate();
 
   const handleClose = () => {
-    if (reservaId) navigate(`/pagoDatos/${reservaId}`);
-    else navigate(-1);
+    // Si el usuario cierra con la X, decidir destino según exista checkout_reserva_ids
+    const hasCheckout = !!sessionStorage.getItem("checkout_reserva_ids");
+    if (reservaId) {
+      navigate(hasCheckout ? `/pagoPasarela/${reservaId}` : `/pagoDatos/${reservaId}`, { replace: true });
+    } else {
+      navigate(-1);
+    }
   };
 
   return (
