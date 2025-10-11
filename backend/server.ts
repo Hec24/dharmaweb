@@ -103,7 +103,8 @@ app.post(
 
         const previa = { ...r };
         const actualizada = updateReserva(reservaId, { estado: "pagada" })!;
-
+        updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined });
+        console.log("Reserva marcada como PAGADA desde webhook:", reservaId);
         try {
           const normalized: Reserva & { eventId?: string } = {
             ...actualizada,
@@ -171,6 +172,39 @@ function hasEventRelevantChanges(prev: Reserva, next: Reserva) {
   return EVENT_RELEVANT_FIELDS.some((k) => prev[k] !== next[k]);
 }
 
+function slotKey(fecha: string, hora: string, profName: string) {
+  return `${fecha}T${hora}__${profName}`; // clave simple
+}
+
+// Considera tomadas las reservas pagadas y las pendientes con hold no expirado
+function isSlotTaken(fecha: string, hora: string, profName: string) {
+  const now = Date.now();
+  return reservas.some(r =>
+    r.fecha === fecha &&
+    r.hora === hora &&
+    r.acompanante === profName &&
+    (
+      r.estado === "pagada" ||
+      (r.estado === "pendiente" && !!r.holdExpiresAt && r.holdExpiresAt > now)
+    )
+  );
+}
+
+// Opcional: limpia holds caducados de vez en cuando (cada X min)
+setInterval(() => {
+  const now = Date.now();
+  let cleaned = 0;
+  for (const r of reservas) {
+    if (r.estado === "pendiente" && r.holdExpiresAt && r.holdExpiresAt < now) {
+      // simplemente eliminamos la marca (sigue existiendo la reserva, pero ya no bloquea)
+      delete r.holdExpiresAt;
+      cleaned++;
+    }
+  }
+  if (cleaned) console.log(`[HOLD] Limpiados ${cleaned} holds caducados`);
+}, 60_000); // cada minuto
+
+
 // ========= Pagos =========
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
   try {
@@ -230,6 +264,12 @@ app.post("/api/reservas", (req: Request, res: Response) => {
       return res.status(400).json({ error: "Faltan campos obligatorios." });
     }
 
+    // ⛔️ Evitar doble booking del mismo slot para ese profesor
+    if (isSlotTaken(fecha, hora, acompanante)) {
+      return res.status(409).json({ error: "SLOT_TAKEN", message: "Ese horario ya no está disponible." });
+    }
+
+    const HOLD_MINUTES = Number(process.env.BOOKING_HOLD_MIN || 15);
     const nueva: Reserva = {
       id: uuidv4(),
       nombre, apellidos, email, telefono,
@@ -262,6 +302,9 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   const patch = req.body as Partial<Reserva>;
   const previa = { ...actual };
   const actualizada = updateReserva(actual.id, patch)!;
+  if (patch.estado === "pagada") {
+    updateReserva(actualizada.id, { holdExpiresAt: undefined });
+  }  console.log("PATCH /api/reservas/:id", { id: actualizada.id, patch });
 
   let calendar: any = null;
   let calendarError: string | null = null;
@@ -275,6 +318,8 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
         ...actualizada,
         duracionMin: actualizada.duracionMin ?? 60,
       };
+
+  
 
       // 🔎 Log antes de sincronizar con Calendar
       console.log("[GCAL] PATCH upsertEvento() ←", {
@@ -326,4 +371,27 @@ app.listen(PORT, () => {
   console.log("[GCAL] IMPERSONATED_USER:", process.env.GCAL_IMPERSONATED_USER || "(no definido)");
   console.log("[GCAL] CALENDAR_ID:", process.env.GCAL_CALENDAR_ID || "primary");
   console.log("[CORS] ORIGINS:", ORIGINS);
+});
+
+// Slots ocupados (pagados o pendientes con hold) para un profe entre fechas
+app.get("/api/ocupados", (req: Request, res: Response) => {
+  const prof = String(req.query.profesor || "").trim();
+  const from = String(req.query.from || "");
+  const to   = String(req.query.to || "");
+
+  if (!prof) return res.status(400).json({ error: "profesor requerido" });
+
+  const now = Date.now();
+  const items = reservas.filter(r => {
+    if (r.acompanante !== prof) return false;
+    const bloquea = r.estado === "pagada" || (r.estado === "pendiente" && r.holdExpiresAt && r.holdExpiresAt > now);
+    if (!bloquea) return false;
+    if (from && r.fecha < from) return false;
+    if (to && r.fecha > to) return false;
+    return true;
+  });
+
+  // devolvemos como "YYYY-MM-DD HH:mm"
+  const out = items.map(r => ({ fecha: r.fecha, hora: r.hora }));
+  return res.json({ ocupados: out });
 });
