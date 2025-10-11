@@ -1,11 +1,11 @@
-// src/pages/PasarelaPago.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import GenericNav from "../shared/GenericNav";
 import Button from "../../Components/ui/Button";
 import { api } from "../../lib/api";
 import type { Sesion } from "../../data/types";
 import { Helmet } from "react-helmet-async";
+import { saveWizardCarrito } from "../../lib/wizardSession";
 
 // DTO mínimo de tu backend
 type ReservaDto = {
@@ -39,6 +39,7 @@ const fmtEUR = (n: number) =>
 
 export default function PasarelaPago(): React.ReactElement {
   const { id: reservaId } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state as LocationState) || null;
 
@@ -65,10 +66,10 @@ export default function PasarelaPago(): React.ReactElement {
   const carritoFinal: Sesion[] | undefined =
     (carritoFromState && carritoFromState.length ? carritoFromState :
      (carritoFromSS && carritoFromSS.length ? carritoFromSS : undefined));
-     // justo después de calcular reservaIdsFinal y carritoFinal
-    console.log("[Pasarela] reservaIdsFinal =", reservaIdsFinal);
-    console.log("[Pasarela] carritoFinal.length =", carritoFinal?.length);
 
+  // Logs útiles
+  console.log("[Pasarela] reservaIdsFinal =", reservaIdsFinal);
+  console.log("[Pasarela] carritoFinal.length =", carritoFinal?.length);
 
   const [pagando, setPagando] = useState(false);
   const [loadingReserva, setLoadingReserva] = useState(true);
@@ -119,7 +120,7 @@ export default function PasarelaPago(): React.ReactElement {
     })();
   }, [reservaId, reservaIdsFinal]);
 
-  // Construye el resumen: si hay carrito → varias líneas; si no, 1 línea con la reserva
+  // Construye el resumen
   const lineItems: LineItem[] = useMemo(() => {
     if (carritoFinal && carritoFinal.length > 0) {
       return carritoFinal.map((s) => {
@@ -145,7 +146,7 @@ export default function PasarelaPago(): React.ReactElement {
           label: "Sesión Individual",
           profesor: reserva.acompanante || "Acompañante",
           fecha: `${reserva.fecha} ${reserva.hora}`,
-          precio: 50, // fallback si no traes servicio desde backend
+          precio: 50,
         },
       ];
     }
@@ -158,7 +159,6 @@ export default function PasarelaPago(): React.ReactElement {
   );
 
   const handlePagar = async () => {
-    // Solo exigimos reservaId si NO hay multi-ids
     if (!reservaIdsFinal?.length && !reservaId) {
       alert("No hay reservas válidas");
       return;
@@ -168,8 +168,8 @@ export default function PasarelaPago(): React.ReactElement {
     try {
       const payload =
         Array.isArray(reservaIdsFinal) && reservaIdsFinal.length > 0
-          ? { reservaIds: reservaIdsFinal }  // multi-reserva
-          : { reservaId };                   // una sola
+          ? { reservaIds: reservaIdsFinal }
+          : { reservaId };
 
       const { data } = await api.post<{ id: string; url: string }>(
         "/pagos/checkout-session",
@@ -182,13 +182,36 @@ export default function PasarelaPago(): React.ReactElement {
         alert("Respuesta de pago inválida");
         return;
       }
-
-      // Redirige a Stripe
       window.location.href = data.url;
     } catch (err) {
       console.error(err);
       setErrorMsg("Error al conectar con el backend");
       setPagando(false);
+    }
+  };
+
+  // --- NUEVO: botón Editar → persistir carrito y navegar a Wizard en Carrito
+  const handleEditarReserva = () => {
+    try {
+      if (carritoFinal && carritoFinal.length) {
+        saveWizardCarrito(carritoFinal as Sesion[]);
+        console.log("[Pasarela] Editar -> guardo carrito (len=%d)", carritoFinal.length);
+      } else if (lineItems.length) {
+        const fallback = lineItems.map(li => ({
+          id: li.id,
+          profesor: li.profesor || "Acompañante",
+          fecha: li.fecha || "",
+          precio: li.precio,
+          servicio: li.label,
+        }));
+        saveWizardCarrito(fallback as Sesion[]);
+        console.log("[Pasarela] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
+      }
+    } catch (e) {
+      console.warn("[Pasarela] No se pudo persistir carrito para edición", e);
+    }
+    if (reservaId) {
+      navigate(`/editar-reserva/${reservaId}?step=carrito`);
     }
   };
 
@@ -243,12 +266,13 @@ export default function PasarelaPago(): React.ReactElement {
             {/* Enlaces de utilidad */}
             <div className="mt-6 text-sm text-gray-600">
               {reservaId && (
-                <Link
-                  to={`/editar-reserva/${reservaId}?resume=1`}
+                <button
+                  onClick={handleEditarReserva}
                   className="underline hover:text-gray-800"
+                  type="button"
                 >
                   Editar reserva
-                </Link>
+                </button>
               )}
               {reservaId && <span className="mx-2">·</span>}
               {reservaId && (

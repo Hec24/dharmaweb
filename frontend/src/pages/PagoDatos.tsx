@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams, Link, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "../Components/ui/Button";
 import GenericNav from "../Components/shared/GenericNav";
 import { api } from "../lib/api";
 import type { Sesion } from "../data/types";
 import { Helmet} from "react-helmet-async"
+import { saveWizardCarrito } from "../lib/wizardSession";
 
 type ReservaDto = {
   id: string;
@@ -49,7 +50,6 @@ type LineItem = {
 type BackendErrorPayload = { error?: string };
 type ApiErrorLike = { response?: { data?: BackendErrorPayload } };
 
-// type guard para no usar 'any'
 const isApiErrorLike = (e: unknown): e is ApiErrorLike =>
   typeof e === "object" && e !== null && "response" in (e as Record<string, unknown>);
 
@@ -178,9 +178,38 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
     }
   };
 
+  // --- NUEVO: llevar al Wizard en paso Carrito y persistir carrito actual
+  const handleEditarReserva = () => {
+    try {
+      // Si tienes carrito en memoria, guárdalo para que lo hidrate el Wizard
+      if (carrito && carrito.length) {
+        saveWizardCarrito(carrito as Sesion[]);
+        console.log("[PagoDatos] Editar -> guardo carrito (len=%d)", carrito.length);
+      } else {
+        // Si no, intenta guardar el resumen derivado (por si venimos de reserva simple)
+        if (lineItems.length) {
+          const fallback = lineItems.map(li => ({
+            id: li.id,
+            profesor: li.profesor || "Acompañante",
+            fecha: li.fecha || "",
+            precio: li.precio,
+            servicio: li.label,
+          }));
+          saveWizardCarrito(fallback as Sesion[]);
+          console.log("[PagoDatos] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
+        }
+      }
+    } catch (e) {
+      console.warn("[PagoDatos] No se pudo persistir carrito para edición", e);
+    }
+    if (reservaId) {
+      // Navega al Wizard directamente en el paso Carrito
+      navigate(`/editar-reserva/${reservaId}?step=carrito`);
+    }
+  };
+
   return (
     <>
-
       <Helmet>
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
@@ -360,12 +389,13 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
               </div>
 
               {reservaId && (
-                <Link
-                  to={`/editar-reserva/${reservaId}?resume=1`}
+                <button
+                  onClick={handleEditarReserva}
                   className="mt-6 w-full text-sm underline text-gray-600 hover:text-gray-900 text-center block"
+                  type="button"
                 >
                   Editar reserva
-                </Link>
+                </button>
               )}
             </div>
           </aside>

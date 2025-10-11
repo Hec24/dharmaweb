@@ -1,4 +1,3 @@
-// src/pages/EditarReservaPage.tsx
 import React from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import GenericNav from "../Components/shared/GenericNav";
@@ -18,7 +17,6 @@ export default function EditarReservaPage() {
 
   return (
     <>
-
       <Helmet>
         <meta name="robots" content="noindex,nofollow" />
       </Helmet>
@@ -46,8 +44,6 @@ export default function EditarReservaPage() {
             className="h-full w-full object-cover"
             loading="eager"
           />
-          {/* Si quieres un velo leve, descomenta: */}
-          {/* <div className="absolute inset-0 bg-black/10" /> */}
         </div>
 
         {/* Capa vacía para mantener altura (no mostramos títulos/contenido extra) */}
