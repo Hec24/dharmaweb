@@ -59,6 +59,7 @@ export default function ReservaWizard({
   const qs = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
   const resume = qs.get("resume") === "1";
   const stepParam = qs.get("step"); // "carrito" para aterrizar en carrito
+  const shouldHydrate = resume || stepParam === "carrito"; // ← solo editar restaura/persiste carrito
   const { id: reservaId } = useParams<{ id: string }>();
 
   // —— Evitar re-inicializaciones en cada render: init por apertura
@@ -78,6 +79,35 @@ export default function ReservaWizard({
     });
     setCarrito([]);
   }, []);
+
+  // Derivar base desde carrito si falta estado (útil al volver desde Pago/Pasarela)
+  const deriveFromCarrito = (c: Sesion[] | null | undefined) => {
+    if (!c || c.length === 0) return null;
+    const first = c[0];
+    const [f, h] = first.fecha.split(" ");
+    const profObj = profesores.find((p) => p.name === first.profesor);
+    return {
+      profesorName: first.profesor,
+      fecha: f,
+      hora: h,
+      acompananteEmail: profObj?.acompananteEmail ?? "",
+      servicio: first.servicio as Servicio | undefined,
+    };
+  };
+
+  const base = React.useMemo(() => {
+    const baseFromState =
+      profesor && fechaHora
+        ? {
+            profesorName: profesor.name,
+            fecha: fechaHora.fecha,
+            hora: fechaHora.hora,
+            acompananteEmail: profesor.acompananteEmail ?? "",
+            servicio: (servicio ? normalizeServicio(servicio) : undefined),
+          }
+        : null;
+    return baseFromState ?? deriveFromCarrito(carrito);
+  }, [profesor, fechaHora, servicio, carrito]);
 
   // Cuando cambia `open`: si se abre, inicializa 1 vez; si se cierra, limpia el flag.
   React.useEffect(() => {
@@ -101,17 +131,26 @@ export default function ReservaWizard({
       setStep(0);
     }
 
-    // --- NUEVO: hidratar carrito si existe en sessionStorage
-    const savedCarrito = loadWizardCarrito();
-    if (savedCarrito && Array.isArray(savedCarrito) && savedCarrito.length > 0) {
-      setCarrito(savedCarrito as Sesion[]);
-      console.log("[Wizard] Carrito restaurado desde sessionStorage (len=%d)", savedCarrito.length);
+    // Carrito -> solo hidratar si vienes a editar; si no, limpiar
+    if (shouldHydrate) {
+      const savedCarrito = loadWizardCarrito();
+      if (savedCarrito && Array.isArray(savedCarrito) && savedCarrito.length > 0) {
+        setCarrito(savedCarrito as Sesion[]);
+        console.log("[Wizard] Carrito restaurado (len=%d)", savedCarrito.length);
+      }
+    } else {
+      try {
+        sessionStorage.removeItem("wizard_carrito");
+      } catch {
+        // ignore storage errorsq
+      }
+      setCarrito([]);
     }
 
-    // --- NUEVO: hidratar datos (nombre, email, etc.)
+    // Hidratar datos (nombre, email, etc.)
     const savedDatos = loadWizardDatos();
     if (savedDatos) {
-      setDatos(prev => ({
+      setDatos((prev) => ({
         nombre: savedDatos.nombre ?? prev.nombre,
         apellidos: savedDatos.apellidos ?? prev.apellidos,
         email: savedDatos.email ?? prev.email,
@@ -120,12 +159,12 @@ export default function ReservaWizard({
       console.log("[Wizard] Datos personales restaurados");
     }
 
-    // --- NUEVO: si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
+    // Si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
     if (stepParam === "carrito") {
       setStep(4);
       console.log("[Wizard] initial step = Carrito (por query param)");
     }
-  }, [open, preSelectedProfesor, autoAdvanceFromStep0, stepParam]);
+  }, [open, preSelectedProfesor, autoAdvanceFromStep0, stepParam, shouldHydrate]);
 
   // —— Navegación pasos
   const stepsTotal = 6;
@@ -156,15 +195,17 @@ export default function ReservaWizard({
         };
         setCarrito((c) => {
           const next = [...c, nueva];
-          // --- NUEVO: persistimos carrito
-          saveWizardCarrito(next as Sesion[]);
+          // Persistimos carrito solo en edición
+          if (shouldHydrate) {
+            saveWizardCarrito(next as Sesion[]);
+          }
           console.log("[Wizard] add sesion → carrito len=%d", next.length);
           return next;
         });
       }
     }
     nextStep();
-  }, [step, profesor, fechaHora, servicio, carrito, nextStep]);
+  }, [step, profesor, fechaHora, servicio, carrito, nextStep, shouldHydrate]);
 
   const handleAddAnotherSession = React.useCallback(() => {
     setStep(0);
@@ -226,23 +267,27 @@ export default function ReservaWizard({
 
   // ✅ Confirmar sesión: crea/edita y pasa el carrito al checkout
   const handleConfirmSesion = React.useCallback(async () => {
-    if (!profesor || !fechaHora) return;
+    // Si ni estado ni carrito tienen info suficiente, avisamos
+    if (!base) {
+      alert("Falta seleccionar al acompañante y la fecha/hora o añadir la sesión al carrito.");
+      return;
+    }
 
-    // IMPORTANTE: detectar si ya existía un checkout ANTES de persistir para decidir la navegación final
+    // Detectar si ya existía un checkout ANTES de persistir para decidir navegación
     const hadCheckout = !!sessionStorage.getItem("checkout_reserva_ids");
 
     try {
-      // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual)
+      // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual/base)
       const sesiones: Sesion[] =
         carrito.length > 0
           ? carrito
           : [
               {
                 id: Date.now().toString(),
-                profesor: profesor.name,
-                fecha: `${fechaHora.fecha} ${fechaHora.hora}`,
-                servicio: normalizeServicio(servicio),
-                precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
+                profesor: base.profesorName,
+                fecha: `${base.fecha} ${base.hora}`,
+                servicio: base.servicio ?? "Individual",
+                precio: (base.servicio ?? "Individual") === "Pareja" ? 80 : 50,
               },
             ];
 
@@ -254,8 +299,8 @@ export default function ReservaWizard({
           apellidos: datos.apellidos,
           email: datos.email,
           telefono: datos.telefono,
-          acompanante: profesor.name,
-          acompananteEmail: profesor.acompananteEmail ?? "",
+          acompanante: base.profesorName,
+          acompananteEmail: base.acompananteEmail ?? "",
           fecha: f,
           hora: h,
         };
@@ -265,7 +310,9 @@ export default function ReservaWizard({
           // persistimos checkout
           persistCheckoutState([reservaId], sesiones);
           // limpiar/persistir estado wizard
-          saveWizardCarrito(sesiones);
+          if (shouldHydrate) {
+            saveWizardCarrito(sesiones);
+          }
           saveWizardDatos({
             nombre: datos.nombre,
             apellidos: datos.apellidos,
@@ -275,7 +322,6 @@ export default function ReservaWizard({
           clearWizardCarritoTemp();
           resetWizard();
 
-          // ⚠️ no llamamos a onClose() aquí para no disparar la navegación por defecto del padre
           const target = hadCheckout
             ? `/pagoPasarela/${reservaId}`
             : `/pagoDatos/${reservaId}`;
@@ -293,7 +339,9 @@ export default function ReservaWizard({
             const newId = resp.data.id;
 
             persistCheckoutState([newId], sesiones);
-            saveWizardCarrito(sesiones);
+            if (shouldHydrate) {
+              saveWizardCarrito(sesiones);
+            }
             saveWizardDatos({
               nombre: datos.nombre,
               apellidos: datos.apellidos,
@@ -318,13 +366,17 @@ export default function ReservaWizard({
       const ids: string[] = [];
       for (const s of sesiones) {
         const [f, h] = s.fecha.split(" ");
+        const profEmail =
+          profesor?.acompananteEmail ??
+          profesores.find((p) => p.name === s.profesor)?.acompananteEmail ??
+          "";
         const body = {
           nombre: datos.nombre,
           apellidos: datos.apellidos,
           email: datos.email,
           telefono: datos.telefono,
           acompanante: s.profesor,
-          acompananteEmail: profesor.acompananteEmail ?? "",
+          acompananteEmail: profEmail,
           fecha: f,
           hora: h,
         };
@@ -335,7 +387,9 @@ export default function ReservaWizard({
 
       // persistimos y navegamos con TODOS los ids
       persistCheckoutState(ids, sesiones);
-      saveWizardCarrito(sesiones);
+      if (shouldHydrate) {
+        saveWizardCarrito(sesiones);
+      }
       saveWizardDatos({
         nombre: datos.nombre,
         apellidos: datos.apellidos,
@@ -350,37 +404,38 @@ export default function ReservaWizard({
         ? `/pagoPasarela/${firstId}`
         : `/pagoDatos/${firstId}`;
 
-      // ⚠️ no llamamos a onClose() aquí
       navigate(target, { state: { carrito: sesiones, reservaIds: ids }, replace: true });
     } catch (e: unknown) {
       console.error("Error guardando reserva:", e);
       alert("Error de conexión al guardar la reserva");
     }
   }, [
-    profesor,
-    fechaHora,
-    servicio,
+    base,
     carrito,
-    resume,
-    reservaId,
     datos.nombre,
     datos.apellidos,
     datos.email,
     datos.telefono,
-    resetWizard,
     navigate,
     persistCheckoutState,
+    profesor,
+    resume,
+    reservaId,
+    resetWizard,
+    shouldHydrate,
   ]);
 
-  // --- NUEVO: persistir carrito en removals (y limpiar al cerrar)
+  // Persistir carrito en removals (solo en edición) y limpiar al cerrar
   const handleRemoveFromCarrito = React.useCallback((id: string) => {
     setCarrito((c) => {
       const next = c.filter((s) => s.id !== id);
-      saveWizardCarrito(next as Sesion[]);
+      if (shouldHydrate) {
+        saveWizardCarrito(next as Sesion[]);
+      }
       console.log("[Wizard] remove sesion → carrito len=%d", next.length);
       return next;
     });
-  }, []);
+  }, [shouldHydrate]);
 
   // —— Render
   return (
@@ -388,6 +443,9 @@ export default function ReservaWizard({
       open={open}
       onClose={() => {
         clearWizardCarritoTemp(); // limpia temporal de wizard
+        try { sessionStorage.removeItem("wizard_carrito"); } catch {
+          // ignore storage errors
+        }
         resetWizard();
         onClose();
       }}
@@ -428,18 +486,20 @@ export default function ReservaWizard({
         />
       )}
 
-      {step === 3 && 
-      <FormDatosPersonales 
-      value={datos} 
-      onChange={(v) =>{
-        setDatos(v);
-        saveWizardDatos({
-          nombre: v.nombre,
-          apellidos: v.apellidos,
-          email: v.email,
-          telefono: v.telefono,
-        }) // --- NUEVO: persistir datos al cambiar
-      }} />}
+      {step === 3 && (
+        <FormDatosPersonales
+          value={datos}
+          onChange={(v) => {
+            setDatos(v);
+            saveWizardDatos({
+              nombre: v.nombre,
+              apellidos: v.apellidos,
+              email: v.email,
+              telefono: v.telefono,
+            }); // persistir datos al cambiar
+          }}
+        />
+      )}
 
       {step === 4 && (
         <CarritoReserva
