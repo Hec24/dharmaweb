@@ -204,6 +204,59 @@ setInterval(() => {
   if (cleaned) console.log(`[HOLD] Limpiados ${cleaned} holds caducados`);
 }, 60_000); // cada minuto
 
+import { existeEventoParaReserva } from "./googleCalendar";
+
+// Política de reconciliación:
+// - Si una reserva "pagada" ya no tiene evento en Calendar → liberamos el slot borrando la reserva
+//   (o si prefieres, márcala como {estado: "cancelada"} y quítala de /ocupados).
+// - Si una "pendiente" ya no tiene evento (raro) → quita el hold para que se libere sola.
+async function reconcileCalendarVsBackend() {
+  const now = Date.now();
+  let freed = 0, clearedHolds = 0;
+
+  // Sólo miramos próximas X semanas para no iterar infinito
+  const HORIZON_DAYS = 60;
+  const horizonISO = new Date(Date.now() + HORIZON_DAYS * 86400000).toISOString().slice(0,10);
+
+  for (const r of [...reservas]) {
+    try {
+      // Ignora reservas antiguas muy lejos en el pasado
+      if (r.fecha > horizonISO) continue;
+
+      // Sólo nos interesan las que bloquean:
+      const bloquea = r.estado === "pagada" || (r.estado === "pendiente" && r.holdExpiresAt && r.holdExpiresAt > now);
+      if (!bloquea) continue;
+
+      const sigue = await existeEventoParaReserva(r.id);
+      if (sigue) continue; // todo ok, no tocar
+
+      // Evento NO existe (o está "cancelled") en Calendar → liberamos
+      if (r.estado === "pagada") {
+        // opción A: borrar del backend (libera inmediatamente /ocupados)
+        deleteReserva(r.id);
+        freed++;
+      } else {
+        // pendiente → quita hold
+        updateReserva(r.id, { holdExpiresAt: undefined });
+        clearedHolds++;
+      }
+    } catch (e) {
+      console.error("[RECONCILE] error comprobando reserva", r.id, e);
+    }
+  }
+
+  if (freed || clearedHolds) {
+    console.log(`[RECONCILE] liberadas ${freed} reservas pagadas; holds limpiados: ${clearedHolds}`);
+  }
+}
+
+// Corre cada 30s (ajusta si quieres)
+setInterval(() => {
+  reconcileCalendarVsBackend().catch(err => {
+    console.error("[RECONCILE] fallo:", err?.message || err);
+  });
+}, 30_000);
+
 
 // ========= Pagos =========
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
@@ -389,6 +442,7 @@ app.listen(PORT, () => {
 
 // Slots ocupados (pagados o pendientes con hold) para un profe entre fechas
 app.get("/api/ocupados", (req: Request, res: Response) => {
+  console.log("[/api/ocupados]", req.query);
   const prof = String(req.query.profesor || "").trim();
   const from = String(req.query.from || "");
   const to   = String(req.query.to || "");
