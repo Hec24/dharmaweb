@@ -194,31 +194,47 @@ export default function ReservaWizard({
               precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
             },
           ];
-
-      // EDICIÓN
      
+      // EDICIÓN
       if (resume && reservaId && sesiones[0]) {
-      const [f, h] = sesiones[0].fecha.split(" ");
-      const patchBody = {
-        nombre: datos.nombre,
-        apellidos: datos.apellidos,
-        email: datos.email,
-        telefono: datos.telefono,
-        acompanante: profesor.name,
-        acompananteEmail: profesor.acompananteEmail ?? "",
-        fecha: f,
-        hora: h,
-      };
-        await patchWithRetry(`/reservas/${reservaId}`, patchBody);
-        resetWizard();
-        onClose();
-        const ids: string[] = [reservaId];
-        navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: ids } });
-        sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
-        sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
-
-        return;
+        const [f, h] = sesiones[0].fecha.split(" ");
+        const patchBody = {
+          nombre: datos.nombre,
+          apellidos: datos.apellidos,
+          email: datos.email,
+          telefono: datos.telefono,
+          acompanante: profesor.name,
+          acompananteEmail: profesor.acompananteEmail ?? "",
+          fecha: f,
+          hora: h,
+        };
+        try {
+          await patchWithRetry(`/reservas/${reservaId}`, patchBody);
+          resetWizard();
+          onClose();
+          navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones } });
+          return;
+        } catch (e: unknown) {
+          // Si el backend perdió la reserva (404), re-crear y continuar
+          const status =
+            typeof e === "object" && e !== null && "response" in e
+              ? (e as { response?: { status?: number } }).response?.status
+              : undefined;
+          if (status === 404) {
+            const resp = await postWithRetry<{ id: string }>(
+              "/reservas",
+              patchBody
+            );
+            const newId = resp.data.id;
+            resetWizard();
+            onClose();
+            navigate(`/pagoDatos/${newId}`, { state: { carrito: sesiones, reservaIds: [newId] } });
+            return;
+          }
+          throw e;
+        }
       }
+
 
 
       // CREACIÓN
