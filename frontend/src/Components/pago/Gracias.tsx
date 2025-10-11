@@ -7,19 +7,37 @@ type StripeSession = {
   id: string;
   payment_status: string; // "paid" | ...
   status: string;         // "complete" | ...
-  metadata?: { reservaId?: string };
+  metadata?: {
+    reservaId?: string;   // fallback legacy
+    reservaIds?: string;  // JSON stringified array
+  };
 };
+
+// Helper: extrae ids desde metadata (soporta array o único)
+function extractReservaIds(session: StripeSession | unknown): string[] {
+  const s = session as StripeSession;
+  const md = s?.metadata || {};
+  if (md.reservaIds) {
+    try {
+      const arr = JSON.parse(md.reservaIds);
+      return Array.isArray(arr) ? arr.filter(Boolean) : [];
+    } catch {
+      // ignore JSON parse errors
+    }
+  }
+  return md.reservaId ? [md.reservaId] : [];
+}
 
 export default function Gracias() {
   const [params] = useSearchParams();
-
   const sessionId = params.get("session_id");
 
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string>("");
-  const [reservaId, setReservaId] = useState<string | null>(null);
+  const [reservaId, setReservaId] = useState<string | null>(null); // mostramos 1 en la UI si existe
   const [calendarLink, setCalendarLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sessionsCount, setSessionsCount] = useState<number>(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -32,50 +50,40 @@ export default function Gracias() {
       }
 
       try {
-        // 1) Recuperar la sesión desde tu backend (usa la misma clave/ cuenta que el webhook)
+        // 1) Recuperar la sesión desde tu backend (misma cuenta/clave que el webhook)
         const { data: session } = await api.get<StripeSession>(`/pagos/checkout-session/${sessionId}`);
         if (cancelled) return;
 
         setStatus(session?.payment_status || "");
-        const rid = session?.metadata?.reservaId || null;
-        setReservaId(rid);
 
+        // Lee ids desde metadata (array o único)
+        const ids = extractReservaIds(session);
+        setSessionsCount(ids.length || 1);
+        const firstId = ids[0] || null;
+        setReservaId(firstId);
+
+        // Si aún no está paid, informamos y salimos
         if (session?.payment_status !== "paid") {
           setError("El pago aún no está confirmado. Si ya has pagado, actualiza esta página en unos segundos.");
           setLoading(false);
           return;
         }
 
-        if (!rid) {
-          setError("No se pudo asociar el pago a una reserva (falta reservaId en metadata).");
-          setLoading(false);
-          return;
-        }
-
-        // tras recuperar la session:
-        const rawIds = (session.metadata as { reservaIds?: string })?.reservaIds;
-        let firstId = session?.metadata?.reservaId || null;
-        try {
-          const ids = rawIds ? JSON.parse(rawIds) as string[] : [];
-          firstId = ids[0] || firstId;
-        } catch {
-          // intentionally ignore JSON parse errors
-        }
-
+        // 💡 El webhook ya debe haber marcado todas las reservas como pagadas y creado los eventos.
+        // Aquí sólo hacemos un PATCH idempotente del primer id como refuerzo/latencia.
         if (firstId) {
-          await api.patch(`/reservas/${firstId}`, { estado: "pagada" }); // idempotente
+          try {
+            const { data: patchResp } = await api.patch(`/reservas/${firstId}`, { estado: "pagada" });
+            const link =
+              patchResp?.calendar?.htmlLink ||
+              patchResp?.reserva?.eventHtmlLink ||
+              null;
+            if (link) setCalendarLink(link);
+          } catch (e) {
+            // No bloqueamos la UX: el webhook ya lo habrá hecho.
+            console.warn("[/gracias] PATCH de refuerzo falló (continuamos):", e);
+          }
         }
-
-
-        // 2) Idempotente: marcar pagada (si ya lo hizo el webhook, esto no rompe nada)
-        const { data: patchResp } = await api.patch(`/reservas/${rid}`, { estado: "pagada" });
-
-        // 3) Intenta extraer un enlace al evento si tu backend lo devuelve en la respuesta
-        const link =
-          patchResp?.calendar?.htmlLink ||
-          patchResp?.reserva?.eventHtmlLink ||
-          null;
-        if (link) setCalendarLink(link);
 
         setError(null);
       } catch (e: unknown) {
@@ -134,10 +142,18 @@ export default function Gracias() {
     <div className="min-h-screen flex items-center justify-center bg-[#FDF2EC]">
       <div className="bg-white shadow-xl rounded-3xl p-12 max-w-lg w-full text-center space-y-4">
         <h1 className="text-3xl mb-2">¡Gracias por tu compra! 🙌</h1>
+
         <p className="text-gray-700">
-          Hemos confirmado tu pago y creado el evento en el calendario.
+          {sessionsCount > 1
+            ? `Hemos confirmado tu pago y creado ${sessionsCount} eventos en el calendario.`
+            : `Hemos confirmado tu pago y creado el evento en el calendario.`}
+          {" "}
           En unos instantes recibirás los correos de invitación.
         </p>
+
+        {status && (
+          <p className="text-sm text-gray-500">Estado de pago: {status}</p>
+        )}
 
         {calendarLink ? (
           <a
@@ -149,7 +165,9 @@ export default function Gracias() {
             Ver evento en Google Calendar
           </a>
         ) : (
-          <p className="text-sm text-gray-500">Si no ves el correo aún, revisa la carpeta de spam.</p>
+          <p className="text-sm text-gray-500">
+            Si no ves el correo aún, revisa la carpeta de spam.
+          </p>
         )}
 
         <div className="pt-2">
