@@ -13,6 +13,11 @@ import { profesores } from "../../data/profesores";
 import { validarDatos } from "../../utils/validacion";
 
 import { postWithRetry, patchWithRetry } from "../../lib/net";
+import {
+  loadWizardCarrito,
+  saveWizardCarrito,
+  clearWizardCarritoTemp,
+} from "../../lib/wizardSession";
 
 import type { Profesor, Sesion, FechaHora, FormValues, Servicio } from "../../data/types";
 
@@ -51,6 +56,7 @@ export default function ReservaWizard({
   const location = useLocation();
   const qs = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
   const resume = qs.get("resume") === "1";
+  const stepParam = qs.get("step"); // "carrito" para aterrizar en carrito
   const { id: reservaId } = useParams<{ id: string }>();
 
   // —— Evitar re-inicializaciones en cada render: init por apertura
@@ -89,10 +95,23 @@ export default function ReservaWizard({
         setStep((s) => (s === 0 ? 1 : s));
       }
     } else {
-      // sin preseleccion → asegúrate de estar en paso 0
+      // sin preseleccion → asegúrate de estar en paso 0 por defecto
       setStep(0);
     }
-  }, [open, preSelectedProfesor, autoAdvanceFromStep0]);
+
+    // --- NUEVO: hidratar carrito si existe en sessionStorage
+    const saved = loadWizardCarrito();
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      setCarrito(saved as Sesion[]);
+      console.log("[Wizard] Carrito restaurado desde sessionStorage (len=%d)", saved.length);
+    }
+
+    // --- NUEVO: si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
+    if (stepParam === "carrito") {
+      setStep(4);
+      console.log("[Wizard] initial step = Carrito (por query param)");
+    }
+  }, [open, preSelectedProfesor, autoAdvanceFromStep0, stepParam]);
 
   // —— Navegación pasos
   const stepsTotal = 6;
@@ -121,7 +140,13 @@ export default function ReservaWizard({
           precio: svc === "Pareja" ? 80 : 50,
           servicio: svc,
         };
-        setCarrito((c) => [...c, nueva]);
+        setCarrito((c) => {
+          const next = [...c, nueva];
+          // --- NUEVO: persistimos carrito
+          saveWizardCarrito(next as Sesion[]);
+          console.log("[Wizard] add sesion → carrito len=%d", next.length);
+          return next;
+        });
       }
     }
     nextStep();
@@ -222,6 +247,8 @@ export default function ReservaWizard({
 
           // persistimos y navegamos con 1 id (edición)
           persistCheckoutState([reservaId], sesiones);
+          // limpiar temporal de edición (opcional)
+          clearWizardCarritoTemp();
           resetWizard();
           onClose();
           navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: [reservaId] } });
@@ -237,6 +264,7 @@ export default function ReservaWizard({
             const newId = resp.data.id;
 
             persistCheckoutState([newId], sesiones);
+            clearWizardCarritoTemp();
             resetWizard();
             onClose();
             navigate(`/pagoDatos/${newId}`, { state: { carrito: sesiones, reservaIds: [newId] } });
@@ -267,6 +295,7 @@ export default function ReservaWizard({
 
       // persistimos y navegamos con TODOS los ids
       persistCheckoutState(ids, sesiones);
+      clearWizardCarritoTemp();
       resetWizard();
       onClose();
       navigate(`/pagoDatos/${ids[0]}`, { state: { carrito: sesiones, reservaIds: ids } });
@@ -291,11 +320,22 @@ export default function ReservaWizard({
     persistCheckoutState,
   ]);
 
+  // --- NUEVO: persistir carrito en removals (y limpiar al cerrar)
+  const handleRemoveFromCarrito = React.useCallback((id: string) => {
+    setCarrito((c) => {
+      const next = c.filter((s) => s.id !== id);
+      saveWizardCarrito(next as Sesion[]);
+      console.log("[Wizard] remove sesion → carrito len=%d", next.length);
+      return next;
+    });
+  }, []);
+
   // —— Render
   return (
     <ModalWizard
       open={open}
       onClose={() => {
+        clearWizardCarritoTemp(); // limpia temporal de wizard
         resetWizard();
         onClose();
       }}
@@ -342,7 +382,7 @@ export default function ReservaWizard({
         <CarritoReserva
           carrito={carrito}
           onAdd={handleAddAnotherSession}
-          onRemove={(id) => setCarrito((c) => c.filter((s) => s.id !== id))}
+          onRemove={handleRemoveFromCarrito}
         />
       )}
 
