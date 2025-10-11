@@ -12,7 +12,6 @@ import ConfirmacionReserva from "./ConfirmacionReserva";
 import { profesores } from "../../data/profesores";
 import { validarDatos } from "../../utils/validacion";
 
-
 import { postWithRetry, patchWithRetry } from "../../lib/net";
 
 import type { Profesor, Sesion, FechaHora, FormValues, Servicio } from "../../data/types";
@@ -176,26 +175,36 @@ export default function ReservaWizard({
     }
   }, [step, handleNext, nextStep]);
 
+  // —— Utilidades de persistencia para Pasarela
+  const persistCheckoutState = React.useCallback((ids: string[], sesiones: Sesion[]) => {
+    try {
+      sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
+      sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
+    } catch {
+      // ignore storage errors
+    }
+  }, []);
+
   // ✅ Confirmar sesión: crea/edita y pasa el carrito al checkout
   const handleConfirmSesion = React.useCallback(async () => {
-  if (!profesor || !fechaHora) return;
+    if (!profesor || !fechaHora) return;
 
-  try {
-    // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual)
-    const sesiones: Sesion[] =
-      carrito.length > 0
-        ? carrito
-        : [
-            {
-              id: Date.now().toString(),
-              profesor: profesor.name,
-              fecha: `${fechaHora.fecha} ${fechaHora.hora}`,
-              servicio: normalizeServicio(servicio),
-              precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
-            },
-          ];
-     
-      // EDICIÓN
+    try {
+      // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual)
+      const sesiones: Sesion[] =
+        carrito.length > 0
+          ? carrito
+          : [
+              {
+                id: Date.now().toString(),
+                profesor: profesor.name,
+                fecha: `${fechaHora.fecha} ${fechaHora.hora}`,
+                servicio: normalizeServicio(servicio),
+                precio: normalizeServicio(servicio) === "Pareja" ? 80 : 50,
+              },
+            ];
+
+      // —— EDICIÓN
       if (resume && reservaId && sesiones[0]) {
         const [f, h] = sesiones[0].fecha.split(" ");
         const patchBody = {
@@ -210,9 +219,12 @@ export default function ReservaWizard({
         };
         try {
           await patchWithRetry(`/reservas/${reservaId}`, patchBody);
+
+          // persistimos y navegamos con 1 id (edición)
+          persistCheckoutState([reservaId], sesiones);
           resetWizard();
           onClose();
-          navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones } });
+          navigate(`/pagoDatos/${reservaId}`, { state: { carrito: sesiones, reservaIds: [reservaId] } });
           return;
         } catch (e: unknown) {
           // Si el backend perdió la reserva (404), re-crear y continuar
@@ -221,11 +233,10 @@ export default function ReservaWizard({
               ? (e as { response?: { status?: number } }).response?.status
               : undefined;
           if (status === 404) {
-            const resp = await postWithRetry<{ id: string }>(
-              "/reservas",
-              patchBody
-            );
+            const resp = await postWithRetry<{ id: string }>("/reservas", patchBody);
             const newId = resp.data.id;
+
+            persistCheckoutState([newId], sesiones);
             resetWizard();
             onClose();
             navigate(`/pagoDatos/${newId}`, { state: { carrito: sesiones, reservaIds: [newId] } });
@@ -235,30 +246,30 @@ export default function ReservaWizard({
         }
       }
 
+      // —— CREACIÓN (una o varias sesiones)
+      const ids: string[] = [];
+      for (const s of sesiones) {
+        const [f, h] = s.fecha.split(" ");
+        const body = {
+          nombre: datos.nombre,
+          apellidos: datos.apellidos,
+          email: datos.email,
+          telefono: datos.telefono,
+          acompanante: s.profesor,
+          acompananteEmail: profesor.acompananteEmail ?? "",
+          fecha: f,
+          hora: h,
+        };
 
-
-      // CREACIÓN
-        const ids: string[] = [];
-    for (const s of sesiones) {
-      const [f, h] = s.fecha.split(" ");
-      const body = {
-        nombre: datos.nombre,
-        apellidos: datos.apellidos,
-        email: datos.email,
-        telefono: datos.telefono,
-        acompanante: s.profesor,
-        acompananteEmail: profesor.acompananteEmail ?? "",
-        fecha: f,
-        hora: h,
-      };
-
-      const resp = await postWithRetry<{ id: string }>("/reservas", body);
-      ids.push(resp.data.id);
+        const resp = await postWithRetry<{ id: string }>("/reservas", body);
+        ids.push(resp.data.id);
       }
 
+      // persistimos y navegamos con TODOS los ids
+      persistCheckoutState(ids, sesiones);
       resetWizard();
       onClose();
-      navigate(`/pagoDatos/${ids[0]}`, { state: { carrito: sesiones } });
+      navigate(`/pagoDatos/${ids[0]}`, { state: { carrito: sesiones, reservaIds: ids } });
     } catch (e: unknown) {
       console.error("Error guardando reserva:", e);
       alert("Error de conexión al guardar la reserva");
@@ -277,6 +288,7 @@ export default function ReservaWizard({
     onClose,
     resetWizard,
     navigate,
+    persistCheckoutState,
   ]);
 
   // —— Render
@@ -327,9 +339,11 @@ export default function ReservaWizard({
       {step === 3 && <FormDatosPersonales value={datos} onChange={setDatos} />}
 
       {step === 4 && (
-        <CarritoReserva carrito={carrito} onAdd={handleAddAnotherSession} onRemove={(id) =>
-          setCarrito((c) => c.filter((s) => s.id !== id))
-        } />
+        <CarritoReserva
+          carrito={carrito}
+          onAdd={handleAddAnotherSession}
+          onRemove={(id) => setCarrito((c) => c.filter((s) => s.id !== id))}
+        />
       )}
 
       {step === 5 && (
@@ -343,4 +357,3 @@ export default function ReservaWizard({
     </ModalWizard>
   );
 }
-
