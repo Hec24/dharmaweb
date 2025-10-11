@@ -70,6 +70,22 @@ export default function PasarelaPago(): React.ReactElement {
     };
   }, [reservaId]);
 
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const cancelled = params.get("cancelled") === "1";
+  if (cancelled && reservaId) {
+    (async () => {
+      try {
+        await api.delete(`/reservas/${reservaId}`);
+        // opcional: navegar de vuelta al wizard/selector
+        // navigate("/reservar");  // o donde corresponda
+      } catch (e) {
+        console.error("[PasarelaPago] no se pudo cancelar la reserva:", e);
+      }
+    })();
+  }
+}, [reservaId]);
+
   // Construye el resumen: si hay carrito → varias líneas; si no, 1 línea con la reserva
   const lineItems: LineItem[] = useMemo(() => {
     if (carritoFromState && carritoFromState.length > 0) {
