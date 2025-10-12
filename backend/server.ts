@@ -83,6 +83,43 @@ app.post(
         process.env.STRIPE_WEBHOOK_SECRET as string
       );
 
+      // Inserta una reserva si no existe en memoria (devuelve la instancia final en memoria)
+      function ensureReservaInMemory(snapshot: Partial<Reserva>): Reserva {
+        const existing = getReserva(snapshot.id as string);
+        if (existing) return existing;
+
+        // Construimos con defaults sensatos y estado "pendiente" (se actualizará a "pagada" después)
+        const nueva: Reserva = {
+          id: snapshot.id as string,
+          nombre: snapshot.nombre || "",
+          apellidos: snapshot.apellidos || "",
+          email: snapshot.email || "",
+          telefono: snapshot.telefono || "",
+          acompanante: snapshot.acompanante || "",
+          acompananteEmail: snapshot.acompananteEmail || "",
+          fecha: snapshot.fecha || "",
+          hora: snapshot.hora || "",
+          duracionMin: snapshot.duracionMin ?? 60,
+          estado: "pendiente",
+        };
+        // Empuja a la “DB” en memoria
+        (reservas as Reserva[]).push(nueva);
+        return nueva;
+      }
+
+      // Busca el snapshot de una reserva dentro de la metadata del session
+      function findSnapshotInSession(session: Stripe.Checkout.Session, id: string): Partial<Reserva> | null {
+        const raw = session.metadata?.reservas;
+        if (!raw) return null;
+        try {
+          const list = JSON.parse(raw) as Array<Partial<Reserva>>;
+          return list.find(x => x && x.id === id) || null;
+        } catch {
+          return null;
+        }
+}
+
+
       if (event.type === "checkout.session.completed") {
         const session = event.data.object as Stripe.Checkout.Session;
 
@@ -101,14 +138,24 @@ app.post(
         }
 
         for (const reservaId of ids) {
-          const r = getReserva(reservaId);
+          // 1) Asegura que la reserva está en memoria
+          let r = getReserva(reservaId);
           if (!r) {
-            console.error("Reserva no encontrada en webhook:", reservaId);
+            const snap = findSnapshotInSession(session, reservaId);
+            if (snap) {
+              r = ensureReservaInMemory(snap);
+              console.log("[WEBHOOK] Reconstituida reserva en memoria desde metadata:", reservaId);
+            }
+          }
+          if (!r) {
+            console.error("[WEBHOOK] Reserva no encontrada ni en metadata:", reservaId);
             continue;
           }
 
+          // 2) Marcar pagada y limpiar hold
           const actualizada = updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined })!;
 
+          // 3) Crear/actualizar evento en Calendar
           try {
             const normalized: Reserva & { eventId?: string } = {
               ...actualizada,
@@ -119,14 +166,15 @@ app.post(
             if (result?.eventId) {
               updateReserva(actualizada.id, { eventId: result.eventId });
             }
-            console.log("Reserva confirmada y evento Calendar ok:", {
+            console.log("[WEBHOOK] Reserva confirmada y evento Calendar ok:", {
               reservaId,
               eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
             });
           } catch (err: any) {
-            console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
+            console.error("[WEBHOOK] Error sincronizando con Calendar:", err?.message || err);
           }
         }
+
       }
 
       res.json({ received: true });
@@ -277,16 +325,36 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     console.log("[/checkout-session] line_items count:", line_items.length);
 
     const first = found[0]!;
+
+    // Snapshot compacto para reconstruir en el webhook si la reserva no está en memoria
+    const reservasSnapshot = found.map(r => ({
+      id: r.id,
+      nombre: r.nombre,
+      apellidos: r.apellidos,
+      email: r.email,
+      telefono: r.telefono,
+      acompanante: r.acompanante,
+      acompananteEmail: r.acompananteEmail ?? "",
+      fecha: r.fecha,
+      hora: r.hora,
+      duracionMin: r.duracionMin ?? 60,
+      // estado lo pondremos en el webhook
+    }));
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       locale: "es",
       customer_email: first.email,
       payment_method_types: ["card"],
-      line_items,
+      line_items, // ← varias líneas, una por reserva
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
-      metadata: { reservaIds: JSON.stringify(ids) },
+      metadata: {
+        reservaIds: JSON.stringify(ids),
+        reservas: JSON.stringify(reservasSnapshot), // ← clave nueva
+      },
     });
+
 
     return res.json({ id: session.id, url: session.url });
   } catch (err: any) {
