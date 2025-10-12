@@ -48,7 +48,7 @@ const saveCheckoutCarrito = (sesiones: Sesion[]) => {
   try {
     sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
   } catch {
-    // no hacer nada
+    // no importa
   }
 };
 const loadCheckoutDatos = (): Partial<FormValues> | null => {
@@ -66,7 +66,7 @@ const saveCheckoutDatos = (v: FormValues) => {
     sessionStorage.setItem("checkout_datos", JSON.stringify(v));
     sessionStorage.setItem("facturacion_datos", JSON.stringify(v)); // alias compat
   } catch {
-    // no hacer nada
+    // no importa
   }
 };
 
@@ -95,20 +95,39 @@ const normalizeStoredCarrito = (arr: unknown[] | null | undefined): Sesion[] => 
     .filter((s) => isNonEmptyString(s.profesor) && isNonEmptyString(s.fecha));
 };
 
-const isFacturacionCompleta = (d?: Partial<FormValues> | null): boolean => {
+  // helper sin 'any'
+const getField = (obj: unknown, keys: readonly string[]): string | undefined => {
+  if (!obj || typeof obj !== "object") return undefined;
+  const rec = obj as Record<string, unknown>;
+  for (const k of keys) {
+    const v = rec[k];
+    if (isNonEmptyString(v)) return v as string;
+  }
+  return undefined;
+  };
+
+  // --- chequeo robusto de facturación (con alias)
+  const isFacturacionCompleta = (d?: Partial<FormValues> | null): boolean => {
   if (!d) return false;
-  const required: (keyof FormValues)[] = [
-    "nombre",
-    "apellidos",
-    "email",
-    "telefono",
-    "direccion",
-    "ciudad",
-    "codigoPostal",
-    "pais",
+
+  const checks: Array<string | undefined> = [
+    getField(d, ["nombre"]),
+    getField(d, ["apellidos"]),
+    getField(d, ["email"]),
+    getField(d, ["telefono"]),
+    // dirección
+    getField(d, ["direccion", "address", "street"]),
+    // ciudad
+    getField(d, ["ciudad", "city"]),
+    // código postal
+    getField(d, ["codigoPostal", "cp", "postalCode", "zip"]),
+    // país
+    getField(d, ["pais", "country"]),
   ];
-  return required.every((k) => isNonEmptyString(d[k]));
+
+  return checks.every(isNonEmptyString);
 };
+
 
 export default function ReservaWizard({
   open,
@@ -137,12 +156,12 @@ export default function ReservaWizard({
   const resume = qs.get("resume") === "1";             // ← edición real
   const stepParam = qs.get("step");                    // "carrito" solo cambia pestaña
 
-  // Detecta si hay un checkout activo (p.ej. vienes de Pasarela/PagoDatos) → rehidratar
+  // Detecta si hay un checkout activo → rehidratar aunque no venga ?resume=1
   const hasCheckout = React.useMemo(() => {
     try { return !!sessionStorage.getItem("checkout_reserva_ids"); } catch { return false; }
   }, [location.key]);
 
-  // ← Rehidratar si editas o si hay checkout abierto (aunque no venga ?resume=1)
+  // ← Rehidratar si editas o si hay checkout abierto
   const shouldHydrate = resume || hasCheckout;
 
   const { id: reservaId } = useParams<{ id: string }>();
@@ -225,7 +244,7 @@ export default function ReservaWizard({
       }
     } else {
       try { sessionStorage.removeItem("wizard_carrito"); } catch {
-        // no hacer nada
+        // no importa
       }
       setCarrito([]);
     }
@@ -340,7 +359,7 @@ export default function ReservaWizard({
       try {
         sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
       } catch {
-        // no hacer nada
+        // no importa
       }
       saveCheckoutCarrito(sesiones);
       saveCheckoutDatos(datosFact);
@@ -355,9 +374,10 @@ export default function ReservaWizard({
       return;
     }
 
-    // ¿Hay datos de facturación completos?
-    const datosPrevios = loadCheckoutDatos() || datos;
-    const factOk = isFacturacionCompleta(datosPrevios);
+    // Fusiona datos de facturación de todas las fuentes para evitar falsos negativos
+    const datosAlmacenados = loadCheckoutDatos() || {};
+    const datosPreviosMerged = { ...datos, ...datosAlmacenados } as FormValues;
+    const factOk = isFacturacionCompleta(datosPreviosMerged);
 
     try {
       // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual/base)
@@ -378,10 +398,10 @@ export default function ReservaWizard({
       if (resume && reservaId && sesiones[0]) {
         const [f, h] = sesiones[0].fecha.split(" ");
         const patchBody = {
-          nombre: datos.nombre,
-          apellidos: datos.apellidos,
-          email: datos.email,
-          telefono: datos.telefono,
+          nombre: datosPreviosMerged.nombre,
+          apellidos: datosPreviosMerged.apellidos,
+          email: datosPreviosMerged.email,
+          telefono: datosPreviosMerged.telefono,
           acompanante: base.profesorName,
           acompananteEmail: base.acompananteEmail ?? "",
           fecha: f,
@@ -392,16 +412,16 @@ export default function ReservaWizard({
           await patchWithRetry(`/reservas/${reservaId}`, patchBody);
 
           // Persistimos carrito + datos facturación para que PagoDatos/Pasarela lo vean
-          persistCheckoutState([reservaId], sesiones, datosPrevios as FormValues);
+          persistCheckoutState([reservaId], sesiones, datosPreviosMerged);
           if (shouldHydrate) saveWizardCarrito(sesiones);
-          saveWizardDatos(datosPrevios as FormValues);
+          saveWizardDatos(datosPreviosMerged);
           clearWizardCarritoTemp();
           resetWizard();
 
-          // Navegación según facturación completa
+          // Navegación según facturación completa (ahora robusta)
           const target = factOk ? `/pagoPasarela/${reservaId}` : `/pagoDatos/${reservaId}`;
           navigate(target, {
-            state: { carrito: sesiones, reservaIds: [reservaId], datos: datosPrevios },
+            state: { carrito: sesiones, reservaIds: [reservaId], datos: datosPreviosMerged },
             replace: true,
           });
           return;
@@ -411,15 +431,15 @@ export default function ReservaWizard({
             const resp = await postWithRetry<{ id: string }>("/reservas", patchBody);
             const newId = resp.data.id;
 
-            persistCheckoutState([newId], sesiones, datosPrevios as FormValues);
+            persistCheckoutState([newId], sesiones, datosPreviosMerged);
             if (shouldHydrate) saveWizardCarrito(sesiones);
-            saveWizardDatos(datosPrevios as FormValues);
+            saveWizardDatos(datosPreviosMerged);
             clearWizardCarritoTemp();
             resetWizard();
 
             const target = factOk ? `/pagoPasarela/${newId}` : `/pagoDatos/${newId}`;
             navigate(target, {
-              state: { carrito: sesiones, reservaIds: [newId], datos: datosPrevios },
+              state: { carrito: sesiones, reservaIds: [newId], datos: datosPreviosMerged },
               replace: true,
             });
             return;
@@ -437,10 +457,10 @@ export default function ReservaWizard({
           profesores.find((p) => p.name === s.profesor)?.acompananteEmail ??
           "";
         const body = {
-          nombre: datos.nombre,
-          apellidos: datos.apellidos,
-          email: datos.email,
-          telefono: datos.telefono,
+          nombre: datosPreviosMerged.nombre,
+          apellidos: datosPreviosMerged.apellidos,
+          email: datosPreviosMerged.email,
+          telefono: datosPreviosMerged.telefono,
           acompanante: s.profesor,
           acompananteEmail: profEmail,
           fecha: f,
@@ -451,16 +471,16 @@ export default function ReservaWizard({
       }
 
       // Persistimos carrito + datos facturación
-      persistCheckoutState(ids, sesiones, datosPrevios as FormValues);
+      persistCheckoutState(ids, sesiones, datosPreviosMerged);
       if (shouldHydrate) saveWizardCarrito(sesiones);
-      saveWizardDatos(datosPrevios as FormValues);
+      saveWizardDatos(datosPreviosMerged);
       clearWizardCarritoTemp();
       resetWizard();
 
       const firstId = ids[0];
       const target = factOk ? `/pagoPasarela/${firstId}` : `/pagoDatos/${firstId}`;
       navigate(target, {
-        state: { carrito: sesiones, reservaIds: ids, datos: datosPrevios },
+        state: { carrito: sesiones, reservaIds: ids, datos: datosPreviosMerged },
         replace: true,
       });
     } catch (e) {
@@ -498,7 +518,7 @@ export default function ReservaWizard({
       onClose={() => {
         clearWizardCarritoTemp(); // limpia temporal del wizard
         try { sessionStorage.removeItem("wizard_carrito"); } catch {
-          // no hacer nada
+          // no importa
         }
         // NO tocamos checkout_* (los usa PagoDatos/Pasarela al volver)
         resetWizard();
