@@ -78,7 +78,8 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
   // carrito pasado desde navigate(..., { state })
   const carritoFromState: Sesion[] | undefined = state?.carrito;
   const idsFromState: string[] | undefined = state?.reservaIds;
-  const datosFromState: Partial<FormValues> | undefined = state?.datos as Partial<FormValues> | undefined;
+  const datosFromState: Partial<FormValues> | undefined = state?.datos as Partial<FormValues> | undefined
+  ;
 
   // sessionStorage fallbacks
   const carritoFromSS = loadSS<Sesion[]>("checkout_carrito") ?? [];
