@@ -12,13 +12,11 @@ import { Reserva } from "./types";
 
 // ========= Config =========
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-const ALT_FRONTEND = "http://127.0.0.1:5173"; // por si el navegador usa 127.0.0.1
+const ALT_FRONTEND = "http://127.0.0.1:5173";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:4000";
 
-// Protege la ruta de debug si quieres: /api/debug/gcal?token=XYZ
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || "";
 
-// Usa la versión por defecto de tu cuenta de Stripe (estable)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 const app = express();
@@ -31,7 +29,7 @@ const ORIGINS = (process.env.CORS_ORIGINS || FRONTEND_URL || "")
 
 app.use(cors({
   origin(origin, cb) {
-    if (!origin) return cb(null, true); // permite Postman/CLI
+    if (!origin) return cb(null, true);
     const allowed = ORIGINS.includes(origin) || origin === ALT_FRONTEND;
     return cb(allowed ? null : new Error("Not allowed by CORS"), allowed);
   },
@@ -41,8 +39,6 @@ app.use(cors({
   optionsSuccessStatus: 204,
 }));
 
-
-// (Opcional) logs de NO-GET
 app.use((req, _res, next) => {
   if (req.method !== "GET") {
     console.log(`${req.method} ${req.path}`, {
@@ -59,7 +55,6 @@ app.set("trust proxy", 1);
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // ========= Ruta de DEBUG GCAL =========
-// Llama en producción: GET /api/debug/gcal?token=TU_TOKEN
 app.get("/api/debug/gcal", async (req: Request, res: Response) => {
   if (ADMIN_TOKEN && req.query.token !== ADMIN_TOKEN) {
     return res.status(401).json({ ok: false, error: "unauthorized" });
@@ -88,54 +83,52 @@ app.post(
         process.env.STRIPE_WEBHOOK_SECRET as string
       );
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+      if (event.type === "checkout.session.completed") {
+        const session = event.data.object as Stripe.Checkout.Session;
 
-      // 1 ó varias reservas desde metadata
-      const ids: string[] = (() => {
-      const raw = session.metadata?.reservaIds;
-        if (raw) {
-          try { return JSON.parse(raw) as string[]; } catch {}
-        }
-        return session.metadata?.reservaId ? [session.metadata.reservaId] : [];
+        // 1 ó varias reservas desde metadata
+        const ids: string[] = (() => {
+          const raw = session.metadata?.reservaIds;
+          if (raw) {
+            try { return JSON.parse(raw) as string[]; } catch {}
+          }
+          return session.metadata?.reservaId ? [session.metadata.reservaId] : [];
         })();
 
         if (!ids.length) {
           console.error("Webhook sin reservaId(s) en metadata");
           return res.json({ received: true });
         }
-          
+
         for (const reservaId of ids) {
           const r = getReserva(reservaId);
           if (!r) {
             console.error("Reserva no encontrada en webhook:", reservaId);
-             continue;
+            continue;
           }
 
           const actualizada = updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined })!;
 
-        try {
-          const normalized: Reserva & { eventId?: string } = {
-             ...actualizada,
+          try {
+            const normalized: Reserva & { eventId?: string } = {
+              ...actualizada,
               duracionMin: actualizada.duracionMin ?? 60,
-              };
+            };
 
-          const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
-        if (result?.eventId) {
-            updateReserva(actualizada.id, { eventId: result.eventId });
+            const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
+            if (result?.eventId) {
+              updateReserva(actualizada.id, { eventId: result.eventId });
+            }
+            console.log("Reserva confirmada y evento Calendar ok:", {
+              reservaId,
+              eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
+            });
+          } catch (err: any) {
+            console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
           }
-          console.log("Reserva confirmada y evento Calendar ok:", {
-          reservaId,
-          eventId: result && typeof result === "object" && "eventId" in result ? result.eventId : undefined,
-        });
-        } catch (err: any) {
-              console.error("Error sincronizando con Calendar desde webhook:", err?.message || err);
         }
-        }
-    }
+      }
 
-
-     
       res.json({ received: true });
     } catch (err: any) {
       console.error("Error en webhook Stripe:", err?.message || err);
@@ -174,7 +167,7 @@ function hasEventRelevantChanges(prev: Reserva, next: Reserva) {
 }
 
 function slotKey(fecha: string, hora: string, profName: string) {
-  return `${fecha}T${hora}__${profName}`; // clave simple
+  return `${fecha}T${hora}__${profName}`;
 }
 
 // Considera tomadas las reservas pagadas y las pendientes con hold no expirado
@@ -191,53 +184,42 @@ function isSlotTaken(fecha: string, hora: string, profName: string) {
   );
 }
 
-// Opcional: limpia holds caducados de vez en cuando (cada X min)
+// Opcional: limpia holds caducados
 setInterval(() => {
   const now = Date.now();
   let cleaned = 0;
   for (const r of reservas) {
     if (r.estado === "pendiente" && r.holdExpiresAt && r.holdExpiresAt < now) {
-      // simplemente eliminamos la marca (sigue existiendo la reserva, pero ya no bloquea)
       delete r.holdExpiresAt;
       cleaned++;
     }
   }
   if (cleaned) console.log(`[HOLD] Limpiados ${cleaned} holds caducados`);
-}, 60_000); // cada minuto
+}, 60_000);
 
 import { existeEventoParaReserva } from "./googleCalendar";
 
-// Política de reconciliación:
-// - Si una reserva "pagada" ya no tiene evento en Calendar → liberamos el slot borrando la reserva
-//   (o si prefieres, márcala como {estado: "cancelada"} y quítala de /ocupados).
-// - Si una "pendiente" ya no tiene evento (raro) → quita el hold para que se libere sola.
 async function reconcileCalendarVsBackend() {
   const now = Date.now();
   let freed = 0, clearedHolds = 0;
 
-  // Sólo miramos próximas X semanas para no iterar infinito
   const HORIZON_DAYS = 60;
   const horizonISO = new Date(Date.now() + HORIZON_DAYS * 86400000).toISOString().slice(0,10);
 
   for (const r of [...reservas]) {
     try {
-      // Ignora reservas antiguas muy lejos en el pasado
       if (r.fecha > horizonISO) continue;
 
-      // Sólo nos interesan las que bloquean:
       const bloquea = r.estado === "pagada" || (r.estado === "pendiente" && r.holdExpiresAt && r.holdExpiresAt > now);
       if (!bloquea) continue;
 
       const sigue = await existeEventoParaReserva(r.id);
-      if (sigue) continue; // todo ok, no tocar
+      if (sigue) continue;
 
-      // Evento NO existe (o está "cancelled") en Calendar → liberamos
       if (r.estado === "pagada") {
-        // opción A: borrar del backend (libera inmediatamente /ocupados)
         deleteReserva(r.id);
         freed++;
       } else {
-        // pendiente → quita hold
         updateReserva(r.id, { holdExpiresAt: undefined });
         clearedHolds++;
       }
@@ -251,13 +233,11 @@ async function reconcileCalendarVsBackend() {
   }
 }
 
-// Corre cada 30s (ajusta si quieres)
 setInterval(() => {
   reconcileCalendarVsBackend().catch(err => {
     console.error("[RECONCILE] fallo:", err?.message || err);
   });
 }, 30_000);
-
 
 // ========= Pagos =========
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
@@ -281,16 +261,12 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     console.log("[/checkout-session] ids recibidos:", ids);
     console.log("[/checkout-session] found:", found.map(r => ({ id: r.id, fecha: r.fecha, hora: r.hora })));
 
-    // Precio por sesión (por defecto 50€ si no pasas precioCts)
     const unitCts = Number.isFinite(precioCts) ? Number(precioCts) : 5000;
-
-    // ⚠️ Si quieres precios distintos por sesión (Individual/Pareja), cambia aquí:
-    // const unitFor = (r: Reserva) => (r?.servicio === "Pareja" ? 8000 : 5000);
 
     const line_items = found.map((r) => ({
       price_data: {
         currency: "eur",
-        unit_amount: unitCts, // o unitFor(r)
+        unit_amount: unitCts,
         product_data: {
           name: `Sesión 1:1 – ${r.fecha} ${r.hora}`,
           description: `Acompañamiento con ${r.acompanante}`,
@@ -306,7 +282,7 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       locale: "es",
       customer_email: first.email,
       payment_method_types: ["card"],
-      line_items, // ← varias líneas, una por reserva
+      line_items,
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
       metadata: { reservaIds: JSON.stringify(ids) },
@@ -318,8 +294,6 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
   }
 });
-
-
 
 app.get("/api/pagos/checkout-session/:id", async (req: Request, res: Response) => {
   try {
@@ -343,12 +317,10 @@ app.post("/api/reservas", (req: Request, res: Response) => {
       return res.status(400).json({ error: "Faltan campos obligatorios." });
     }
 
-    // ⛔️ Evitar doble booking del mismo slot para ese profesor
     if (isSlotTaken(fecha, hora, acompanante)) {
       return res.status(409).json({ error: "SLOT_TAKEN", message: "Ese horario ya no está disponible." });
     }
 
-    const HOLD_MINUTES = Number(process.env.BOOKING_HOLD_MIN || 15);
     const nueva: Reserva = {
       id: uuidv4(),
       nombre, apellidos, email, telefono,
@@ -391,7 +363,7 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   const patch = req.body as Partial<Reserva>;
   const previa = { ...actual };
   const actualizada = updateReserva(actual.id, patch)!;
-  
+
   let calendar: any = null;
   let calendarError: string | null = null;
 
@@ -399,22 +371,18 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   const relevantChanges = hasEventRelevantChanges(previa, actualizada);
 
   if (justPaid) {
-    // Si acaba de pagarse, “consolidamos” el slot: ya no depende del hold.
     updateReserva(actualizada.id, { holdExpiresAt: undefined });
     actualizada.holdExpiresAt = undefined;
   }
 
-
-  if (justPaid || relevantChanges) {
+  // ✅ SOLO sincronizamos con Calendar si la reserva está pagada
+  if (actualizada.estado === "pagada" && (justPaid || relevantChanges)) {
     try {
       const normalized: Reserva & { eventId?: string } = {
         ...actualizada,
         duracionMin: actualizada.duracionMin ?? 60,
       };
 
-  
-
-      // 🔎 Log antes de sincronizar con Calendar
       console.log("[GCAL] PATCH upsertEvento() ←", {
         reservaId: normalized.id,
         fecha: normalized.fecha,
@@ -460,7 +428,6 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Servidor Express en puerto ${PORT}`);
-  // Logs rápidos del entorno GCAL (útiles para verificar que Render está leyendo bien las vars)
   console.log("[GCAL] IMPERSONATED_USER:", process.env.GCAL_IMPERSONATED_USER || "(no definido)");
   console.log("[GCAL] CALENDAR_ID:", process.env.GCAL_CALENDAR_ID || "primary");
   console.log("[CORS] ORIGINS:", ORIGINS);
@@ -485,7 +452,6 @@ app.get("/api/ocupados", (req: Request, res: Response) => {
     return true;
   });
 
-  // devolvemos como "YYYY-MM-DD HH:mm"
   const out = items.map(r => ({ fecha: r.fecha, hora: r.hora }));
   return res.json({ ocupados: out });
 });
