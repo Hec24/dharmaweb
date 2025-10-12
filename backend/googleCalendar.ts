@@ -72,8 +72,6 @@ function loadServiceAccountCredentials():
 const credentials = loadServiceAccountCredentials();
 
 // === Auth ===
-// Si `credentials` es undefined y existe GOOGLE_APPLICATION_CREDENTIALS,
-// GoogleAuth lo tomará de esa ruta automáticamente.
 const auth = new GoogleAuth({
   credentials,
   scopes: SCOPES,
@@ -340,6 +338,12 @@ export async function cancelarEvento(args: { reservaId?: string; eventId?: strin
 }
 
 export async function upsertEvento(reserva: Reserva & { eventId?: string }) {
+  // ✅ Salvaguarda: NUNCA crear/actualizar si no está pagada
+  if (reserva.estado !== "pagada") {
+    log.info("Upsert omitido (reserva no pagada)", { reservaId: reserva.id, estado: reserva.estado });
+    return { skipped: "not_paid" } as any;
+  }
+
   log.info("Upsert evento ←", { reservaId: reserva.id, eventId: reserva.eventId });
 
   try {
