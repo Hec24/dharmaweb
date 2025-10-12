@@ -103,7 +103,7 @@ const getField = (obj: unknown, keys: readonly string[]): string | undefined => 
     const v = rec[k];
     if (isNonEmptyString(v)) return v as string;
   }
-  return undefined;
+    return undefined;
   };
 
   // --- chequeo robusto de facturación (con alias)
