@@ -58,14 +58,14 @@ export default function ReservaWizard({
   const location = useLocation();
   const qs = React.useMemo(() => new URLSearchParams(location.search), [location.search]);
   const resume = qs.get("resume") === "1";
-  const stepParam = qs.get("step"); // "carrito" para aterrizar en carrito
-  const shouldHydrate = resume || stepParam === "carrito"; // ← solo editar restaura/persiste carrito
+  const stepParam = qs.get("step"); // "carrito" para aterrizar en carrito (no hidrata)
+  const shouldHydrate = resume; // ← SOLO modo edición rehidrata/persiste carrito
   const { id: reservaId } = useParams<{ id: string }>();
 
   // —— Evitar re-inicializaciones en cada render: init por apertura
   const initRef = React.useRef(false);
 
-  // Reset completo (sin llamar setState en render)
+  // Reset completo
   const resetWizard = React.useCallback(() => {
     setStep(0);
     setProfesor(null);
@@ -115,19 +115,16 @@ export default function ReservaWizard({
       initRef.current = false;
       return;
     }
-    // abierto
     if (initRef.current) return;
     initRef.current = true;
 
-    // Preselección de profesor (si viene del padre)
+    // Preselección de profesor
     if (preSelectedProfesor) {
       setProfesor((prev) => (prev?.id === preSelectedProfesor.id ? prev : preSelectedProfesor));
       if (autoAdvanceFromStep0) {
-        // avanzamos SOLO si venimos del paso 0
         setStep((s) => (s === 0 ? 1 : s));
       }
     } else {
-      // sin preseleccion → asegúrate de estar en paso 0 por defecto
       setStep(0);
     }
 
@@ -142,21 +139,20 @@ export default function ReservaWizard({
       try {
         sessionStorage.removeItem("wizard_carrito");
       } catch {
-        // ignore storage errorsq
+        // ignore storage errors
       }
       setCarrito([]);
     }
 
-    // Hidratar datos (nombre, email, etc.)
+    // Hidratar datos (merge completo: incluye dirección, CP, ciudad, país, NIF…)
     const savedDatos = loadWizardDatos();
-      if (savedDatos) {
-        setDatos(prev => ({
-          ...prev,
-          ...savedDatos, // ← merge completo, incluye código postal, dirección, ciudad, país, etc.
-        }));
-        console.log("[Wizard] Datos personales restaurados");
+    if (savedDatos) {
+      setDatos((prev) => ({
+        ...prev,
+        ...savedDatos,
+      }));
+      console.log("[Wizard] Datos personales restaurados");
     }
-
 
     // Si la URL trae ?step=carrito → ir directamente a Carrito (índice 4)
     if (stepParam === "carrito") {
@@ -194,7 +190,6 @@ export default function ReservaWizard({
         };
         setCarrito((c) => {
           const next = [...c, nueva];
-          // Persistimos carrito solo en edición
           if (shouldHydrate) {
             saveWizardCarrito(next as Sesion[]);
           }
@@ -211,11 +206,9 @@ export default function ReservaWizard({
     setProfesor(null);
     setServicio(null);
     setFechaHora(null);
-    // mantenemos datos personales
   }, []);
 
   const handleProfesorSelect = React.useCallback((p: Profesor) => {
-    // evita setear si es el mismo
     setProfesor((prev) => (prev?.id === p.id ? prev : p));
   }, []);
 
@@ -254,19 +247,24 @@ export default function ReservaWizard({
     }
   }, [step, handleNext, nextStep]);
 
-  // —— Utilidades de persistencia para Pasarela
-  const persistCheckoutState = React.useCallback((ids: string[], sesiones: Sesion[]) => {
-    try {
-      sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
-      sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
-    } catch {
-      // ignore storage errors
-    }
-  }, []);
+  // —— Utilidades de persistencia para Pasarela (incluye datos facturación)
+  const persistCheckoutState = React.useCallback(
+    (ids: string[], sesiones: Sesion[], datosFact: FormValues) => {
+      try {
+        sessionStorage.setItem("checkout_reserva_ids", JSON.stringify(ids));
+        sessionStorage.setItem("checkout_carrito", JSON.stringify(sesiones));
+        sessionStorage.setItem("checkout_datos", JSON.stringify(datosFact));
+        // alias por compatibilidad con PagoDatos si estuviera leyendo otra clave
+        sessionStorage.setItem("facturacion_datos", JSON.stringify(datosFact));
+      } catch {
+        // ignore storage errors
+      }
+    },
+    []
+  );
 
   // ✅ Confirmar sesión: crea/edita y pasa el carrito al checkout
   const handleConfirmSesion = React.useCallback(async () => {
-    // Si ni estado ni carrito tienen info suficiente, avisamos
     if (!base) {
       alert("Falta seleccionar al acompañante y la fecha/hora o añadir la sesión al carrito.");
       return;
@@ -306,13 +304,13 @@ export default function ReservaWizard({
         try {
           await patchWithRetry(`/reservas/${reservaId}`, patchBody);
 
-          // persistimos checkout
-          persistCheckoutState([reservaId], sesiones);
-          // limpiar/persistir estado wizard
+          // persistimos checkout + datos facturación
+          persistCheckoutState([reservaId], sesiones, datos);
+          // persistimos wizard (edición)
           if (shouldHydrate) {
             saveWizardCarrito(sesiones);
           }
-          saveWizardDatos(datos as FormValues);
+          saveWizardDatos(datos);
           clearWizardCarritoTemp();
           resetWizard();
 
@@ -332,11 +330,11 @@ export default function ReservaWizard({
             const resp = await postWithRetry<{ id: string }>("/reservas", patchBody);
             const newId = resp.data.id;
 
-            persistCheckoutState([newId], sesiones);
+            persistCheckoutState([newId], sesiones, datos);
             if (shouldHydrate) {
               saveWizardCarrito(sesiones);
             }
-            saveWizardDatos(datos as FormValues);
+            saveWizardDatos(datos);
             clearWizardCarritoTemp();
             resetWizard();
 
@@ -374,12 +372,12 @@ export default function ReservaWizard({
         ids.push(resp.data.id);
       }
 
-      // persistimos y navegamos con TODOS los ids
-      persistCheckoutState(ids, sesiones);
+      // persistimos checkout + datos facturación y navegamos
+      persistCheckoutState(ids, sesiones, datos);
       if (shouldHydrate) {
         saveWizardCarrito(sesiones);
       }
-      saveWizardDatos(datos as FormValues);
+      saveWizardDatos(datos);
       clearWizardCarritoTemp();
       resetWizard();
 
@@ -396,10 +394,7 @@ export default function ReservaWizard({
   }, [
     base,
     carrito,
-    datos.nombre,
-    datos.apellidos,
-    datos.email,
-    datos.telefono,
+    datos,
     navigate,
     persistCheckoutState,
     profesor,
@@ -475,7 +470,14 @@ export default function ReservaWizard({
           value={datos}
           onChange={(v) => {
             setDatos(v);
-            saveWizardDatos(v as FormValues); // persistir datos al cambiar
+            // Persistimos SIEMPRE el objeto completo (incluye campos fiscales)
+            saveWizardDatos(v);
+            try {
+              sessionStorage.setItem("checkout_datos", JSON.stringify(v));
+              sessionStorage.setItem("facturacion_datos", JSON.stringify(v));
+            } catch {
+              // ignore storage errors
+            }
           }}
         />
       )}
