@@ -24,6 +24,7 @@ type ReservaDto = {
 type LocationState = {
   carrito?: Sesion[];
   reservaIds?: string[];
+  datos?: Record<string, unknown>;
 } | null;
 
 type LineItem = {
@@ -37,6 +38,17 @@ type LineItem = {
 const fmtEUR = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n || 0);
 
+// helpers SS
+const loadSS = <T,>(k: string): T | null => {
+  try { const raw = sessionStorage.getItem(k); return raw ? (JSON.parse(raw) as T) : null; }
+  catch { return null; }
+};
+const saveSS = (k: string, v: unknown) => {
+  try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {
+    // no importa
+  }
+};
+
 export default function PasarelaPago(): React.ReactElement {
   const { id: reservaId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -48,15 +60,8 @@ export default function PasarelaPago(): React.ReactElement {
   const reservaIdsFromState: string[] | undefined = state?.reservaIds;
 
   // ---- Fallbacks desde sessionStorage (si hubo refresh o entrada directa)
-  const reservaIdsFromSS: string[] = useMemo(() => {
-    try { return JSON.parse(sessionStorage.getItem("checkout_reserva_ids") || "[]"); }
-    catch { return []; }
-  }, []);
-
-  const carritoFromSS: Sesion[] = useMemo(() => {
-    try { return JSON.parse(sessionStorage.getItem("checkout_carrito") || "[]"); }
-    catch { return []; }
-  }, []);
+  const reservaIdsFromSS = loadSS<string[]>("checkout_reserva_ids") ?? [];
+  const carritoFromSS = loadSS<Sesion[]>("checkout_carrito") ?? [];
 
   // ---- Fuente de verdad final (prioriza state; si no, sessionStorage)
   const reservaIdsFinal: string[] | undefined =
@@ -114,6 +119,8 @@ export default function PasarelaPago(): React.ReactElement {
         // Limpia persisted state
         sessionStorage.removeItem("checkout_reserva_ids");
         sessionStorage.removeItem("checkout_carrito");
+        sessionStorage.removeItem("checkout_datos");
+        sessionStorage.removeItem("facturacion_datos");
       } catch (e) {
         console.error("[PasarelaPago] no se pudo cancelar alguna reserva:", e);
       }
@@ -159,18 +166,15 @@ export default function PasarelaPago(): React.ReactElement {
   );
 
   const handlePagar = async () => {
-    if (!reservaIdsFinal?.length && !reservaId) {
+    const ids = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal : (reservaId ? [reservaId] : []);
+    if (!ids.length) {
       alert("No hay reservas válidas");
       return;
     }
     setPagando(true);
     setErrorMsg(null);
     try {
-      const payload =
-        Array.isArray(reservaIdsFinal) && reservaIdsFinal.length > 0
-          ? { reservaIds: reservaIdsFinal }
-          : { reservaId };
-
+      const payload = { reservaIds: ids };
       const { data } = await api.post<{ id: string; url: string }>(
         "/pagos/checkout-session",
         payload
@@ -190,29 +194,37 @@ export default function PasarelaPago(): React.ReactElement {
     }
   };
 
-  // --- NUEVO: botón Editar → persistir carrito y navegar a Wizard en Carrito
+  // Editar → persistir carrito + ids + (si hay) datos de facturación y navegar a Wizard (Carrito)
   const handleEditarReserva = () => {
-    try {
-      if (carritoFinal && carritoFinal.length) {
-        saveWizardCarrito(carritoFinal as Sesion[]);
-        console.log("[Pasarela] Editar -> guardo carrito (len=%d)", carritoFinal.length);
-      } else if (lineItems.length) {
-        const fallback = lineItems.map(li => ({
-          id: li.id,
-          profesor: li.profesor || "Acompañante",
-          fecha: li.fecha || "",
-          precio: li.precio,
-          servicio: li.label,
-        }));
-        saveWizardCarrito(fallback as Sesion[]);
-        console.log("[Pasarela] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
-      }
-    } catch (e) {
-      console.warn("[Pasarela] No se pudo persistir carrito para edición", e);
+    const ids = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal : (reservaId ? [reservaId] : []);
+    if (!ids.length) return;
+
+    // Persistir carrito (o fallback desde lineItems)
+    if (carritoFinal && carritoFinal.length) {
+      saveWizardCarrito(carritoFinal as Sesion[]);
+      saveSS("checkout_carrito", carritoFinal);
+    } else if (lineItems.length) {
+      const fallback = lineItems.map(li => ({
+        id: li.id,
+        profesor: li.profesor || "Acompañante",
+        fecha: li.fecha || "",
+        precio: li.precio,
+        servicio: li.label,
+      }));
+      saveWizardCarrito(fallback as unknown as Sesion[]);
+      saveSS("checkout_carrito", fallback);
     }
-    if (reservaId) {
-      navigate(`/editar-reserva/${reservaId}?step=carrito`);
+
+    // Persistir ids + conservar datos de facturación si existían
+    saveSS("checkout_reserva_ids", ids);
+    const datosPrev = loadSS<Record<string, unknown>>("checkout_datos") ||
+                      loadSS<Record<string, unknown>>("facturacion_datos");
+    if (datosPrev) {
+      saveSS("checkout_datos", datosPrev);
+      saveSS("facturacion_datos", datosPrev);
     }
+
+    navigate(`/editar-reserva/${ids[0]}?resume=1&step=carrito`);
   };
 
   return (

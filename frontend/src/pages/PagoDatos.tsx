@@ -1,4 +1,3 @@
-// src/pages/PagoDatos.tsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Button from "../Components/ui/Button";
@@ -23,6 +22,8 @@ type ReservaDto = {
 
 type LocationState = {
   carrito?: Sesion[];
+  reservaIds?: string[];
+  datos?: Record<string, unknown>;
 } | null;
 
 interface Props {
@@ -57,15 +58,44 @@ const isApiErrorLike = (e: unknown): e is ApiErrorLike =>
 const fmtEUR = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(n || 0);
 
+// helpers SS
+const loadSS = <T,>(k: string): T | null => {
+  try { const raw = sessionStorage.getItem(k); return raw ? (JSON.parse(raw) as T) : null; }
+  catch { return null; }
+};
+const saveSS = (k: string, v: unknown) => {
+  try { sessionStorage.setItem(k, JSON.stringify(v)); } catch {
+    // no importa
+  }
+};
+
 export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.ReactElement {
   const { id: reservaId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state as LocationState) || null;
 
-  // carrito pasado desde navigate(..., { state: { carrito } })
+  // carrito pasado desde navigate(..., { state })
   const carritoFromState: Sesion[] | undefined = state?.carrito;
-  const carrito: Sesion[] = carritoFromState ?? carritoProp;
+  const idsFromState: string[] | undefined = state?.reservaIds;
+  const datosFromState: Partial<FormValues> | undefined = state?.datos as Partial<FormValues> | undefined
+  ;
+
+  // sessionStorage fallbacks
+  const carritoFromSS = loadSS<Sesion[]>("checkout_carrito") ?? [];
+  const idsFromSS = loadSS<string[]>("checkout_reserva_ids") ?? [];
+  const datosCheckout = loadSS<Partial<FormValues>>("checkout_datos") ||
+                        loadSS<Partial<FormValues>>("facturacion_datos") || null;
+
+  // Fuente de verdad final
+  const carrito: Sesion[] =
+    (carritoFromState && carritoFromState.length ? carritoFromState :
+     (carritoFromSS && carritoFromSS.length ? carritoFromSS : carritoProp));
+
+  const reservaIdsFinal: string[] =
+    (idsFromState && idsFromState.length ? idsFromState :
+     (idsFromSS && idsFromSS.length ? idsFromSS :
+      (reservaId ? [reservaId] : [])));
 
   const [loading, setLoading] = useState<boolean>(false);
   const [loadingReserva, setLoadingReserva] = useState<boolean>(true);
@@ -94,19 +124,7 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
       try {
         setLoadingReserva(true);
         const { data } = await api.get<ReservaDto>(`/reservas/${reservaId}`);
-        if (!cancelled) {
-          setReserva(data);
-          setDatosFacturacion((prev) => ({
-            nombre: prev.nombre || data.nombre || "",
-            apellidos: prev.apellidos || data.apellidos || "",
-            email: prev.email || data.email || "",
-            telefono: prev.telefono || data.telefono || "",
-            direccion: prev.direccion,
-            pais: prev.pais,
-            poblacion: prev.poblacion,
-            zipCode: prev.zipCode,
-          }));
-        }
+        if (!cancelled) setReserva(data);
       } catch {
         if (!cancelled) setErrorMsg("No se pudo cargar la reserva.");
       } finally {
@@ -118,23 +136,44 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
     };
   }, [reservaId]);
 
-  // Rehidratación de datos de facturación desde sessionStorage (si existen)
+  // Rehidratación de datos de facturación (prioridad: state → checkout_datos → wizard_datos → reserva)
   useEffect(() => {
-    const saved = loadWizardDatos();
-    if (saved) {
-      setDatosFacturacion((prev) => ({
-        nombre: saved.nombre ?? prev.nombre,
-        apellidos: saved.apellidos ?? prev.apellidos,
-        email: saved.email ?? prev.email,
-        telefono: saved.telefono ?? prev.telefono,
-        direccion: saved.direccion ?? prev.direccion,
-        pais: saved.pais ?? prev.pais,
-        poblacion: saved.poblacion ?? prev.poblacion,
-        zipCode: saved.zipCode ?? prev.zipCode,
-      }));
-      console.log("[PagoDatos] datos rehidratados desde sessionStorage");
+    const wiz = loadWizardDatos();
+    const merged: Partial<FormValues> = {
+      // 1) state
+      ...datosFromState,
+      // 2) checkout_datos / facturacion_datos
+      ...(datosCheckout || {}),
+      // 3) wizard_datos (legacy)
+      ...(wiz || {}),
+    };
+
+    // 4) completa con lo que venga de la reserva (por si faltan nombre/email/tlf)
+    if (reserva) {
+      merged.nombre = merged.nombre ?? (reserva.nombre || "");
+      merged.apellidos = merged.apellidos ?? (reserva.apellidos || "");
+      merged.email = merged.email ?? (reserva.email || "");
+      merged.telefono = merged.telefono ?? (reserva.telefono || "");
     }
-  }, []);
+
+    setDatosFacturacion((prev) => ({
+      nombre: merged.nombre ?? prev.nombre,
+      apellidos: merged.apellidos ?? prev.apellidos,
+      email: merged.email ?? prev.email,
+      telefono: merged.telefono ?? prev.telefono,
+      direccion: merged.direccion ?? prev.direccion,
+      pais: merged.pais ?? prev.pais,
+      poblacion: merged.poblacion ?? prev.poblacion,
+      zipCode: merged.zipCode ?? prev.zipCode,
+    }));
+    // IMPORTANTÍSIMO: deja todo persistido para futuras idas/vueltas
+    if (Object.keys(merged).length) {
+      saveWizardDatos(merged);
+      saveSS("checkout_datos", merged);
+      saveSS("facturacion_datos", merged);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reserva, datosFromState]); // cuando vuelves de editar, vendrá state.datos
 
   // Construye el resumen
   const lineItems: LineItem[] = useMemo(() => {
@@ -175,19 +214,37 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
   );
   const total: number = subtotal;
 
-  const onChange = (patch: Partial<FormValues>): void =>
-    setDatosFacturacion((v) => ({ ...v, ...patch }));
+  const onChange = (patch: Partial<FormValues>): void => {
+    setDatosFacturacion((v) => {
+      const next = { ...v, ...patch };
+      // Persistimos en ambos sitios para mantener flujo Wizard <-> Pagos
+      saveWizardDatos(next);
+      saveSS("checkout_datos", next);
+      saveSS("facturacion_datos", next);
+      return next;
+    });
+  };
 
   const handleGoCheckout = async (): Promise<void> => {
-    if (!reservaId) {
+    const ids = reservaIdsFinal;
+    if (!ids.length) {
       setErrorMsg("Reserva no encontrada");
       return;
     }
     setErrorMsg(null);
     setLoading(true);
     try {
-      await api.patch(`/reservas/${reservaId}`, datosFacturacion);
-      navigate(`/pagoPasarela/${reservaId}`);
+      // Persistimos antes por si la pasarela rehidrata por storage
+      saveSS("checkout_reserva_ids", ids);
+      saveSS("checkout_carrito", carrito);
+      saveSS("checkout_datos", datosFacturacion);
+      saveSS("facturacion_datos", datosFacturacion);
+
+      // Guardar facturación en backend (si tu PATCH admite estos campos)
+      await api.patch(`/reservas/${ids[0]}`, datosFacturacion);
+      navigate(`/pagoPasarela/${ids[0]}`, {
+        state: { carrito, reservaIds: ids, datos: datosFacturacion },
+      });
     } catch (e: unknown) {
       console.error(e);
       const backendMsg = isApiErrorLike(e) ? e.response?.data?.error : undefined;
@@ -197,16 +254,18 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
     }
   };
 
-  // --- NUEVO: llevar al Wizard en paso Carrito y persistir carrito + datos
+  // Editar → persistir carrito + datos + ids y navegar a Wizard (Carrito)
   const handleEditarReserva = () => {
-    if (!reservaId) return;
+    const ids = reservaIdsFinal;
+    if (!ids.length) return;
+
     try {
-      // 1) Persistir carrito para que el Wizard lo pinte en Carrito
+      // 1) Persistir carrito (o fallback desde lineItems)
       if (carrito && carrito.length) {
         saveWizardCarrito(carrito as Sesion[]);
+        saveSS("checkout_carrito", carrito);
         console.log("[PagoDatos] Editar -> guardo carrito (len=%d)", carrito.length);
       } else if (lineItems.length) {
-        // Fallback desde lineItems (reserva simple)
         const fallback = lineItems.map((li) => ({
           id: li.id,
           profesor: li.profesor || "Acompañante",
@@ -214,27 +273,23 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
           precio: li.precio,
           servicio: li.label,
         }));
-        saveWizardCarrito(fallback as Sesion[]);
+        saveWizardCarrito(fallback as unknown as Sesion[]);
+        saveSS("checkout_carrito", fallback);
         console.log("[PagoDatos] Editar -> guardo fallback desde lineItems (len=%d)", fallback.length);
       }
 
-      // 2) Persistir datos de facturación para no perderlos al editar
-      saveWizardDatos({
-        nombre: datosFacturacion.nombre,
-        apellidos: datosFacturacion.apellidos,
-        email: datosFacturacion.email,
-        telefono: datosFacturacion.telefono,
-        direccion: datosFacturacion.direccion,
-        pais: datosFacturacion.pais,
-        poblacion: datosFacturacion.poblacion,
-        zipCode: datosFacturacion.zipCode,
-      });
+      // 2) Persistir datos de facturación
+      saveWizardDatos(datosFacturacion);
+      saveSS("checkout_datos", datosFacturacion);
+      saveSS("facturacion_datos", datosFacturacion);
+
+      // 3) Persistir ids para flujos multi-reserva
+      saveSS("checkout_reserva_ids", ids);
     } catch (e) {
       console.warn("[PagoDatos] No se pudo persistir estado antes de editar", e);
     }
 
-    // 3) Navegar al Wizard directamente al paso Carrito y en modo edición
-    navigate(`/editar-reserva/${reservaId}?step=carrito&resume=1`);
+    navigate(`/editar-reserva/${ids[0]}?step=carrito&resume=1`);
   };
 
   return (
@@ -382,7 +437,7 @@ export default function PagoDatos({ carrito: carritoProp = [] }: Props): React.R
                 <p className="text-sm text-gray-500">Cargando resumen…</p>
               )}
 
-              {!loadingReserva && lineItems.length === 0 && (
+              {(!loadingReserva && lineItems.length === 0) && (
                 <p className="text-sm text-gray-500">No hay elementos en el resumen.</p>
               )}
 
