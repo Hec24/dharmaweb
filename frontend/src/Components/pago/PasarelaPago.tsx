@@ -104,28 +104,36 @@ export default function PasarelaPago(): React.ReactElement {
 
   // Si el usuario vuelve de Stripe con ?cancelled=1 → libera TODAS las reservas implicadas
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const cancelled = params.get("cancelled") === "1";
-    if (!cancelled) return;
+  const params = new URLSearchParams(window.location.search);
+  const cancelled = params.get("cancelled") === "1";
+  if (!cancelled) return;
 
-    const idsToDelete = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal
-                        : (reservaId ? [reservaId] : []);
+  const idsToDelete = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal
+                      : (reservaId ? [reservaId] : []);
 
-    if (!idsToDelete.length) return;
+  if (!idsToDelete.length) return;
 
-    (async () => {
+  (async () => {
+    try {
+      await Promise.all(idsToDelete.map(id => api.delete(`/reservas/${id}`)));
+    } catch (e) {
+      console.error("[PasarelaPago] no se pudo cancelar alguna reserva:", e);
+    } finally {
+      // Limpia TODO: wizard + checkout
       try {
-        await Promise.all(idsToDelete.map(id => api.delete(`/reservas/${id}`)));
-        // Limpia persisted state
         sessionStorage.removeItem("checkout_reserva_ids");
         sessionStorage.removeItem("checkout_carrito");
         sessionStorage.removeItem("checkout_datos");
         sessionStorage.removeItem("facturacion_datos");
-      } catch (e) {
-        console.error("[PasarelaPago] no se pudo cancelar alguna reserva:", e);
+        sessionStorage.removeItem("wizard_carrito");
+        sessionStorage.removeItem("wizard_datos");
+      } catch {
+        // no importa
       }
-    })();
-  }, [reservaId, reservaIdsFinal]);
+    }
+  })();
+}, [reservaId, reservaIdsFinal]);
+
 
   // Construye el resumen
   const lineItems: LineItem[] = useMemo(() => {

@@ -80,3 +80,21 @@ export function clearWizardDatos() {
     console.warn("[wizardSession] clearWizardDatos error", e);
   }
 }
+
+// --- al final del archivo ---
+
+export function clearAllBookingState() {
+  try {
+    // Estado del wizard
+    sessionStorage.removeItem("wizard_carrito");
+    sessionStorage.removeItem("wizard_datos");
+
+    // Estado del checkout/pago
+    sessionStorage.removeItem("checkout_reserva_ids");
+    sessionStorage.removeItem("checkout_carrito");
+    sessionStorage.removeItem("checkout_datos");
+    sessionStorage.removeItem("facturacion_datos");
+  } catch (e) {
+    console.warn("[wizardSession] clearAllBookingState error", e);
+  }
+}

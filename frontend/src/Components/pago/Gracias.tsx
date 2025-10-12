@@ -28,6 +28,23 @@ function extractReservaIds(session: StripeSession | unknown): string[] {
   return md.reservaId ? [md.reservaId] : [];
 }
 
+// 🔹 NUEVO: limpiar todo el estado de reserva/checkout una vez confirmado el pago
+function clearAllBookingState() {
+  try {
+    const KEYS = [
+      "wizard_carrito",
+      "wizard_datos",
+      "checkout_reserva_ids",
+      "checkout_carrito",
+      "checkout_datos",
+      "facturacion_datos",
+    ];
+    KEYS.forEach((k) => sessionStorage.removeItem(k));
+  } catch {
+    // ignore
+  }
+}
+
 export default function Gracias() {
   const [params] = useSearchParams();
   const sessionId = params.get("session_id");
@@ -62,7 +79,7 @@ export default function Gracias() {
         const firstId = ids[0] || null;
         setReservaId(firstId);
 
-        // Si aún no está paid, informamos y salimos
+        // Si aún no está paid, informamos y salimos (NO limpiamos nada)
         if (session?.payment_status !== "paid") {
           setError("El pago aún no está confirmado. Si ya has pagado, actualiza esta página en unos segundos.");
           setLoading(false);
@@ -88,6 +105,10 @@ export default function Gracias() {
           console.warn("[/gracias] PATCH de refuerzo (multi) falló en alguna reserva:", e);
           setError(null);
         }
+
+        // ✅ NUEVO: pago confirmado → limpiar carrito y datos para empezar de cero
+        clearAllBookingState();
+
       } catch (e: unknown) {
         console.error("[/gracias] error confirmando:", e);
         let errorMessage = "No se pudo confirmar el pago.";
