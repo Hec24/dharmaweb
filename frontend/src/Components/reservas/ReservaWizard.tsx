@@ -367,151 +367,175 @@ export default function ReservaWizard({
     []
   );
 
-  // ✅ Confirmar sesión: crea/edita y pasa el carrito al checkout
-  const handleConfirmSesion = React.useCallback(async () => {
-    if (!base) {
-      alert("Falta seleccionar al acompañante y la fecha/hora o añadir la sesión al carrito.");
-      return;
-    }
+  // ✅ Sustituye tu handleConfirmSesion COMPLETO por este:
+const handleConfirmSesion = React.useCallback(async () => {
+  if (!base) {
+    alert("Falta seleccionar al acompañante y la fecha/hora o añadir la sesión al carrito.");
+    return;
+  }
 
-    // Fusiona datos de facturación de todas las fuentes para evitar falsos negativos
-    const datosAlmacenados = loadCheckoutDatos() || {};
-    const datosPreviosMerged = { ...datos, ...datosAlmacenados } as FormValues;
-    const factOk = isFacturacionCompleta(datosPreviosMerged);
+  // Fusiona datos de facturación de todas las fuentes para evitar falsos negativos
+  const datosAlmacenados = loadCheckoutDatos() || {};
+  const datosPreviosMerged = { ...datos, ...datosAlmacenados } as FormValues;
+  const factOk = isFacturacionCompleta(datosPreviosMerged);
 
-    try {
-      // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual/base)
-      const sesiones: Sesion[] =
-        carrito.length > 0
-          ? carrito
-          : [
-              {
-                id: Date.now().toString(),
-                profesor: base.profesorName,
-                fecha: `${base.fecha} ${base.hora}`,
-                servicio: base.servicio ?? "Individual",
-                precio: (base.servicio ?? "Individual") === "Pareja" ? 80 : 50,
-              },
-            ];
+  try {
+    // sesiones a pagar (si no hay carrito, construimos 1 con la selección actual/base)
+    const sesiones: Sesion[] =
+      carrito.length > 0
+        ? carrito
+        : [
+            {
+              id: Date.now().toString(),
+              profesor: base.profesorName,
+              fecha: `${base.fecha} ${base.hora}`,
+              servicio: base.servicio ?? "Individual",
+              precio: (base.servicio ?? "Individual") === "Pareja" ? 80 : 50,
+            },
+          ];
 
-      // —— EDICIÓN
-      if (resume && reservaId && sesiones[0]) {
-        const [f, h] = sesiones[0].fecha.split(" ");
-        const patchBody = {
-          nombre: datosPreviosMerged.nombre,
-          apellidos: datosPreviosMerged.apellidos,
-          email: datosPreviosMerged.email,
-          telefono: datosPreviosMerged.telefono,
-          acompanante: base.profesorName,
-          acompananteEmail: base.acompananteEmail ?? "",
-          fecha: f,
-          hora: h,
-        };
+    // ================
+    // MODO EDICIÓN
+    // ================
+    if (resume && reservaId && sesiones[0]) {
+      const first = sesiones[0];
+      const [f0, h0] = first.fecha.split(" ");
 
-        try {
-          await patchWithRetry(`/reservas/${reservaId}`, patchBody);
+      // 1) PATCH a la reserva ORIGINAL con la 1ª sesión
+      const patchBody = {
+        nombre: datosPreviosMerged.nombre,
+        apellidos: datosPreviosMerged.apellidos,
+        email: datosPreviosMerged.email,
+        telefono: datosPreviosMerged.telefono,
+        acompanante: first.profesor,
+        acompananteEmail:
+          profesores.find((p) => p.name === first.profesor)?.acompananteEmail ?? "",
+        fecha: f0,
+        hora: h0,
+      };
 
-          // Persistimos carrito + datos facturación para que PagoDatos/Pasarela lo vean
-          persistCheckoutState([reservaId], sesiones, datosPreviosMerged);
-          if (shouldHydrate) saveWizardCarrito(sesiones);
-          saveWizardDatos(datosPreviosMerged);
-          clearWizardCarritoTemp();
-          resetWizard();
-
-          // Navegación según facturación completa (ahora robusta)
-          const target = factOk ? `/pagoPasarela/${reservaId}` : `/pagoDatos/${reservaId}`;
-          navigate(target, {
-            state: { carrito: sesiones, reservaIds: [reservaId], datos: datosPreviosMerged },
-            replace: true,
-          });
-          return;
-        } catch (e: unknown) {
-          const status = (e as AxiosLikeError)?.response?.status;
-          if (status === 404) {
-            const resp = await postWithRetry<{ id: string }>("/reservas", patchBody);
-            const newId = resp.data.id;
-
-            persistCheckoutState([newId], sesiones, datosPreviosMerged);
-            if (shouldHydrate) saveWizardCarrito(sesiones);
-            saveWizardDatos(datosPreviosMerged);
-            clearWizardCarritoTemp();
-            resetWizard();
-
-            const target = factOk ? `/pagoPasarela/${newId}` : `/pagoDatos/${newId}`;
-            navigate(target, {
-              state: { carrito: sesiones, reservaIds: [newId], datos: datosPreviosMerged },
-              replace: true,
-            });
-            return;
-          }
+      // Si la original no existe (404) la recreamos y usamos ese nuevo id como base
+      let baseId = reservaId;
+      try {
+        await patchWithRetry(`/reservas/${reservaId}`, patchBody);
+      } catch (e) {
+        const status = (e as AxiosLikeError)?.response?.status;
+        if (status === 404) {
+          const resp = await postWithRetry<{ id: string }>(`/reservas`, patchBody);
+          baseId = resp.data.id;
+        } else {
           throw e;
         }
       }
 
-      // —— CREACIÓN (una o varias sesiones)
-      const ids: string[] = [];
-      for (const s of sesiones) {
-        const [f, h] = s.fecha.split(" ");
-        const profEmail =
-          profesor?.acompananteEmail ??
-          profesores.find((p) => p.name === s.profesor)?.acompananteEmail ??
-          "";
-        const body = {
-          nombre: datosPreviosMerged.nombre,
-          apellidos: datosPreviosMerged.apellidos,
-          email: datosPreviosMerged.email,
-          telefono: datosPreviosMerged.telefono,
-          acompanante: s.profesor,
-          acompananteEmail: profEmail,
-          fecha: f,
-          hora: h,
-        };
-        const resp = await postWithRetry<{ id: string }>("/reservas", body);
-        ids.push(resp.data.id);
+      // 2) CREAR reservas nuevas para sesiones adicionales (si las hay)
+      const extraIds: string[] = [];
+      if (sesiones.length > 1) {
+        for (let i = 1; i < sesiones.length; i++) {
+          const s = sesiones[i];
+          const [f, h] = s.fecha.split(" ");
+          const body = {
+            nombre: datosPreviosMerged.nombre,
+            apellidos: datosPreviosMerged.apellidos,
+            email: datosPreviosMerged.email,
+            telefono: datosPreviosMerged.telefono,
+            acompanante: s.profesor,
+            acompananteEmail:
+              profesores.find((p) => p.name === s.profesor)?.acompananteEmail ?? "",
+            fecha: f,
+            hora: h,
+          };
+          const resp = await postWithRetry<{ id: string }>(`/reservas`, body);
+          extraIds.push(resp.data.id);
+        }
       }
 
-      // Persistimos carrito + datos facturación
-      persistCheckoutState(ids, sesiones, datosPreviosMerged);
+      // 3) Persistir TODOS los ids para que PagoDatos/Pasarela vean el pack completo
+      const allIds = [baseId, ...extraIds];
+      persistCheckoutState(allIds, sesiones, datosPreviosMerged);
       if (shouldHydrate) saveWizardCarrito(sesiones);
       saveWizardDatos(datosPreviosMerged);
+
+      // Limpieza suave del estado interno del wizard (NO borres checkout_*)
       clearWizardCarritoTemp();
       resetWizard();
 
-      const firstId = ids[0];
-      const target = factOk ? `/pagoPasarela/${firstId}` : `/pagoDatos/${firstId}`;
+      // 4) Navegación según facturación
+      const target = factOk ? `/pagoPasarela/${allIds[0]}` : `/pagoDatos/${allIds[0]}`;
       navigate(target, {
-        state: { carrito: sesiones, reservaIds: ids, datos: datosPreviosMerged },
+        state: { carrito: sesiones, reservaIds: allIds, datos: datosPreviosMerged },
         replace: true,
       });
-    } catch (e) {
-      console.error("Error guardando reserva:", e);
-      alert("Error de conexión al guardar la reserva");
+      return;
     }
-  }, [
-    base,
-    carrito,
-    datos,
-    navigate,
-    persistCheckoutState,
-    profesor,
-    resume,
-    reservaId,
-    resetWizard,
-    shouldHydrate,
-  ]);
 
-  // Persistir carrito en removals (actualiza también checkout_carrito)
-  const handleRemoveFromCarrito = React.useCallback((id: string) => {
-    setCarrito((c) => {
-      const next = c.filter((s) => s.id !== id);
-      saveCheckoutCarrito(next);
-      if (shouldHydrate) saveWizardCarrito(next as Sesion[]);
-      console.log("[Wizard] remove sesion → carrito len=%d", next.length);
-      return next;
+    // ================
+    // MODO CREACIÓN
+    // ================
+    const ids: string[] = [];
+    for (const s of sesiones) {
+      const [f, h] = s.fecha.split(" ");
+      const body = {
+        nombre: datosPreviosMerged.nombre,
+        apellidos: datosPreviosMerged.apellidos,
+        email: datosPreviosMerged.email,
+        telefono: datosPreviosMerged.telefono,
+        acompanante: s.profesor,
+        acompananteEmail:
+          profesores.find((p) => p.name === s.profesor)?.acompananteEmail ?? "",
+        fecha: f,
+        hora: h,
+      };
+      const resp = await postWithRetry<{ id: string }>(`/reservas`, body);
+      ids.push(resp.data.id);
+    }
+
+    persistCheckoutState(ids, sesiones, datosPreviosMerged);
+    if (shouldHydrate) saveWizardCarrito(sesiones);
+    saveWizardDatos(datosPreviosMerged);
+    clearWizardCarritoTemp();
+    resetWizard();
+
+    const firstId = ids[0];
+    const target = factOk ? `/pagoPasarela/${firstId}` : `/pagoDatos/${firstId}`;
+    navigate(target, {
+      state: { carrito: sesiones, reservaIds: ids, datos: datosPreviosMerged },
+      replace: true,
     });
-  }, [shouldHydrate]);
+  } catch (e) {
+    console.error("Error guardando reserva:", e);
+    alert("Error de conexión al guardar la(s) reserva(s)");
+  }
+}, [
+  base,
+  carrito,
+  datos,
+  navigate,
+  persistCheckoutState,
+  resume,
+  reservaId,
+  resetWizard,
+  shouldHydrate,
+]);
 
-  // —— Render
+// Eliminar una sesión del carrito (y persistir en checkout + wizard si aplica)
+const handleRemoveFromCarrito = React.useCallback((id: string) => {
+  setCarrito((c) => {
+    const next = c.filter((s) => s.id !== id);
+
+    // Persistimos para que PagoDatos/Pasarela vean el carrito actualizado
+    saveCheckoutCarrito(next);
+    if (shouldHydrate) {
+      // Solo guardamos en wizard cuando estamos en edición / hay checkout activo
+      saveWizardCarrito(next as Sesion[]);
+    }
+
+    console.log("[Wizard] remove sesion → carrito len=%d", next.length);
+    return next;
+  });
+}, [shouldHydrate]);
+
+
   return (
     <ModalWizard
       open={open}
