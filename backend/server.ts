@@ -420,40 +420,42 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       quantity: 1,
     }));
 
-    // 8) Snapshot para el webhook (por si corre en otra instancia)
-    const reservasSnapshot = found.map(r => ({
-      id: r.id,
-      nombre: r.nombre,
-      apellidos: r.apellidos,
-      email: r.email,
-      telefono: r.telefono,
-      acompanante: r.acompanante,
-      acompananteEmail: r.acompananteEmail ?? "",
-      fecha: r.fecha,
-      hora: r.hora,
-      duracionMin: r.duracionMin ?? 60,
-    }));
+    // // 8) Snapshot para el webhook (por si corre en otra instancia)
+    // const reservasSnapshot = found.map(r => ({
+    //   id: r.id,
+    //   nombre: r.nombre,
+    //   apellidos: r.apellidos,
+    //   email: r.email,
+    //   telefono: r.telefono,
+    //   acompanante: r.acompanante,
+    //   acompananteEmail: r.acompananteEmail ?? "",
+    //   fecha: r.fecha,
+    //   hora: r.hora,
+    //   duracionMin: r.duracionMin ?? 60,
+    // }));
 
-    const first = found[0]!;
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      locale: "es",
-      customer_email: first.email,
-      payment_method_types: ["card"],
-      line_items,
-      success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
-      metadata: {
-        reservaIds: JSON.stringify(ids),
-        reservas: JSON.stringify(reservasSnapshot),
-      },
-    });
+const first = found[0]!;
+const session = await stripe.checkout.sessions.create({
+  mode: "payment",
+  locale: "es",
+  customer_email: first.email,
+  // NOTE: en APIs recientes no hace falta payment_method_types
+  line_items,
+  success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
+  metadata: {
+    // ✅ deja solo esto (corto y suficiente para el webhook y /gracias)
+    reservaIds: JSON.stringify(ids),
+  },
+});
 
-    return res.json({ id: session.id, url: session.url });
-  } catch (err: any) {
-    console.error("Error creando Checkout Session:", err?.message || err);
-    return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
-  }
+return res.json({ id: session.id, url: session.url });
+ } catch (err: any) {
+  const status = err?.statusCode || err?.code || err?.response?.status;
+  const msg = err?.raw?.message || err?.message;
+  console.error("Error creando Checkout Session:", { status, msg, raw: err?.raw });
+  return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
+}
 });
 
 
