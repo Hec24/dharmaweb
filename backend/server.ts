@@ -290,27 +290,124 @@ setInterval(() => {
 // ========= Pagos =========
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
   try {
-    const { reservaId, reservaIds, precioCts } = req.body as {
+    type CarritoItem = {
+      id?: string;
+      profesor: string;
+      fecha: string;    // "YYYY-MM-DD HH:mm"
+      servicio?: string;
+      precio?: number;
+    };
+    type Datos = {
+      nombre?: string;
+      apellidos?: string;
+      email?: string;
+      telefono?: string;
+      direccion?: string;
+      poblacion?: string;
+      ciudad?: string;
+      zipCode?: string;
+      codigoPostal?: string;
+      pais?: string;
+    };
+
+    const { reservaId, reservaIds, precioCts, carrito, datos } = req.body as {
       reservaId?: string;
       reservaIds?: string[];
       precioCts?: number;
+      carrito?: CarritoItem[];
+      datos?: Datos;
     };
 
-    const ids = Array.isArray(reservaIds) && reservaIds.length
-      ? reservaIds
+    // 1) Normaliza ids iniciales (si no hay, usa el único)
+    const ids: string[] = Array.isArray(reservaIds) && reservaIds.length
+      ? [...reservaIds]
       : (reservaId ? [reservaId] : []);
+
+    // 2) Fuente de carrito (opcional): si viene, podremos reconstruir ids faltantes
+    const carritoArr: CarritoItem[] = Array.isArray(carrito) ? carrito : [];
+
+    // 3) Trae las reservas existentes en memoria
+    const existentes = ids.map(id => getReserva(id) || null);
+    // indices de ids que faltan en memoria
+    const faltantesIdx = existentes
+      .map((r, i) => (r ? -1 : i))
+      .filter(i => i >= 0);
+
+    // 4) Si faltan, intenta reconstruirlas desde el carrito por posición
+    const nuevosIds: string[] = [];
+    if (faltantesIdx.length > 0 && carritoArr.length > 0) {
+      for (const i of faltantesIdx) {
+        const s = carritoArr[i] || carritoArr[0]; // fallback
+        if (!s || !s.profesor || !s.fecha) continue;
+
+        const [f, h] = String(s.fecha).split(" ");
+        const body = {
+          nombre: datos?.nombre || "",
+          apellidos: datos?.apellidos || "",
+          email: datos?.email || "",
+          telefono: datos?.telefono || "",
+          acompanante: s.profesor,
+          acompananteEmail: "",
+          fecha: f || "",
+          hora: h || "",
+          duracionMin: 60,
+          estado: "pendiente" as const,
+        };
+
+        if (isSlotTaken(body.fecha, body.hora, body.acompanante)) {
+          return res.status(409).json({ error: "SLOT_TAKEN", message: "Ese horario ya no está disponible." });
+        }
+
+        const newId = uuidv4();
+        reservas.push({ id: newId, ...body });
+        ids[i] = newId;      // sustituye el id faltante por el nuevo
+        nuevosIds.push(newId);
+      }
+    }
+
+    // 5) Si el usuario añadió MÁS sesiones en el modal (carrito > ids), crea las extra
+    if (carritoArr.length > ids.length) {
+      for (let i = ids.length; i < carritoArr.length; i++) {
+        const s = carritoArr[i];
+        if (!s || !s.profesor || !s.fecha) continue;
+        const [f, h] = String(s.fecha).split(" ");
+        const body = {
+          nombre: datos?.nombre || "",
+          apellidos: datos?.apellidos || "",
+          email: datos?.email || "",
+          telefono: datos?.telefono || "",
+          acompanante: s.profesor,
+          acompananteEmail: "",
+          fecha: f || "",
+          hora: h || "",
+          duracionMin: 60,
+          estado: "pendiente" as const,
+        };
+
+        if (isSlotTaken(body.fecha, body.hora, body.acompanante)) {
+          return res.status(409).json({ error: "SLOT_TAKEN", message: "Ese horario ya no está disponible." });
+        }
+
+        const newId = uuidv4();
+        reservas.push({ id: newId, ...body });
+        ids.push(newId);
+        nuevosIds.push(newId);
+      }
+    }
 
     if (!ids.length) return res.status(400).json({ error: "Faltan reservas" });
 
+    // 6) Vuelve a cargar todas ya consistentes
     const found = ids.map(id => getReserva(id)).filter(Boolean) as Reserva[];
     if (found.length !== ids.length) {
-      return res.status(404).json({ error: "Alguna reserva no existe" });
+      return res.status(404).json({ error: "Alguna reserva no existe y no pudo reconstruirse" });
     }
-    console.log("[/checkout-session] ids recibidos:", ids);
+
+    console.log("[/checkout-session] ids finales:", ids);
     console.log("[/checkout-session] found:", found.map(r => ({ id: r.id, fecha: r.fecha, hora: r.hora })));
 
+    // 7) Precio por línea (ajusta si quieres por servicio)
     const unitCts = Number.isFinite(precioCts) ? Number(precioCts) : 5000;
-
     const line_items = found.map((r) => ({
       price_data: {
         currency: "eur",
@@ -322,11 +419,8 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       },
       quantity: 1,
     }));
-    console.log("[/checkout-session] line_items count:", line_items.length);
 
-    const first = found[0]!;
-
-    // Snapshot compacto para reconstruir en el webhook si la reserva no está en memoria
+    // 8) Snapshot para el webhook (por si corre en otra instancia)
     const reservasSnapshot = found.map(r => ({
       id: r.id,
       nombre: r.nombre,
@@ -338,23 +432,22 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
       fecha: r.fecha,
       hora: r.hora,
       duracionMin: r.duracionMin ?? 60,
-      // estado lo pondremos en el webhook
     }));
 
+    const first = found[0]!;
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       locale: "es",
       customer_email: first.email,
       payment_method_types: ["card"],
-      line_items, // ← varias líneas, una por reserva
+      line_items,
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
       metadata: {
         reservaIds: JSON.stringify(ids),
-        reservas: JSON.stringify(reservasSnapshot), // ← clave nueva
+        reservas: JSON.stringify(reservasSnapshot),
       },
     });
-
 
     return res.json({ id: session.id, url: session.url });
   } catch (err: any) {
@@ -362,6 +455,7 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
   }
 });
+
 
 app.get("/api/pagos/checkout-session/:id", async (req: Request, res: Response) => {
   try {

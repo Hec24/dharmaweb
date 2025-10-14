@@ -174,33 +174,50 @@ export default function PasarelaPago(): React.ReactElement {
   );
 
   const handlePagar = async () => {
-    const ids = reservaIdsFinal && reservaIdsFinal.length ? reservaIdsFinal : (reservaId ? [reservaId] : []);
-    if (!ids.length) {
-      alert("No hay reservas válidas");
+  const idsActuales = reservaIdsFinal && reservaIdsFinal.length ? [...reservaIdsFinal] : (reservaId ? [reservaId] : []);
+  if (!idsActuales.length) {
+    alert("No hay reservas válidas");
+    return;
+  }
+
+  setPagando(true);
+  setErrorMsg(null);
+  try {
+    // carrito (state o sessionStorage)
+    const carritoSnapshot: Sesion[] =
+      (carritoFinal && carritoFinal.length ? carritoFinal :
+       (() => { try { return JSON.parse(sessionStorage.getItem("checkout_carrito") || "[]"); } catch { return []; } })());
+
+    // datos facturación (cualquiera de los alias que ya usas)
+    const datosRaw =
+      sessionStorage.getItem("checkout_datos") ||
+      sessionStorage.getItem("facturacion_datos") ||
+      sessionStorage.getItem("wizard_datos");
+    const datos = datosRaw ? JSON.parse(datosRaw) : {};
+
+    const payload =
+      Array.isArray(idsActuales) && idsActuales.length > 0
+        ? { reservaIds: idsActuales, carrito: carritoSnapshot, datos }
+        : { reservaId, carrito: carritoSnapshot, datos };
+
+    const { data } = await api.post<{ id: string; url: string }>(
+      "/pagos/checkout-session",
+      payload
+    );
+
+    if (!data?.url) {
+      setPagando(false);
+      alert("Respuesta de pago inválida");
       return;
     }
-    setPagando(true);
-    setErrorMsg(null);
-    try {
-      const payload = { reservaIds: ids };
-      const { data } = await api.post<{ id: string; url: string }>(
-        "/pagos/checkout-session",
-        payload
-      );
-      console.log("[Pasarela] payload que envío a backend:", payload);
+    window.location.href = data.url;
+  } catch (err) {
+    console.error(err);
+    setErrorMsg("Error al conectar con el backend");
+    setPagando(false);
+  }
+};
 
-      if (!data?.url) {
-        setPagando(false);
-        alert("Respuesta de pago inválida");
-        return;
-      }
-      window.location.href = data.url;
-    } catch (err) {
-      console.error(err);
-      setErrorMsg("Error al conectar con el backend");
-      setPagando(false);
-    }
-  };
 
   // Editar → persistir carrito + ids + (si hay) datos de facturación y navegar a Wizard (Carrito)
   const handleEditarReserva = () => {
