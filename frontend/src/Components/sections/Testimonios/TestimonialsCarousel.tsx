@@ -70,7 +70,7 @@ const TestimonialsCarousel: React.FC = () => {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 md:pt-12 pb-12 md:pb-16">
         {/* sr-only por redundancia con SectionHeader */}
         <h2 id={headingId} className="sr-only">
-          Voces de nuestros participantes
+          Nuestr@s Alumn@s Dicen
         </h2>
 
         <SectionHeader
