@@ -33,7 +33,7 @@ const IntroEscuela: React.FC = () => {
           subtitle={
             <>
               <strong className="font-semibold text-asparragus">Dharma en Ruta</strong> es más que una escuela online:
-              es un espacio de transformación práctica donde unimos sabiduría ancestral —como el yoga, la meditación,
+              es un espacio donde unimos sabiduría ancestral —como el yoga, la meditación,
               la filosofía o la astrología— con herramientas cotidianas para tu vida —como las finanzas, el orden,
               la salud o las relaciones—.
               <br />
