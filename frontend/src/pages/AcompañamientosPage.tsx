@@ -97,11 +97,11 @@ const AcompañamientosPage: React.FC = () => {
       >
         <div className="w-full text-center flex flex-col items-center justify-start pt-10 md:pt-12 pb-6 min-h-[320px]">
           <SectionHeader
-            title="Acompañamiento Espiritual Personalizado"
-            subtitle="Encuentra la guía perfecta para tu camino interior"
+            title="Acompañamientos Personalizados: Tu Ruta Con Guía"
+            subtitle="Dharma en Ruta también es un espacio vivo, donde profundizar en tu proceso de manera personal."
             subtitleClassName="text-base md:text-lg text-black mt-2"
             align="center"
-            size="lg"
+            size="md"
             color="black"
             className="mb-4"
             decoration
@@ -116,7 +116,7 @@ const AcompañamientosPage: React.FC = () => {
             className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2"
             aria-label="Abrir asistente de reserva"
           >
-            Reservar ahora
+            Reservar Ahora
           </ButtonLink>
 
           {/* Wizard solo cuando se abre */}
@@ -144,13 +144,10 @@ const AcompañamientosPage: React.FC = () => {
             className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
           />
           <div className="relative z-10 max-w-6xl mx-auto py-10 md:py-14 w-full px-4 sm:px-6">
-            <h2 id="como-funciona-heading" className="sr-only">
-              ¿Cómo funciona nuestro acompañamiento?
-            </h2>
 
             <SectionHeader
               title="¿Cómo funciona?"
-              subtitle="Tres pasos sencillos para empezar hoy"
+              subtitle="Cuatro pasos sencillos para empezar hoy"
               subtitleClassName="text-sm md:text-base text-linen/90 mt-2"
               align="center"
               size="md"
@@ -160,10 +157,10 @@ const AcompañamientosPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mb-8 md:mb-10">
               {[
-                { n: "1", t: "Elige", d: "Conecta con quien resuene contigo." },
-                { n: "2", t: "Reserva", d: "Elige día y hora cómodamente." },
-                { n: "3", t: "Conecta", d: "Recibe los detalles de tu sesión." },
-                { n: "4", t: "Transforma", d: "Da tu siguiente paso con guía." },
+                { n: "1", t: "Elige tu área", d: "Explora las 8 áreas de la escuela y elige la que más resuene contigo: evolución personal, bienestar, vínculos, sexualidad, finanzas, etc." },
+                { n: "2", t: "Encuentra tu acompañamiento", d: "Cada profesional ofrece sesiones, lecturas o procesos guiados según su especialidad. Lee su perfil y siente con quién conectas más." },
+                { n: "3", t: "Reserva y comienza", d: "Agenda tu sesión directamente desde la web." },
+                { n: "4", t: "Integra lo aprendido", d: "Los acompañamientos son el puente entre el conocimiento y la práctica. Aquí el aprendizaje se transforma en experiencia real." },
               ].map((s) => (
                 <div key={s.n} className="bg-linen p-6 md:p-7 rounded-xl shadow-sm ring-1 ring-black/5">
                   <span className="text-gold text-3xl md:text-4xl font-bold mb-2 block">{s.n}</span>
@@ -204,9 +201,6 @@ const AcompañamientosPage: React.FC = () => {
             className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
           />
           <div className="relative z-10 max-w-5xl mx-auto py-10 md:py-14 w-full px-4 sm:px-6">
-            <h2 id="faq-heading" className="sr-only">
-              Preguntas frecuentes
-            </h2>
 
             <SectionHeader
               title="Preguntas Frecuentes"
@@ -253,7 +247,7 @@ const AcompañamientosPage: React.FC = () => {
                       }`}
                     >
                       <div className="px-4 sm:px-6 pb-4 sm:pb-6 text-sm md:text-base text-asparragus/90">
-                        {faq.answer}
+                        {faq.answer} <br /> {faq.answer2}
                       </div>
                     </div>
                   </div>
@@ -278,16 +272,15 @@ const AcompañamientosPage: React.FC = () => {
             className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/10 to-transparent"
           />
           <div className="relative z-10 max-w-7xl mx-auto py-8 md:py-12 w-full px-4 sm:px-6">
-            <h2 id="agendar-heading" className="sr-only">
-              Encuentra al Acompañador Ideal
-            </h2>
+            
             <SectionHeader
-              title="Encuentra al Acompañador Ideal"
+              title="Encuentra al Profesional Ideal para Ti"
               align="center"
               size="md"
               color="asparragus"
               className="mb-6 md:mb-8"
-              subtitle="Profesionales que te acompañarán con respeto y claridad."
+              subtitle="En Dharma en Ruta colaboramos con guías, docentes y terapeutas que ponen su sabiduría y camino personal al servicio de tu evolución.
+              Cada profesional pertenece a una de las 8 áreas de la escuela y te acompaña con una mirada integral."
               subtitleClassName="text-sm md:text-base text-asparragus/80 mt-2"
             />
             <div className="sr-only" role="status" aria-live="polite">
@@ -329,12 +322,17 @@ const AcompañamientosPage: React.FC = () => {
             className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
           />
           <div className="relative z-10 max-w-5xl mx-auto text-center w-full px-4 sm:px-6 py-12 md:py-16">
-            <h2 id="cta-final-heading" className="font-gotu text-linen text-3xl sm:text-4xl md:text-5xl leading-tight">
-              ¿Preparado para tu transformación?
-            </h2>
-            <p className="mt-3 text-linen/90 text-base sm:text-lg md:text-xl font-light">
-              El mejor momento es ahora.
-            </p>
+            
+
+            <SectionHeader 
+              title="Aquí, el conocimiento se transforma en práctica"
+              align="center"
+              size="sm"
+              color="white"
+              className="mb-6 md:mb-8"
+              subtitle="Y la práctica, en transformación real. ¿Estás preparad@?"
+              subtitleClassName="text-sm md:text-lg text-white mt-2"
+            />
 
             <div className="mt-6">
               <ButtonLink
@@ -346,7 +344,7 @@ const AcompañamientosPage: React.FC = () => {
                 className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2"
                 aria-label="Comenzar mi viaje ahora"
               >
-                Comenzar mi viaje
+                Comenzar mi viaje ahora
               </ButtonLink>
             </div>
           </div>

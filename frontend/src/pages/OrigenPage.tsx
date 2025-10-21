@@ -1,6 +1,5 @@
 // src/pages/OrigenPage.tsx
-// src/pages/OrigenPage.tsx
-import React from "react";
+
 import { FiArrowRight } from "react-icons/fi";
 import { LuCompass, LuFeather, LuMap, LuUsers } from "react-icons/lu";
 import GenericNav from "../Components/shared/GenericNav";
@@ -88,12 +87,12 @@ export default function OrigenPage({
                     El inicio
                   </h2>
                   <p className="text-sm md:text-base leading-relaxed text-raw/90">
-                    Hace unos años decidí que no iba a vivir más desde el miedo. Un
-                    31 de diciembre empaqué lo justo, compré un billete de solo ida
-                    y me lancé sola a recorrer el Sudeste Asiático. Ese viaje me
-                    quitó mil capas: aprendí a estar conmigo, a soltar lo que no me
-                    servía y a darme cuenta de que sí, había otra manera de vivir.
-                    Fue el inicio de mi propio Dharma.
+                    Hace unos años decidí que no iba a vivir más desde el miedo. 
+                    Un 31 de diciembre empaqué lo justo, compré un billete de solo ida y me lancé sola a 
+                    recorrer el Sudeste Asiático. 
+                    <br/>
+                    Ese viaje me quitó mil capas: aprendí a estar conmigo, a soltar lo que no me
+                    servía y a darme cuenta de que sí, había otra manera de vivir. Fue el inicio de mi propio Dharma.
                   </p>
                 </div>
               </div>
@@ -129,13 +128,12 @@ export default function OrigenPage({
             <div className="grid gap-6 md:grid-cols-12 md:items-start">
               <div className="md:col-span-7">
                 <p className="text-sm md:text-base leading-relaxed text-raw/90">
-                  De vuelta, seguí explorando y compartiendo lo que me transformaba:
-                  el yoga, la meditación, la filosofía, los retiros, los viajes, la
-                  fisioterapia… Y al mismo tiempo, elegí un estilo de vida nómada,
-                  viviendo en mi furgoneta con mis dos gatas, Thelma y Louise. Así
-                  entendí que mi propósito estaba en acompañar a otras personas a
-                  emprender también su ruta: hacia dentro (autoconocimiento) y hacia
-                  fuera (nuevas formas de vivir).
+                  De vuelta, seguí explorando y compartiendo lo que me transformabaa: el yoga, la meditación,
+                  la filosofía, los retiros, los viajes, la fisioterapia… Y al mismo tiempo, elegí un estilo de vida
+                  nómada, viviendo en mi furgoneta con mis dos gatas, Thelma y Louise.
+                  <br />
+                  Así entendí que mi propósito estaba en acompañar a otras personas a emprender también
+                  su ruta: hacia dentro (autoconocimiento) y hacia fuera (nuevas formas de vivir).
                 </p>
               </div>
 
@@ -173,7 +171,7 @@ export default function OrigenPage({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-raw/15 to-transparent" />
         </section>
 
-        {/* P3 — Nacimiento de la escuela */}
+                {/* P3 — Nacimiento de la escuela (con enlace externo) */}
         <section aria-labelledby="escuela-title" className="relative border-b border-raw/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
             <div className="mb-4 sm:mb-5">
@@ -185,17 +183,23 @@ export default function OrigenPage({
             <div className="grid gap-6 md:grid-cols-12">
               <div className="md:col-span-7">
                 <p className="text-sm md:text-base leading-relaxed text-raw/90">
-                  De ahí nació Dharma en Ruta: una escuela nómada y de vida, que une
-                  sabiduría ancestral con herramientas modernas, en 8 áreas que
-                  atraviesan toda experiencia humana. Una escuela que no se queda en
-                  la teoría, sino que te da recursos prácticos para:
+                  De ahí nació{" "}
+                  <a
+                    href="https://patriciaholisticyoga.com/que-es-dharma-en-ruta-y-como-puedes-encontrar-tu-dharma/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-asparragus underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded"
+                    aria-label="Leer más sobre qué es Dharma en Ruta y cómo encontrar tu dharma (se abre en una pestaña nueva)"
+                  >
+                    Dharma en Ruta
+                  </a>
+                  : una escuela colaborativa, nutrida por distintas voces y profesionales que comparten 
+                  su sabiduría, experiencia y recorrido personal, haciendo de cada área un espacio único y vivo.
+                  <br /> 
+                  Una escuela que no se queda en la teoría, sino que te da recursos prácticos para:
                 </p>
 
-                <ul
-                  role="list"
-                  className="mt-4 space-y-2 text-sm md:text-base"
-                  aria-label="Recursos prácticos de la escuela"
-                >
+                <ul role="list" className="mt-4 space-y-2 text-sm md:text-base" aria-label="Recursos prácticos de la escuela">
                   {[
                     "Reconocer quién eres",
                     "Gestionar tus emociones y miedos",
@@ -203,10 +207,7 @@ export default function OrigenPage({
                     "Vivir con más libertad y coherencia",
                   ].map((item) => (
                     <li key={item} role="listitem" className="flex items-start gap-2 text-raw/90">
-                      <span
-                        aria-hidden="true"
-                        className="mt-[0.35rem] inline-block h-1.5 w-1.5 rounded-full bg-asparragus"
-                      />
+                      <span aria-hidden className="mt-[0.35rem] inline-block h-1.5 w-1.5 rounded-full bg-asparragus" />
                       <span className="leading-snug">{item}</span>
                     </li>
                   ))}
@@ -220,9 +221,8 @@ export default function OrigenPage({
                     <p className="font-gotu text-asparragus text-base">8 áreas, una misma ruta</p>
                   </div>
                   <p className="text-sm leading-relaxed text-raw/90">
-                    Integramos cuerpo, mente, hábitos, relaciones y propósito con
-                    una mirada clara y práctica. Sin dogmas, con coherencia
-                    cotidiana.
+                    Integramos cuerpo, mente, hábitos, relaciones y propósito con una mirada clara y
+                    práctica. Sin dogmas, con coherencia cotidiana.
                   </p>
                 </div>
               </div>
@@ -245,10 +245,10 @@ export default function OrigenPage({
               <div className="md:col-span-7">
                 <p className="text-sm md:text-base leading-relaxed text-raw/90">
                   Dharma en Ruta es también comunidad: un lugar donde conectar con
-                  personas afines, donde compartir, aprender y sentir que no estás solx
-                  en este camino. Hoy, esta escuela es el reflejo de mi viaje y mi
-                  compromiso: mostrarte que sí, hay otra manera de vivir, y que puedes
-                  empezar a caminar hacia ella ahora.
+                  personas afines, donde compartir, aprender y sentir que no estás sol@ en este camino.
+                  <br />
+                  Hoy, esta escuela es el reflejo de mi viaje y mi compromiso: mostrarte que sí, hay otra 
+                  manera de vivir, y que puedes empezar a caminar hacia ella ahora.
                 </p>
               </div>
 
@@ -264,7 +264,7 @@ export default function OrigenPage({
                     href="https://dashboard.mailerlite.com/forms/779309/143072527599535592/share"
                     className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
-                    Descarga Gratis tu Mapa del Dharma
+                  Da tu primer paso: Descarga Gratis tu Mapa del Dharma
                   </ButtonLink>
                 </div>
               </div>
