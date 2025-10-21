@@ -57,8 +57,8 @@ const SelectorProfesores: React.FC<Props> = ({ profesores, value, onChange }) =>
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6">
       <SectionHeader
-        title="Elige tu acompañante"
-        subtitle="Selecciona a la persona que te acompañará en tu proceso. Todos los perfiles han sido elegidos por su profesionalidad y calidad humana."
+        title="Elige a tu persona ideal"
+        subtitle="Profesionales que te acompañan desde la experiencia, la escucha y la presencia."
         align="center"
         size="sm"   // igual que el resto
         color="asparragus"
