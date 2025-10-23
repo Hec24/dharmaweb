@@ -94,6 +94,7 @@ export default function AreaPage() {
             heroImg={heroImg}
             titulo={area.nombre}
             descripcion={area.descripcion}
+            encontraras={area.encontraras}
             bullets={area.bullets}
             /* ↓ En móvil reducimos altura y padding; crece en md+ */
             minH="min-h-[56vh] md:min-h-[70vh]"
@@ -125,9 +126,6 @@ export default function AreaPage() {
           />
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-            <h2 id="area-cursos-heading" className="sr-only">
-              Cursos de esta área
-            </h2>
 
             <SectionHeader
               title="Cursos de esta área"

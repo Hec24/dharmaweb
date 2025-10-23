@@ -27,12 +27,14 @@ type AreaHeroProps = {
   density?: "compact" | "comfortable";
   /** ↑ Hace el bloque (tipos/paddings/ancho) más grande en 1920×1080 y 2560×1440 */
   boostXL?: boolean;
+  encontraras?: string;
 };
 
 const AreaHero: React.FC<AreaHeroProps> = ({
   heroImg,
   titulo,
   descripcion,
+  encontraras,
   bullets = [],
   ctaLabel,
   ctaTo,
@@ -101,6 +103,11 @@ const AreaHero: React.FC<AreaHeroProps> = ({
           {descripcion && (
             <p className={`mt-3 ${descBase} ${xlDesc} font-degular text-asparragus/90 leading-relaxed`}>
               {descripcion}
+            </p>
+          )}
+          {encontraras && (
+            <p className={`mt-2 ${descBase} ${xlDesc} font-degular text-asparragus/90 leading-relaxed font-semibold`}>
+              {encontraras}
             </p>
           )}
 
