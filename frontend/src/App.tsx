@@ -24,6 +24,8 @@ import AvisoLegalPage from "./pages/AvisoLegalPage";
 import CookiesPage from "./pages/CookiesPage";
 import OrigenPage from "./pages/OrigenPage";
 import PrewarmBackend from "./Components/PrewarmBackend";
+import ContactPage from "./pages/ContactPage"
+import TestimoniosPage from "./pages/TestimoniosPage";
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
 function RootWithScroll() {
@@ -56,7 +58,9 @@ const router = createBrowserRouter([
       { path: "politica-privacidad", element: <PoliticaPrivacidadPage /> },
       { path: "aviso-legal", element: <AvisoLegalPage /> },
       { path: "cookies", element: <CookiesPage /> },
-      { path: "origen", element: <OrigenPage /> }
+      { path: "origen", element: <OrigenPage /> },
+      { path: "contacto", element: <ContactPage />},
+      { path: "testimonios", element: <TestimoniosPage /> },
     ],
   },
 ]);

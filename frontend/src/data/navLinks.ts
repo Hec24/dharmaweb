@@ -27,8 +27,8 @@ export const leftLinks = [
     { label: "Historia de La Escuela", href: "/origen" },
     { label: "Equipo", href: "/acompanamientos#agendar" },
     { label: "Recursos para ti", href: "/proximamente" },
-    { label: "Testimonios", href: "/proximamente" },
-    { label: "Contacto", href: "/proximamente" },
+    { label: "Testimonios", href: "/testimonios" },
+    { label: "Contacto", href: "/contacto" },
  
   ];
 
