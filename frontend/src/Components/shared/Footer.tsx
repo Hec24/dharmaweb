@@ -157,10 +157,10 @@ const Footer: React.FC = () => {
           </div>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-degular">
             <Link
-              to="/politica-privacidad"
+              to="/aviso-legal"
               className="text-linen hover:text-gold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-asparragus rounded"
             >
-              Política de Privacidad
+              Aviso Legal
             </Link>
             <Link
               to="/terminos"
@@ -169,17 +169,19 @@ const Footer: React.FC = () => {
               Términos y Condiciones
             </Link>
             <Link
+              to="/politica-privacidad"
+              className="text-linen hover:text-gold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-asparragus rounded"
+            >
+              Política de Privacidad
+            </Link>
+            
+            <Link
               to="/cookies"
               className="text-linen hover:text-gold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-asparragus rounded"
             >
-              Cookies
+              Política de Cookies
             </Link>
-            <Link
-              to="/aviso-legal"
-              className="text-linen hover:text-gold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-asparragus rounded"
-            >
-              Aviso Legal
-            </Link>
+            
           </div>
         </div>
       </div>
