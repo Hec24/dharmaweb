@@ -10,9 +10,14 @@ const IntroEscuela: React.FC = () => {
       role="region"
     >
       {/* hairlines editoriales */}
-      <div className="absolute inset-x-0 top-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" />
-
+      {/* <div className="absolute inset-x-0 top-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" />
+      <div className="absolute inset-x-0 bottom-0 h-px bg-black/10 pointer-events-none" aria-hidden="true" /> */}
+      {/* Escalón superior: overlay oscuro que recoge el hairline del Header */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
+      />
+      
       <div
         className="
           max-w-7xl mx-auto
