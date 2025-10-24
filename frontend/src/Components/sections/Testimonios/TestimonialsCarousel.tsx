@@ -149,7 +149,7 @@ const TestimonialsCarousel: React.FC = () => {
         {/* CTA */}
         <div className="mt-8 md:mt-10 text-center">
           <SectionHeader
-            title="¿Listo para tu transformación?"
+            title="¿List@ para tu transformación?"
             subtitle="Estas historias son solo el comienzo. Tu viaje personal hacia el autoconocimiento te espera."
             subtitleClassName="text-asparragus/80 text-sm md:text-base font-degular max-w-2xl mx-auto mt-2"
             align="center"

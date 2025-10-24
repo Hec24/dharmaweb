@@ -1,5 +1,5 @@
 // src/pages/AreaPage.tsx
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
@@ -69,7 +69,6 @@ export default function AreaPage() {
         {heroImg && <meta name="twitter:image" content={heroImg} />}
       </Helmet>
 
-
       {/* NAV sobre el hero (transparente) */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
@@ -88,7 +87,7 @@ export default function AreaPage() {
       </header>
 
       <main className="bg-white">
-        {/* HERO — mobile-first: más compacto en móvil */}
+        {/* HERO — ajustado para “subir” el cuadro y dejar más aire abajo */}
         <section id="area-hero" className="relative">
           <AreaHero
             heroImg={heroImg}
@@ -96,11 +95,18 @@ export default function AreaPage() {
             descripcion={area.descripcion}
             encontraras={area.encontraras}
             bullets={area.bullets}
-            /* ↓ En móvil reducimos altura y padding; crece en md+ */
+            /**
+             * Cambios clave:
+             * - translateY: menos empuje hacia abajo → el “cuadradito” sube.
+             * - gapBelow: más padding inferior en la sección → más aire antes del siguiente bloque.
+             * - boostXL: OFF para evitar que en 2xl+ vuelva a bajar extra.
+             */
             minH="min-h-[56vh] md:min-h-[70vh]"
             padTop="pt-24 md:pt-40"
-            translateY="translate-y-6 md:translate-y-14"
+            translateY="translate-y-2 md:translate-y-8"
+            gapBelow="pb-16 md:pb-24 2xl:pb-28"
             overlayToWhite={60}
+            boostXL={false}
           />
           {/* Hairline inferior (línea fina) */}
           <div
@@ -116,17 +122,16 @@ export default function AreaPage() {
           aria-labelledby="area-cursos-heading"
           style={{ backgroundColor: "var(--color-linen)" }}
         >
-          {/* Mini espacio visual entre hero y esta sección (solo móvil) */}
+          {/* Mini espacio extra (por si algún navegador renderiza el hairline sobrepuesto) */}
           <div aria-hidden className="h-2 md:h-0" />
 
-          {/* Overlay superior más sutil en móvil para que se vea el “aire” */}
+          {/* Overlay superior sutil */}
           <div
             aria-hidden
             className="pointer-events-none absolute top-0 left-0 right-0 h-4 md:h-6 bg-gradient-to-b from-black/10 to-transparent"
           />
 
           <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-
             <SectionHeader
               title="Cursos de esta área"
               subtitle="Formación práctica para avanzar a tu ritmo."
@@ -193,7 +198,7 @@ export default function AreaPage() {
           />
         </section>
 
-        {/* Selector de otras áreas — chips con más aire en mobile */}
+        {/* Selector de otras áreas */}
         <section
           id="otras-areas"
           className="relative py-10 md:py-14 bg-white"
@@ -222,19 +227,14 @@ export default function AreaPage() {
             <nav aria-label="Listado de áreas">
               <ul
                 role="list"
-                className="
-                  flex flex-wrap justify-center
-                  gap-x-2.5 sm:gap-x-3
-                  gap-y-2.5 sm:gap-y-3
-                "
+                className="flex flex-wrap justify-center gap-x-2.5 sm:gap-x-3 gap-y-2.5 sm:gap-y-3"
               >
                 {allAreas.map((a) => (
                   <li key={a.slug} role="listitem">
                     <Link
                       to={`/areas/${a.slug}`}
                       className="
-                        inline-flex items-center
-                        px-5 sm:px-6 py-2.5 sm:py-3
+                        inline-flex items-center px-5 sm:px-6 py-2.5 sm:py-3
                         rounded-full bg-[var(--color-linen)] text-asparragus
                         text-sm sm:text-[15px] whitespace-nowrap
                         hover:bg-[var(--color-gold)] hover:text-white
@@ -250,9 +250,6 @@ export default function AreaPage() {
               </ul>
             </nav>
           </div>
-
-          {/* (Opcional) Hairline inferior si viene otra sección después */}
-          {/* <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" /> */}
         </section>
       </main>
     </>

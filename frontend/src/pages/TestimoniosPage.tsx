@@ -345,14 +345,7 @@ export default function TestimoniosPage() {
               >
                 Ver cursos
               </ButtonLink>
-              <ButtonLink
-                size="sm"
-                variant="ghost"
-                href="/areas"
-                className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2"
-              >
-                Ver áreas
-              </ButtonLink>
+             
             </div>
           </div>
         </section>

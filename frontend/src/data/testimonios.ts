@@ -50,29 +50,29 @@ export const testimonialsData: Testimonial[] = [
   },
   {
     id: 6,
-    name: "Gema",
+    name: "Clara",
     rating: 4,
-    text: "Destacaría sobre todo, además de el haber vivido nuevas experiencias, el haber podido conocer a otras personas de diferentes lugares y compartir con ellos.",
-    program: "Yogui Viaje",
+    text: "No puedo más que recomendar a Patri a otras personas. Gran profe de yoga, sus conocimientos de fisio me dan mucha tranquilidad con mis lesiones. He hecho clases grupales, individuales, y he participado de un retiro. Patri es flexible y se adapta a lo que la pides. Por más prácticas juntas! ☺️",
+    program: "Cursos",
     date: "Octubre 2024"
   },
 
   {
     id: 7,
-    name: "Fran",
+    name: "Lucía",
     rating: 5,
-    text: "Uno de los mejores viajes de mi vida, así, sin esperarlo.... Maravilloso! Todo cambió ya en el aeropuerto de Madrid, como si todas las piezas de un puzzle de repente encajaran.",
-    program: "Yogui Viaje",
-    date: "Junio 2023"
+    text: "Gracias a Patricia descubrí mi pasión por el yoga, tanto en la práctica amable con el cuerpo, como fuera de la esterilla. Con ella comencé el camino que nunca tiene fin. Siempre recomendaré sus clases y sus retiros. Namaste siempre Patri🙏🏼",
+    program: "Cursos",
+    date: "Octubre 2024"
   },
 
   {
     id: 8,
-    name: "Izaro",
+    name: "Naomí",
     rating: 5,
-    text: "Este viaje comenzó como una oportunidad para conocer Tenerife y terminó siendo un aprendizaje para mi. Aprendí a ser yo misma con los demás y a abrir mi mente a nuevas experiencias.",
-    program: "Yogui Viaje",
-    date: "Mayo 2023"
+    text: "Solo pude disfrutar de una clase de yoga con Patricia porque vivo lejos, pero me bastó para saber que es toda una profesional que hace las cosas con pasión y sentimiento. Una experiencia brutal 👏🏼",
+    program: "Cursos",
+    date: "Setiembre 2024"
   },
 
 
@@ -83,5 +83,4 @@ export const programFilters = [
   "Todos",
   "Cursos", 
   "Acompañamientos",
-  "Yogui Viaje",
 ];
