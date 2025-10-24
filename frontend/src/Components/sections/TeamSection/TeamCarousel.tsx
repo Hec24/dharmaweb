@@ -19,10 +19,10 @@ const TeamCarousel: React.FC = () => {
       className="relative bg-linen overflow-hidden"
       aria-labelledby={headingId}
     >
-      {/* OJO: aquí NO ponemos overlay superior, para que el “escalón” venga de la sección anterior */}
-       <div
+      {/* Escalón superior: overlay oscuro */}
+      <div
         aria-hidden
-        className="pointer-events-none absolute top-0 left-0 right-0 h-5 md:h-6 bg-gradient-to-b from-black/10 to-transparent"
+        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
       />
       
       

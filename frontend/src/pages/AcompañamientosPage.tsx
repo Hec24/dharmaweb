@@ -15,6 +15,9 @@ import { profesores } from "../data/profesores";
 import { faqs } from "../data/faqs";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import type { Profesor } from "../data/types";
+import HeadingPicture from "../Components/shared/HeadingPicture";
+import PreFooterPicture from "../Components/shared/preFooterPicture";
+
 
 const AcompañamientosPage: React.FC = () => {
   const [expandedFaq, setExpandedFaq] = React.useState<number | null>(null);
@@ -92,6 +95,8 @@ const AcompañamientosPage: React.FC = () => {
           />
         }
       >
+        
+
         <div className="w-full text-center flex flex-col items-center justify-start pt-10 md:pt-12 pb-6 min-h-[320px]">
           <SectionHeader
             title="Acompañamientos Personalizados: Tu Ruta Con Guía"
@@ -128,11 +133,18 @@ const AcompañamientosPage: React.FC = () => {
         </div>
       </Header>
 
+      <HeadingPicture
+          src="/img/Backgrounds/background4.jpg"
+          alt="formas dharma"
+          height="md"
+          fullBleed
+        />
+
       <div className="font-degular text-raw overflow-x-hidden">
         {/* CÓMO FUNCIONA */}
         <section
           id="como-funciona"
-          className="relative w-full bg-raw overflow-hidden"
+          className="relative w-full bg-raw overflow-hidden -mt-px"
           aria-labelledby="como-funciona-heading"
         >
           {/* Overlay superior */}
@@ -346,6 +358,12 @@ const AcompañamientosPage: React.FC = () => {
           <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
         </section>
       </div>
+      <PreFooterPicture
+     src="/img/Backgrounds/endingPicture.jpg"
+     alt="imagen dharma"
+     height="lg"
+     fullBleed
+   />
     </>
   );
 };

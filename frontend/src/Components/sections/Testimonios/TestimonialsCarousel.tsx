@@ -58,14 +58,19 @@ const TestimonialsCarousel: React.FC = () => {
   }, [activeFilter, perPage]);
 
   return (
+
+    
     <section
       id="testimonios"
       className="relative bg-[var(--color-linen)] overflow-hidden"
       aria-labelledby={headingId}
       role="region"
     >
-      {/* Hairline superior */}
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-black/10" />
+     {/* Escalón superior: overlay oscuro que recoge el hairline del Header */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
+      />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 md:pt-12 pb-12 md:pb-16">
         {/* sr-only por redundancia con SectionHeader */}
