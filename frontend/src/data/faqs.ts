@@ -48,7 +48,7 @@ export const faqs = [
 
   {
     question: "¿Qué métodos de pago se aceptan?",
-    answer:"Puedes pagar de forma segura con tarjeta, PayPal, Stripe",
+    answer:"Puedes pagar de forma segura con tarjeta de crédito, débito o Google Pay",
     answer2: "En los procesos más largos también se pueden ofrecer pagos fraccionados.",
   },
 ];

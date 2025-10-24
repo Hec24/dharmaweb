@@ -12,7 +12,7 @@ export const COURSES_MOCK: Course[] = [
     level: "Intermedio",
     precioEUR: 149,
     hotmartUrl: "https://HOTMART_URL_ANATOMIA",
-    tags: ["anatomía", "docentes"],
+    tags: ["anatomía"],
   },
   {
     id: "c2",
