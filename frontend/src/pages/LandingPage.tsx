@@ -14,6 +14,7 @@ import TestimonialsCarousel from "../Components/sections/Testimonios/Testimonial
 import LandingHeader from "../Components/shared/Header/LandingHeader";
 import HeadingPicture from "../Components/shared/HeadingPicture";
 import PreFooterPicture from "../Components/shared/preFooterPicture";
+import SchoolValuesSection from "../Components/sections/ValoresSection/SchoolValuesSection";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
@@ -145,6 +146,7 @@ export const LandingPage: React.FC = () => {
       </section>
 
       <RuedaVida />
+      <SchoolValuesSection />
       <LeadMagnet />
       <TeamCarousel />
       <TestimonialsCarousel />
