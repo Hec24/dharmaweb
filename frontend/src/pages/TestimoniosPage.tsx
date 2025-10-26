@@ -112,7 +112,7 @@ export default function TestimoniosPage() {
 
       {/* HERO — coherente con Historia/Contacto */}
       <section
-        className="relative h-[34vh] md:h-[40vh] flex items-end overflow-hidden"
+        className="relative h-[38vh] md:h-[46vh] flex items-end overflow-hidden"
         aria-labelledby="testimonios-hero-title"
       >
         <img

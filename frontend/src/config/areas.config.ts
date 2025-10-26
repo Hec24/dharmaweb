@@ -19,6 +19,9 @@ export type Area = {
   cursos: Curso[];
 };
 
+
+
+
 // ⚠️ Slugs EXACTOS tal y como los tienes en tu menú
 export const AREAS: Record<string, Area> = {
   "elsenderodelyo": {
@@ -459,3 +462,12 @@ export const AREAS: Record<string, Area> = {
     ],
   },
 };
+
+export const BEST_SELLING_COURSES = [
+  // Finanzas para una Vida Libre
+  AREAS.finanzasparaunavidalibre.cursos.find(c => c.id === "c007"),
+  // Diálogos del Dharma
+  AREAS.diálogosdeldharma.cursos.find(c => c.id === "c011"),
+  // El Camino del Bienestar
+  AREAS.elcaminodelbienestar.cursos.find(c => c.id === "c026"),
+].filter(Boolean) as NonNullable<(typeof AREAS)["finanzasparaunavidalibre"]["cursos"]>;

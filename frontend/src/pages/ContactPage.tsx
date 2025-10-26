@@ -107,7 +107,7 @@ export default function ContactPage() {
 
       {/* HERO — fondo similar a historia: imagen con overlay asparragus */}
       <section
-        className="relative h-[34vh] md:h-[40vh] flex items-end overflow-hidden"
+        className="relative h-[38vh] md:h-[46vh] flex items-end overflow-hidden"
         aria-labelledby="contact-hero-title"
       >
         <img

@@ -12,8 +12,8 @@ import TeamCarousel from "../Components/sections/TeamSection/TeamCarousel";
 import TestimonialsCarousel from "../Components/sections/Testimonios/TestimonialsCarousel";
 // import TituloEscuela from "../Components/sections/HeaderSection/TituloEscuela";
 import LandingHeader from "../Components/shared/Header/LandingHeader";
-import HeadingPicture from "../Components/shared/HeadingPicture";
-import PreFooterPicture from "../Components/shared/preFooterPicture";
+// import HeadingPicture from "../Components/shared/HeadingPicture";
+// import PreFooterPicture from "../Components/shared/preFooterPicture";
 import SchoolValuesSection from "../Components/sections/ValoresSection/SchoolValuesSection";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
@@ -132,12 +132,12 @@ export const LandingPage: React.FC = () => {
         </div> */}
       </LandingHeader>
 
-      <HeadingPicture
+      {/* <HeadingPicture
           src="/img/Backgrounds/background4.jpg"
           alt="formas dharma"
           height="md"
           fullBleed
-        />
+        /> */}
 
       {/* Resto de secciones */}
       <section className="flex flex-col">
@@ -150,12 +150,12 @@ export const LandingPage: React.FC = () => {
       <LeadMagnet />
       <TeamCarousel />
       <TestimonialsCarousel />
-       <PreFooterPicture
+       {/* <PreFooterPicture
         src="/img/Backgrounds/endingPicture.jpg"
         alt="imagen dharma"
         height="lg"
         fullBleed
-      />
+      /> */}
     </>
   );
 };
