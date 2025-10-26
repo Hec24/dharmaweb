@@ -1,22 +1,106 @@
 // src/pages/AcompañamientosPage.tsx
 import React from "react";
-import { FiArrowRight, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import { FiArrowRight, FiChevronDown, FiChevronUp, FiCalendar } from "react-icons/fi";
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 
 import GenericNav from "../Components/shared/GenericNav";
 import Header from "../Components/shared/Header";
 import SectionHeader from "../Components/ui/SectionHeader";
-import ProfesorCard from "../Components/ui/ProfesorCard";
 import ButtonLink from "../Components/ui/ButtonLink";
 import ReservaWizard from "../Components/reservas/ReservaWizard";
 
+
 import { profesores } from "../data/profesores";
-import { faqs } from "../data/faqs";
+import { faqsAcompanamientos } from "../data/faqs";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import type { Profesor } from "../data/types";
-import HeadingPicture from "../Components/shared/HeadingPicture";
-import PreFooterPicture from "../Components/shared/preFooterPicture";
+// import HeadingPicture from "../Components/shared/HeadingPicture";
+// import PreFooterPicture from "../Components/shared/preFooterPicture";
+
+
+// ——— Chips de especialidad (compacto)
+function Tag({ children }: { children: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-black/10 bg-gold/20 text-raw px-3 py-1 text-[0.75rem] font-medium">
+      {children}
+    </span>
+  );
+}
+
+// ——— Card horizontal profesional: foto 3:4 + cuadro blanco + CTA Agendar
+function ProfileRow({
+  p,
+  onAgendar,
+}: {
+  p: Profesor;
+  onAgendar: (prof: Profesor) => void;
+}) {
+  const titleId = React.useId();
+  return (
+    <article
+      className="group relative isolate rounded-3xl overflow-hidden ring-1 ring-black/5 bg-linen shadow-sm"
+      aria-labelledby={titleId}
+      role="listitem"
+    >
+      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[22rem]">
+        {/* Imagen 3:4 uniforme */}
+        <div className="relative md:w-1/2 lg:w-[45%] aspect-[3/4] md:aspect-auto">
+          <img
+            src={p.image}
+            alt={p.name}
+            className="absolute inset-0 h-full w-full object-cover object-center md:rounded-l-3xl"
+            loading="lazy"
+          />
+          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+        </div>
+
+        {/* Cuadro blanco con info + CTA */}
+        <div className="relative bg-white md:w-1/2 lg:w-[55%] flex flex-col justify-center p-6 sm:p-8 md:p-10 text-raw">
+          <header className="mb-2">
+            <h3 id={titleId} className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw">
+              {p.name}
+            </h3>
+            {p.title && (
+              <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular">
+                {p.title}
+              </p>
+            )}
+          </header>
+
+          {p.description && (
+            <p className="mt-3 text-sm md:text-base text-raw/85 leading-relaxed font-degular">
+              {p.description}
+            </p>
+          )}
+
+          {p.specialties && p.specialties.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {p.specialties.map((s) => (
+                <Tag key={`${p.id}-${s}`}>{s}</Tag>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-5">
+            <ButtonLink
+              as="button"
+              size="md"
+              variant="primary"
+              icon={<FiCalendar aria-hidden />}
+              onClick={() => onAgendar(p)}
+              className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2"
+              aria-label={`Agendar sesión con ${p.name}`}
+            >
+              Agendar con {p.name.split(" ")[0]}
+            </ButtonLink>
+          </div>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 
 
 const AcompañamientosPage: React.FC = () => {
@@ -55,6 +139,9 @@ const AcompañamientosPage: React.FC = () => {
     "Diseña tu práctica de yoga, lecturas de carta natal y procesos de bienestar guiados. Trabajo cercano, práctico y alineado contigo.";
   const canonical = "https://dharmaenruta.com/acompanamientos";
   const ogImage = "https://dharmaenruta.com/og/acompanamientos.jpg";
+
+
+  
 
   return (
     <>
@@ -133,12 +220,12 @@ const AcompañamientosPage: React.FC = () => {
         </div>
       </Header>
 
-      <HeadingPicture
+      {/* <HeadingPicture
           src="/img/Backgrounds/background4.jpg"
           alt="formas dharma"
           height="md"
           fullBleed
-        />
+        /> */}
 
       <div className="font-degular text-raw overflow-x-hidden">
         {/* CÓMO FUNCIONA */}
@@ -197,7 +284,7 @@ const AcompañamientosPage: React.FC = () => {
           <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
         </section>
 
-        {/* LISTADO ACOMPAÑADORES */}
+        {/* LISTADO DE ACOMPAÑANTES */}
         <section
           id="agendar"
           className="relative scroll-mt-24 w-full bg-linen"
@@ -215,7 +302,7 @@ const AcompañamientosPage: React.FC = () => {
               size="md"
               color="asparragus"
               className="mb-6 md:mb-8"
-              subtitle="En Dharma en Ruta colaboramos con guías, docentes y terapeutas que ponen su sabiduría y camino personal al servicio de tu evolución. Cada profesional pertenece a una de las 8 áreas de la escuela y te acompaña con una mirada integral."
+              subtitle="Explora los perfiles y agenda tu sesión con la persona que más resuene contigo."
               subtitleClassName="text-sm md:text-base text-asparragus/80 mt-2"
             />
 
@@ -223,20 +310,9 @@ const AcompañamientosPage: React.FC = () => {
               {modalOpen && "Asistente de reserva abierto."}
             </div>
 
-            <div className="space-y-8 md:space-y-10">
+            <div className="flex flex-col gap-8 md:gap-10" role="list" aria-label="Listado de acompañantes">
               {profesores.map((profesor) => (
-                <section
-                  key={profesor.id}
-                  id={`acompanador-${profesor.id}`}
-                  className="bg-transparent"
-                  aria-label={`Acompañador ${"name" in profesor ? profesor.name : "perfil"}`}
-                >
-                  <ProfesorCard
-                    {...profesor}
-                    variant="acompanamientos"
-                    onAgendar={() => handleAgendar(profesor)}
-                  />
-                </section>
+                <ProfileRow key={profesor.id} p={profesor as Profesor} onAgendar={handleAgendar} />
               ))}
             </div>
           </div>
@@ -244,7 +320,6 @@ const AcompañamientosPage: React.FC = () => {
           {/* Hairline hacia CTA */}
           <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
         </section>
-
         {/* CTA FINAL — NUEVO esquema beige/marrón */}
         <section
           id="cta-final"
@@ -309,7 +384,7 @@ const AcompañamientosPage: React.FC = () => {
             />
 
             <div className="space-y-3 sm:space-y-4 w-full">
-              {faqs.map((faq, index) => {
+              {faqsAcompanamientos.map((faq, index) => {
                 const isOpen = expandedFaq === index;
                 const contentId = `faq-content-${index}`;
                 const buttonId = `faq-button-${index}`;
@@ -345,7 +420,7 @@ const AcompañamientosPage: React.FC = () => {
                       }`}
                     >
                       <div className="px-4 sm:px-6 pb-4 sm:pb-6 text-sm md:text-base text-raw/90">
-                        {faq.answer} <br /> {faq.answer2}
+                        {faq.answer}<br />{faq.answer2}
                       </div>
                     </div>
                   </div>
@@ -358,12 +433,12 @@ const AcompañamientosPage: React.FC = () => {
           <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
         </section>
       </div>
-      <PreFooterPicture
+      {/* <PreFooterPicture
      src="/img/Backgrounds/endingPicture.jpg"
      alt="imagen dharma"
      height="lg"
      fullBleed
-   />
+   /> */}
     </>
   );
 };

@@ -26,6 +26,7 @@ import OrigenPage from "./pages/OrigenPage";
 import PrewarmBackend from "./Components/PrewarmBackend";
 import ContactPage from "./pages/ContactPage"
 import TestimoniosPage from "./pages/TestimoniosPage";
+import EquipoPage from "./pages/EquipoPage";
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
 function RootWithScroll() {
@@ -61,6 +62,7 @@ const router = createBrowserRouter([
       { path: "origen", element: <OrigenPage /> },
       { path: "contacto", element: <ContactPage />},
       { path: "testimonios", element: <TestimoniosPage /> },
+      { path: "equipo", element: <EquipoPage/>}
     ],
   },
 ]);
