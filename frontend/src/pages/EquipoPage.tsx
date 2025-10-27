@@ -16,7 +16,7 @@ import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
 type ProfesorItem = (typeof profesores)[number];
 
-const heroBgSrc = "/img/hero/hero-equipo.webp";
+const heroBgSrc = "/img/Backroungds/background5.jpg";
 
 function Tag({ children }: { children: string }) {
   return (
