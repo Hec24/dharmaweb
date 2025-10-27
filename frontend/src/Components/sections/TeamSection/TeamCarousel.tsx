@@ -60,8 +60,8 @@ const TeamCarousel: React.FC = () => {
                   title={(p as { title?: string }).title}
                   description={(p as { description?: string }).description}
                   specialties={(p as { specialties?: string[] }).specialties}
-                  /* El botón “Conoce más” de la card apuntará a la sección correcta */
-                  link={ROUTES.PROFESORES} // p.ej. "/acompanamientos#profesores"
+                  // /* El botón “Conoce más” de la card apuntará a la sección correcta */
+                  // link={ROUTES.PROFESORES} // p.ej. "/acompanamientos#profesores"
                 />
               </div>
             )}
