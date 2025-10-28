@@ -126,7 +126,7 @@ const ProfesorCard: React.FC<ProfesorCardProps> = ({
             </p>
           )}
         </header>
-        <div className="mt-auto pt-3">
+        {/* <div className="mt-auto pt-3">
           <a
             href={link}
             className="inline-flex items-center text-gold font-medium hover:text-raw transition-colors text-sm group"
@@ -134,7 +134,7 @@ const ProfesorCard: React.FC<ProfesorCardProps> = ({
             Conoce más
             <FiChevronRight className="ml-1 group-hover:translate-x-1 transition-transform" />
           </a>
-        </div>
+        </div> */}
       </article>
     </div>
   );

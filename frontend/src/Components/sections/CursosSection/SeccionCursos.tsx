@@ -89,10 +89,11 @@ const SeccionCursos: React.FC = () => {
           role="region"
           aria-labelledby={headingId}
         >
-          {/* Patrón detrás del contenido */}
+         {/* Patrón detrás del contenido (solo desktop) */}
           <div
             aria-hidden
             className="
+              hidden md:block
               absolute inset-0 -z-10 rounded-3xl
               before:absolute before:inset-0 before:rounded-3xl before:bg-raw/25
             "

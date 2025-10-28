@@ -76,12 +76,12 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
             className="
               pointer-events-none select-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 rounded-3xl
               w-[calc(100%+48px)] h-[calc(100%+40px)]
-              md:w-[calc(100%+160px)] md:h-[calc(100%+120px)]
-              lg:w-[calc(100%+160px)] lg:h-[calc(100%+140px)]
-              xl:w-[calc(100%+180px)] xl:h-[calc(100%+160px)]
+              md:w-[calc(100%+460px)] md:h-[calc(100%+120px)]
+              lg:w-[calc(100%+460px)] lg:h-[calc(100%+140px)]
+              xl:w-[calc(100%+920px)] xl:h-[calc(100%+160px)]
             "
             style={{
-              backgroundImage: "url('/img/Backgrounds/background4.jpg')",
+              backgroundImage: "url('/img/Backgrounds/background3.jpg')",
               backgroundRepeat: "repeat",
               backgroundSize: "320px",
               backgroundPosition: "center",
@@ -95,9 +95,9 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
             className="
               pointer-events-none select-none absolute left-1/2 top-1/2 -z-20 -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-raw/25
               w-[calc(100%+48px)] h-[calc(100%+40px)]
-              md:w-[calc(100%+160px)] md:h-[calc(100%+120px)]
-              lg:w-[calc(100%+160px)] lg:h-[calc(100%+140px)]
-              xl:w-[calc(100%+180px)] xl:h-[calc(100%+160px)]
+              md:w-[calc(100%+460px)] md:h-[calc(100%+120px)]
+              lg:w-[calc(100%+460px)] lg:h-[calc(100%+140px)]
+              xl:w-[calc(100%+920px)] xl:h-[calc(100%+160px)]
             "
           />
 

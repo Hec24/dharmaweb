@@ -1,7 +1,7 @@
 export const ROUTES = {
   HOME: "/",
   EVALUACION: "/evaluacion",
-  PROFESORES: "/acompanamientos#agendar",
+  PROFESORES: "/equipo",
   CURSOS: "/cursos",
   ACOMPANAMIENTOS: "/acompanamientos"
 }
