@@ -15,8 +15,7 @@ import { profesores } from "../data/profesores";
 import { faqsAcompanamientos } from "../data/faqs";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import type { Profesor } from "../data/types";
-// import HeadingPicture from "../Components/shared/HeadingPicture";
-// import PreFooterPicture from "../Components/shared/preFooterPicture";
+
 
 
 // ——— Chips de especialidad (compacto)
@@ -184,15 +183,26 @@ const AcompañamientosPage: React.FC = () => {
       >
         
 
-        <div className="w-full text-center flex flex-col items-center justify-start pt-10 md:pt-12 pb-6 min-h-[320px]">
+        <div
+          className="
+            w-full flex flex-col items-center justify-start text-center
+            px-6 sm:px-8              /* 👉 añade aire lateral en mobile */
+            pt-14 md:pt-16 lg:pt-20  /* 👉 más respiro arriba */
+            pb-8 md:pb-10            /* 👉 más aire abajo */
+            min-h-[340px]            /* un poco más de alto base */
+          "
+        >
           <SectionHeader
             title="Acompañamientos Personalizados: Tu Ruta Con Guía"
             subtitle="Dharma en Ruta también es un espacio vivo, donde profundizar en tu proceso de manera personal."
-            subtitleClassName="text-base md:text-lg text-black mt-2"
+            subtitleClassName="
+              text-base md:text-lg text-black mt-3 md:mt-4 
+              max-w-[22rem] sm:max-w-[28rem] md:max-w-[36rem] /* 👉 limita ancho del subtítulo para legibilidad */
+            "
             align="center"
             size="md"
             color="black"
-            className="mb-4"
+            className="mb-5 md:mb-6"
             decoration
           />
 
@@ -218,14 +228,9 @@ const AcompañamientosPage: React.FC = () => {
             />
           )}
         </div>
+
       </Header>
 
-      {/* <HeadingPicture
-          src="/img/Backgrounds/background4.jpg"
-          alt="formas dharma"
-          height="md"
-          fullBleed
-        /> */}
 
       <div className="font-degular text-raw overflow-x-hidden">
         {/* CÓMO FUNCIONA */}
@@ -260,7 +265,7 @@ const AcompañamientosPage: React.FC = () => {
                 <div key={s.n} className="bg-linen p-6 md:p-7 rounded-xl shadow-sm ring-1 ring-black/5">
                   <span className="text-gold text-2xl md:text-3xl font-semibold mb-2 block">{s.n}</span>
                   <h3 className="text-base md:text-lg font-semibold mb-2 text-raw">{s.t}</h3>
-                  <p className="text-sm md:text-base text-raw/90">{s.d}</p>
+                  <p className="text-sm md:text-base text-asparragus">{s.d}</p>
                 </div>
               ))}
             </div>
@@ -433,12 +438,7 @@ const AcompañamientosPage: React.FC = () => {
           <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
         </section>
       </div>
-      {/* <PreFooterPicture
-     src="/img/Backgrounds/endingPicture.jpg"
-     alt="imagen dharma"
-     height="lg"
-     fullBleed
-   /> */}
+
     </>
   );
 };

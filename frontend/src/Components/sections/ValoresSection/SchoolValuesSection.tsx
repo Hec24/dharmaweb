@@ -54,7 +54,7 @@ export default function SchoolValuesSection({
       {/* Patrón visible con mezcla cálida */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 opacity-100"
+        className="absolute inset-0 -z-10 opacity-65"
         style={{
           backgroundImage: `url('${bgSrc}')`,
           backgroundRepeat: "repeat",
