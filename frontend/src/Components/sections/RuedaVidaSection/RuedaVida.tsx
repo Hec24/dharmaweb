@@ -70,36 +70,6 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
 
         {/* Panel editorial (patrón por detrás del cuadro) */}
         <div className="relative mx-auto max-w-5xl rounded-2xl bg-white/90 p-5 md:p-7 ring-1 ring-black/5 shadow-lg">
-          {/* Patrón detrás del cuadro (más grande en desktop, sin desbordar el body) */}
-          <div
-            aria-hidden
-            className="
-              pointer-events-none select-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 rounded-3xl
-              w-[calc(100%+48px)] h-[calc(100%+40px)]
-              md:w-[calc(100%+460px)] md:h-[calc(100%+120px)]
-              lg:w-[calc(100%+460px)] lg:h-[calc(100%+140px)]
-              xl:w-[calc(100%+920px)] xl:h-[calc(100%+160px)]
-            "
-            style={{
-              backgroundImage: "url('/img/Backgrounds/background3.jpg')",
-              backgroundRepeat: "repeat",
-              backgroundSize: "320px",
-              backgroundPosition: "center",
-              opacity: 0.45,
-              filter: "saturate(0.9)",
-            }}
-          />
-          {/* Tinte cálido por debajo del patrón (mismas dimensiones responsivas) */}
-          <div
-            aria-hidden
-            className="
-              pointer-events-none select-none absolute left-1/2 top-1/2 -z-20 -translate-x-1/2 -translate-y-1/2 rounded-3xl bg-raw/25
-              w-[calc(100%+48px)] h-[calc(100%+40px)]
-              md:w-[calc(100%+460px)] md:h-[calc(100%+120px)]
-              lg:w-[calc(100%+460px)] lg:h-[calc(100%+140px)]
-              xl:w-[calc(100%+920px)] xl:h-[calc(100%+160px)]
-            "
-          />
 
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 md:gap-8 items-center relative z-10">
             {/* Imagen con la rueda */}
