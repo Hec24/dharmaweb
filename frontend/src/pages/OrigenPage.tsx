@@ -1,5 +1,4 @@
 // src/pages/OrigenPage.tsx
-
 import { FiArrowRight } from "react-icons/fi";
 import { LuCompass, LuFeather, LuMap, LuUsers } from "react-icons/lu";
 import GenericNav from "../Components/shared/GenericNav";
@@ -8,11 +7,8 @@ import SectionHeader from "../Components/ui/SectionHeader";
 import ButtonLink from "../Components/ui/ButtonLink";
 
 type OrigenPageProps = {
-  /** Imagen de fondo del HERO (distinta a la foto principal) */
   heroBgSrc?: string;
-  /** Imagen principal del relato (Pat + van) */
   coverImageSrc?: string;
-  /** Alt de la imagen principal */
   coverImageAlt?: string;
 };
 
@@ -21,9 +17,11 @@ export default function OrigenPage({
   coverImageSrc = "/img/Team/patytest.webp",
   coverImageAlt = "Pat en su furgoneta junto a Thelma y Louise, en ruta",
 }: OrigenPageProps) {
+  const bgSrc = "/img/Backgrounds/background4.jpg";
+
   return (
     <>
-      {/* NAV (patrón CursosPage) */}
+      {/* NAV */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
           title="Dharma en Ruta"
@@ -40,7 +38,7 @@ export default function OrigenPage({
         />
       </header>
 
-      {/* HERO (fondo independiente, no la foto de Pat) */}
+      {/* HERO */}
       <section
         className="relative h-[38vh] md:h-[46vh] flex items-end overflow-hidden"
         aria-labelledby="origen-hero-title"
@@ -63,8 +61,6 @@ export default function OrigenPage({
             subtitleClassName="font-gotu text-linen/95 text-base sm:text-lg md:text-xl"
           />
         </div>
-
-        {/* hairline inferior */}
         <div
           aria-hidden
           className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 to-transparent"
@@ -73,31 +69,26 @@ export default function OrigenPage({
 
       {/* CONTENIDO */}
       <main id="main" className="font-degular text-raw bg-linen" aria-labelledby="origen-hero-title">
-        {/* P1 — El inicio (título dentro de la misma columna que el párrafo) */}
-        <section
-          aria-labelledby="inicio-title"
-          className="relative border-b border-raw/10 flow-root"
-        >
+        {/* P1 */}
+        <section aria-labelledby="inicio-title" className="relative border-b border-raw/10 flow-root">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
             <div className="grid gap-6 md:grid-cols-12 md:items-center">
-              {/* Columna texto (7/12) — título y párrafo unidos para evitar “saltos” */}
               <div className="order-2 md:order-1 md:col-span-7">
                 <div className="space-y-4">
                   <h2 id="inicio-title" className="font-gotu text-asparragus text-lg md:text-xl">
                     El inicio
                   </h2>
                   <p className="text-sm md:text-base leading-relaxed text-raw/90">
-                    Hace unos años decidí que no iba a vivir más desde el miedo. 
-                    Un 31 de diciembre empaqué lo justo, compré un billete de solo ida y me lancé sola a 
-                    recorrer el Sudeste Asiático. 
-                    <br/>
+                    Hace unos años decidí que no iba a vivir más desde el miedo.
+                    Un 31 de diciembre empaqué lo justo, compré un billete de solo ida y me lancé sola a
+                    recorrer el Sudeste Asiático.
+                    <br />
                     Ese viaje me quitó mil capas: aprendí a estar conmigo, a soltar lo que no me
                     servía y a darme cuenta de que sí, había otra manera de vivir. Fue el inicio de mi propio Dharma.
                   </p>
                 </div>
               </div>
 
-              {/* Columna imagen (5/12) */}
               <div className="order-1 md:order-2 md:col-span-5">
                 <figure className="relative overflow-hidden rounded-xl bg-raw/5 ring-1 ring-raw/10">
                   <img
@@ -116,19 +107,18 @@ export default function OrigenPage({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-raw/15 to-transparent" />
         </section>
 
-        {/* P2 — La fusión */}
-        <section aria-labelledby="fusion-title" className="relative border-b border-raw/10">
+        {/* P2 */}
+        <section aria-labelledby="fusion-title" className="relative border-b border-raw/10 bg-raw/5">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
             <div className="mb-4 sm:mb-5">
               <h2 id="fusion-title" className="font-gotu text-asparragus text-lg md:text-xl">
                 La fusión
               </h2>
             </div>
-
             <div className="grid gap-6 md:grid-cols-12 md:items-start">
               <div className="md:col-span-7">
                 <p className="text-sm md:text-base leading-relaxed text-raw/90">
-                  De vuelta, seguí explorando y compartiendo lo que me transformabaa: el yoga, la meditación,
+                  De vuelta, seguí explorando y compartiendo lo que me transformaba: el yoga, la meditación,
                   la filosofía, los retiros, los viajes, la fisioterapia… Y al mismo tiempo, elegí un estilo de vida
                   nómada, viviendo en mi furgoneta con mis dos gatas, Thelma y Louise.
                   <br />
@@ -136,12 +126,10 @@ export default function OrigenPage({
                   su ruta: hacia dentro (autoconocimiento) y hacia fuera (nuevas formas de vivir).
                 </p>
               </div>
-
-              {/* Lista de 3 ítems con icono y texto */}
               <div className="md:col-span-5">
                 <ol className="space-y-3" role="list" aria-label="Tres pilares de esta fusión">
                   <li role="listitem" className="flex items-start gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gold/90 text-white shadow-sm ring-1 ring-black/5">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-gold)] text-white shadow-sm ring-1 ring-black/5">
                       <LuCompass aria-hidden />
                     </span>
                     <p className="text-sm leading-snug text-raw/90">
@@ -149,7 +137,7 @@ export default function OrigenPage({
                     </p>
                   </li>
                   <li role="listitem" className="flex items-start gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-asparragus text-white shadow-sm ring-1 ring-black/5">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-asparragus)] text-white shadow-sm ring-1 ring-black/5">
                       <LuFeather aria-hidden />
                     </span>
                     <p className="text-sm leading-snug text-raw/90">
@@ -157,7 +145,7 @@ export default function OrigenPage({
                     </p>
                   </li>
                   <li role="listitem" className="flex items-start gap-3">
-                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-raw text-white shadow-sm ring-1 ring-black/5">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[var(--color-raw)] text-white shadow-sm ring-1 ring-black/5">
                       <LuUsers aria-hidden />
                     </span>
                     <p className="text-sm leading-snug text-raw/90">
@@ -171,51 +159,96 @@ export default function OrigenPage({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-raw/15 to-transparent" />
         </section>
 
-                {/* P3 — Nacimiento de la escuela (con enlace externo) */}
-        <section aria-labelledby="escuela-title" className="relative border-b border-raw/10">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        {/* P3 — patrón EXACTO SchoolValues + difuminado corto */}
+        <section
+          aria-labelledby="escuela-title"
+          className="relative isolate border-b border-raw/10 overflow-hidden"
+        >
+          {/* Fondo base claro */}
+          <div className="absolute inset-0 -z-20 bg-white" aria-hidden />
+
+          {/* Patrón visible con mezcla cálida (imitado tal cual) */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-10 opacity-65"
+            style={{
+              backgroundImage: `url('${bgSrc}')`,
+              backgroundRepeat: "repeat",
+              backgroundSize: "240px",
+              backgroundPosition: "center",
+              mixBlendMode: "multiply",
+              // incluye la opacidad dentro del filter como en tu snippet
+              filter: "saturate(0.85) brightness(1.05) opacity(0.35)",
+            }}
+          />
+
+          {/* Tinte suave para cohesionar (mix-blend-multiply, sin color fuerte) */}
+          <div
+            aria-hidden
+            className="absolute inset-0 -z-[5] mix-blend-multiply"
+          />
+
+          {/* Difuminado inferior más corto (sección estrecha) */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-8"
+            style={{
+              background:
+                "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.75) 70%, rgba(255,255,255,1) 100%)",
+            }}
+          />
+
+          {/* CONTENIDO */}
+          <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
             <div className="mb-4 sm:mb-5">
               <h2 id="escuela-title" className="font-gotu text-asparragus text-lg md:text-xl">
                 El nacimiento de la escuela
               </h2>
             </div>
-
             <div className="grid gap-6 md:grid-cols-12">
               <div className="md:col-span-7">
-                <p className="text-sm md:text-base leading-relaxed text-raw/90">
+                <p className="text-sm md:text-base leading-relaxed text-raw">
                   De ahí nació{" "}
                   <a
                     href="https://patriciaholisticyoga.com/que-es-dharma-en-ruta-y-como-puedes-encontrar-tu-dharma/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-asparragus underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded"
-                    aria-label="Leer más sobre qué es Dharma en Ruta y cómo encontrar tu dharma (se abre en una pestaña nueva)"
+                    className="underline underline-offset-4 text-asparragus decoration-asparragus/30 hover:decoration-asparragus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white rounded"
                   >
                     Dharma en Ruta
                   </a>
-                  : una escuela colaborativa, nutrida por distintas voces y profesionales que comparten 
+                  : una escuela colaborativa, nutrida por distintas voces y profesionales que comparten
                   su sabiduría, experiencia y recorrido personal, haciendo de cada área un espacio único y vivo.
-                  <br /> 
+                  <br />
                   Una escuela que no se queda en la teoría, sino que te da recursos prácticos para:
                 </p>
-
-                <ul role="list" className="mt-4 space-y-2 text-sm md:text-base" aria-label="Recursos prácticos de la escuela">
+                <ul
+                  role="list"
+                  className="mt-4 space-y-2 text-sm md:text-base"
+                  aria-label="Recursos prácticos de la escuela"
+                >
                   {[
                     "Reconocer quién eres",
                     "Gestionar tus emociones y miedos",
                     "Crear hábitos y vínculos más sanos",
                     "Vivir con más libertad y coherencia",
                   ].map((item) => (
-                    <li key={item} role="listitem" className="flex items-start gap-2 text-raw/90">
-                      <span aria-hidden className="mt-[0.35rem] inline-block h-1.5 w-1.5 rounded-full bg-asparragus" />
+                    <li
+                      key={item}
+                      className="flex items-center gap-2 text-raw"
+                      role="listitem"
+                    >
+                      <span
+                        aria-hidden
+                        className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--color-asparragus)] flex-shrink-0"
+                      />
                       <span className="leading-snug">{item}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-
               <div className="md:col-span-5">
-                <div className="rounded-xl border border-raw/10 bg-white/70 p-4 shadow-sm backdrop-blur">
+                <div className="rounded-xl border border-raw/10 bg-white/80 p-4 shadow-sm backdrop-blur">
                   <div className="mb-3 flex items-center gap-2">
                     <LuMap aria-hidden className="text-asparragus" />
                     <p className="font-gotu text-asparragus text-base">8 áreas, una misma ruta</p>
@@ -228,45 +261,35 @@ export default function OrigenPage({
               </div>
             </div>
           </div>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-raw/15 to-transparent" />
         </section>
 
-        {/* P4 — Visión + CTA */}
-        <section aria-labelledby="vision-title" className="relative">
+        {/* P4 */}
+        <section aria-labelledby="vision-title" className="relative bg-[var(--color-pale)]/10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-            <div className="mb-4 sm:mb-5">
-              <h2 id="vision-title" className="font-gotu text-asparragus text-lg md:text-xl">
-                La visión
-              </h2>
-            </div>
-
+            <h2 id="vision-title" className="font-gotu text-asparragus text-lg md:text-xl mb-4 sm:mb-5">
+              La visión
+            </h2>
             <div className="grid gap-6 md:grid-cols-12 md:items-center">
-              {/* Columna izquierda: texto */}
               <div className="md:col-span-7">
                 <p className="text-sm md:text-base leading-relaxed text-raw/90">
                   Dharma en Ruta es también comunidad: un lugar donde conectar con
                   personas afines, donde compartir, aprender y sentir que no estás sol@ en este camino.
                   <br />
-                  Hoy, esta escuela es el reflejo de mi viaje y mi compromiso: mostrarte que sí, hay otra 
+                  Hoy, esta escuela es el reflejo de mi viaje y mi compromiso: mostrarte que sí, hay otra
                   manera de vivir, y que puedes empezar a caminar hacia ella ahora.
                 </p>
               </div>
-
-              {/* Columna derecha: CTA (botón) */}
-              <div className="md:col-span-5">
-                <div className="flex md:justify-start">
-                  <ButtonLink
-                    as="a"
-                    size="md"
-                    variant="secondary"
-                    icon={<FiArrowRight aria-hidden />}
-                    aria-label="Descarga Gratis tu Mapa del Dharma"
-                    href="https://dashboard.mailerlite.com/forms/779309/143072527599535592/share"
-                    className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                  >
+              <div className="md:col-span-5 flex md:justify-start">
+                <ButtonLink
+                  as="a"
+                  size="md"
+                  variant="secondary"
+                  icon={<FiArrowRight aria-hidden />}
+                  href="https://dashboard.mailerlite.com/forms/779309/143072527599535592/share"
+                  className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                >
                   Da tu primer paso: Descarga Gratis tu Mapa del Dharma
-                  </ButtonLink>
-                </div>
+                </ButtonLink>
               </div>
             </div>
           </div>

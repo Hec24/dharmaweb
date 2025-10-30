@@ -30,7 +30,7 @@ export const AREAS: Record<string, Area> = {
     "Un viaje hacia dentro para conocerte, reconocerte y sanar lo que duele. Aquí trabajas tus emociones, tu historia y tu identidad, para vivir desde tu verdad, no desde el deber.", 
     encontraras:"Qué encontrarás:",
     color: "var(--color-linen)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     bullets: [
       "Herramientas de autoconocimiento y gestión emocional",
       "Trabajo con la/el niña/o interior, heridas y creencias limitantes",
@@ -90,7 +90,7 @@ export const AREAS: Record<string, Area> = {
     "Aprende a cuidar de tu dinero sin miedo, con presencia y consciencia. Porque la libertad también se construye desde la seguridad y el equilibrio.",
     encontraras:"Qué encontrarás:",
     color: "var(--color-gold)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     bullets: [
       "Educación financiera básica y hábitos de abundancia",
       "Cómo reconciliarte con la energía del dinero",
@@ -132,7 +132,7 @@ export const AREAS: Record<string, Area> = {
     descripcion: "Explora las enseñanzas que transforman la manera en que ves el mundo. Yoga, budismo, taoísmo, estoicismo y más… caminos que te invitan a pensar, sentir y comunicar con mayor claridad y propósito.",
     encontraras:"Qué encontrarás:",
     color: "var(--color-raw-100)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     bullets: [
       "Escritura y comunicación como herramientas de autoconocimiento", 
       "Filosofías y prácticas de vida aplicadas al día a día",
@@ -199,7 +199,7 @@ export const AREAS: Record<string, Area> = {
       "Reflexiones sobre el desapego y el bienestar emocional en casa.",
     ],
     color: "var(--color-pale)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     cursos: [
        {
         id: "c016",
@@ -260,7 +260,7 @@ export const AREAS: Record<string, Area> = {
     ],
     encontraras:"Qué encontrarás:",
     color: "var(--color-mossgreen)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     cursos: [
       {
         id: "c022",
@@ -306,7 +306,7 @@ export const AREAS: Record<string, Area> = {
       "Rutinas de descanso, autocuidado y bienestar físico.",
     ],
     color: "var(--color-asparragus)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     cursos: [
       {
         id: "c026",
@@ -371,7 +371,7 @@ export const AREAS: Record<string, Area> = {
       "Recursos para cultivar relaciones auténticas y equilibradas",
     ],
     color: "var(--color-asparragus-800)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     cursos: [
       {
         id: "c033",
@@ -422,7 +422,7 @@ export const AREAS: Record<string, Area> = {
       "Prácticas para cultivar intimidad, amor propio y conexión real",
     ],
     color: "var(--color-raw)",
-    heroImg: "/img/Backgrounds/background3.jpg",
+    heroImg: "/img/Backgrounds/background4.jpg",
     cursos: [
        {
         id: "c038",
