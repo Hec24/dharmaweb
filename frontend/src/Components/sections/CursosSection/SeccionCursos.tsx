@@ -85,7 +85,7 @@ const SeccionCursos: React.FC = () => {
 
         {/* Contenedor blanco con patrón detrás */}
         <div
-          className="relative rounded-2xl bg-white/90 ring-1 ring-black/5 supports-[backdrop-filter]:backdrop-blur-md p-4 sm:p-5 md:p-6 lg:p-8 shadow-sm overflow-hidden"
+          className="relative rounded-2xlsupports-[backdrop-filter]:backdrop-blur-md p-4 sm:p-5 md:p-6 lg:p-8 shadow-sm overflow-hidden"
           role="region"
           aria-labelledby={headingId}
         >
@@ -95,7 +95,7 @@ const SeccionCursos: React.FC = () => {
             className="
               hidden md:block
               absolute inset-0 -z-10 rounded-3xl
-              before:absolute before:inset-0 before:rounded-3xl before:bg-raw/25
+              before:absolute before:inset-0 before:rounded-3xl 
             "
             style={{
               backgroundImage: "url('/img/Backgrounds/background2.jpg')",
