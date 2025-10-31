@@ -53,20 +53,17 @@ const TestimonialsCarousel: React.FC = () => {
   const visible: Testimonial[] = filtered.slice(startIndex, startIndex + perPage);
 
   useEffect(() => {
-    // reset de página al cambiar filtros o layout (perPage)
     setPage(0);
   }, [activeFilter, perPage]);
 
   return (
-
-    
     <section
       id="testimonios"
       className="relative bg-[var(--color-linen)] overflow-hidden"
       aria-labelledby={headingId}
       role="region"
     >
-     {/* Escalón superior: overlay oscuro que recoge el hairline del Header */}
+      {/* Escalón superior: overlay oscuro que recoge el hairline del Header */}
       <div
         aria-hidden
         className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
@@ -108,12 +105,30 @@ const TestimonialsCarousel: React.FC = () => {
           </ul>
         </nav>
 
-        {/* GRID paginada:
-            - Mobile-first: 1 columna (perPage=1)
-            - >=1024px: 2 columnas (perPage=2)
-            - Solo se renderizan `perPage` cards por página (1 o 2).
-        */}
-        <div className="rounded-2xl bg-white/90 ring-1 ring-black/5 supports-[backdrop-filter]:backdrop-blur-md p-4 md:p-6">
+        {/* === CONTENEDOR BLANCO CON PATRÓN DETRÁS (como CursoSection) === */}
+        <div
+          className="relative rounded-2xl supports-[backdrop-filter]:backdrop-blur-md p-4 sm:p-5 md:p-6 lg:p-8 shadow-sm overflow-hidden"
+          role="group"
+          aria-labelledby={headingId}
+        >
+          {/* Patrón detrás del contenido (solo desktop) */}
+          <div
+            aria-hidden
+            className="
+              hidden md:block
+              absolute inset-0 -z-10 rounded-3xl
+              before:absolute before:inset-0 before:rounded-3xl
+            "
+            style={{
+              backgroundImage: "url('/img/Backgrounds/background2.jpg')",
+              backgroundRepeat: "repeat",
+              backgroundSize: "320px",
+              backgroundPosition: "center",
+              opacity: 0.45,
+              filter: "saturate(0.9)",
+            }}
+          />
+
           {/* Controles tipo “flechas” (coherentes con TeamCarousel) */}
           <div className="hidden lg:flex justify-end mb-4 gap-2" aria-hidden={totalPages <= 1}>
             <IconPager
@@ -124,6 +139,7 @@ const TestimonialsCarousel: React.FC = () => {
             />
           </div>
 
+          {/* GRID paginada */}
           <div role="list" aria-label="Testimonios" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
             {visible.length === 0 ? (
               <div role="status" className="col-span-full text-center text-asparragus/70 font-degular text-sm">
@@ -138,7 +154,7 @@ const TestimonialsCarousel: React.FC = () => {
             )}
           </div>
 
-          {/* Controles en mobile, también con flechas para coherencia */}
+          {/* Controles en mobile */}
           {totalPages > 1 && (
             <div className="mt-5 flex items-center justify-center lg:hidden">
               <IconPager
@@ -192,7 +208,7 @@ const IconPager: React.FC<{
   const isNextDisabled = page >= totalPages - 1;
 
   const btnBase =
-    "inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/5 bg-[var(--color-linen)]/70 text-asparragus transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asparragus focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-40";
+    "inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 bg-white text-asparragus transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-black";
 
   return (
     <div className="flex items-center gap-2">
@@ -206,7 +222,7 @@ const IconPager: React.FC<{
         <FiChevronLeft aria-hidden />
         <span className="sr-only">Anterior</span>
       </button>
-      <span className="mx-1 text-xs font-degular text-asparragus/70" aria-live="polite">
+      <span className="mx-1 text-xs font-degular text-black bg-white" aria-live="polite">
         {page + 1} / {totalPages}
       </span>
       <button
@@ -224,4 +240,3 @@ const IconPager: React.FC<{
 };
 
 export default TestimonialsCarousel;
-

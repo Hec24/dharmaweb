@@ -7,16 +7,15 @@ import { profesores } from "../data/profesores";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
 /**
- * Página de Equipo — Versión informativa con layout tipo “card horizontal profesional”
- * - Imagen grande 3:4 (como antes).
- * - Bloque blanco ancho a un lado con nombre, título, descripción y tags.
- * - En móvil: apilado (foto arriba, texto abajo).
- * - En desktop: diseño de dos columnas equilibradas (foto + cuadro blanco).
+ * EquipoPage — Variante con panel derecho en VERTICAL:
+ * Arriba: título, texto y etiquetas.
+ * Abajo: patrón decorativo ocupando ~45% de alto (solo desktop).
  */
 
 type ProfesorItem = (typeof profesores)[number];
 
 const heroBgSrc = "/img/Backgrounds/background5.jpg";
+const panelPatternSrc = "/img/Backgrounds/background4.jpg";
 
 function Tag({ children }: { children: string }) {
   return (
@@ -31,13 +30,19 @@ function ProfileRow({ p }: { p: ProfesorItem }) {
 
   return (
     <article
-      className="group relative isolate rounded-3xl overflow-hidden ring-1 ring-black/5 bg-linen shadow-sm"
+      className="group relative isolate overflow-hidden rounded-3xl ring-1 ring-black/5 bg-linen shadow-sm"
       aria-labelledby={titleId}
       role="listitem"
     >
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[22rem]">
-        {/* Imagen 3:4 uniforme (misma proporción que antes, ocupa la mitad en desktop) */}
-        <div className="relative md:w-1/2 lg:w-[45%] aspect-[3/4] md:aspect-auto">
+      {/* Altura generosa del bloque para dar presencia a imagen y patrón */}
+      <div
+        className="
+          flex flex-col md:flex-row md:items-stretch
+          min-h-[34rem] sm:min-h-[38rem] md:min-h-[44rem] lg:min-h-[48rem]
+        "
+      >
+        {/* Imagen 3:4 con presencia en móvil; 45%/55% en desktop */}
+        <div className="relative h-[22rem] sm:h-[24rem] md:h-auto md:w-1/2 lg:w-[45%]">
           <img
             src={p.image}
             alt={p.name}
@@ -50,35 +55,66 @@ function ProfileRow({ p }: { p: ProfesorItem }) {
           />
         </div>
 
-        {/* Bloque blanco informativo */}
-        <div className="relative bg-white md:w-1/2 lg:w-[55%] flex flex-col justify-center p-6 sm:p-8 md:p-10 text-raw">
-          <header className="mb-2">
-            <h3
-              id={titleId}
-              className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw"
-            >
-              {p.name}
-            </h3>
-            {p.title && (
-              <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular">
-                {p.title}
-              </p>
-            )}
-          </header>
+        {/* Panel informativo en vertical: contenido arriba + patrón abajo */}
+        <div className="relative bg-white md:w-1/2 lg:w-[55%] overflow-hidden md:rounded-r-3xl">
+          <div className="flex h-full flex-col">
+            {/* Contenido (arriba) */}
+            <div className="flex-0 p-6 sm:p-8 md:p-10 text-raw">
+              <header className="mb-2">
+                <h3
+                  id={titleId}
+                  className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw"
+                >
+                  {p.name}
+                </h3>
+                {p.title && (
+                  <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular">
+                    {p.title}
+                  </p>
+                )}
+              </header>
 
-          {p.description && (
-            <p className="mt-3 text-sm md:text-base text-raw/85 leading-relaxed font-degular">
-              {p.description}
-            </p>
-          )}
+              {p.description && (
+                <p className="mt-3 text-sm md:text-base text-raw/85 leading-relaxed font-degular">
+                  {p.description}
+                </p>
+              )}
 
-          {p.specialties && p.specialties.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {p.specialties.map((s) => (
-                <Tag key={`${p.id}-${s}`}>{s}</Tag>
-              ))}
+              {p.specialties && p.specialties.length > 0 && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {p.specialties.map((s) => (
+                    <Tag key={`${p.id}-${s}`}>{s}</Tag>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Patrón (abajo). Solo en desktop para no recargar móvil */}
+            <div
+              className="
+                relative hidden md:block
+                basis-[45%] grow
+              "
+              aria-hidden
+            >
+              {/* Separador hairline entre contenido y patrón */}
+              <div className="absolute -top-px left-0 right-0 h-px bg-black/10" />
+              {/* Fondo patrón ocupando todo el contenedor inferior */}
+              <div
+                className="absolute inset-0"
+                style={{
+                  backgroundImage: `url('${panelPatternSrc}')`,
+                  backgroundRepeat: "repeat",
+                  backgroundSize: "320px",
+                  backgroundPosition: "center",
+                  opacity: 0.45,
+                  filter: "saturate(0.9)",
+                }}
+              />
+              {/* Velo sutil por si hay imágenes con mucho contraste */}
+              <div className="absolute inset-0 bg-white/10" />
+            </div>
+          </div>
         </div>
       </div>
     </article>

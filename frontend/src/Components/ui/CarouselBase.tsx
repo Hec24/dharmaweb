@@ -81,7 +81,7 @@ export function CarouselBase<T>({
       {showLeft && (
         <button
           onClick={prevSlide}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-md hover:bg-linen transition-colors -ml-2 md:-ml-4 border border-gold/30"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white p-2 rounded-full  hover:bg-linen transition-colors -ml-2 md:-ml-4 border border-gold/30"
           aria-label="Anterior"
         >
           ‹
@@ -90,7 +90,7 @@ export function CarouselBase<T>({
       {showRight && (
         <button
           onClick={nextSlide}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-md hover:bg-linen transition-colors -mr-2 md:-mr-4 border border-gold/30"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white p-2 rounded-full hover:bg-linen transition-colors -mr-2 md:-mr-4 border border-gold"
           aria-label="Siguiente"
         >
           ›

@@ -16,7 +16,7 @@ const TeamCarousel: React.FC = () => {
   return (
     <section
       id="profesores"
-      className="relative bg-linen overflow-hidden"
+      className="relative bg-[var(--color-linen)] overflow-hidden"
       aria-labelledby={headingId}
     >
       {/* Escalón superior: overlay oscuro */}
@@ -24,10 +24,11 @@ const TeamCarousel: React.FC = () => {
         aria-hidden
         className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
       />
-      
-      
+
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 md:pt-12 pb-12 md:pb-14">
-        
+        <h2 id={headingId} className="sr-only">
+          Conoce a nuestro equipo
+        </h2>
 
         <SectionHeader
           title="Conoce a nuestro equipo"
@@ -39,12 +40,31 @@ const TeamCarousel: React.FC = () => {
           className="mb-6 md:mb-8"
         />
 
-        {/* Carrusel */}
+        {/* === Contenedor blanco con patrón detrás (igual que en CursosSection / Testimonials) === */}
         <div
           role="region"
           aria-labelledby={headingId}
-          className="rounded-2xl bg-white/90 ring-1 ring-black/5 supports-[backdrop-filter]:backdrop-blur-md p-4 md:p-6"
-        >
+          className="relative rounded-2xl supports-[backdrop-filter]:backdrop-blur-md p-4 sm:p-5 md:p-6 lg:p-8 shadow-sm overflow-hidden">
+          
+          {/* Patrón detrás del contenido (solo md+) */}
+          <div
+            aria-hidden
+            className="
+              hidden md:block
+              absolute inset-0 -z-10 rounded-3xl
+              before:absolute before:inset-0 before:rounded-3xl
+            "
+            style={{
+              backgroundImage: "url('/img/Backgrounds/background2.jpg')",
+              backgroundRepeat: "repeat",
+              backgroundSize: "320px",
+              backgroundPosition: "center",
+              opacity: 0.45,
+              filter: "saturate(0.9)",
+            }}
+          />
+
+          {/* Carrusel */}
           <CarouselBase
             items={profesores}
             renderItem={(p: ProfesorItem) => (
@@ -60,8 +80,6 @@ const TeamCarousel: React.FC = () => {
                   title={(p as { title?: string }).title}
                   description={(p as { description?: string }).description}
                   specialties={(p as { specialties?: string[] }).specialties}
-                  // /* El botón “Conoce más” de la card apuntará a la sección correcta */
-                  // link={ROUTES.PROFESORES} // p.ej. "/acompanamientos#profesores"
                 />
               </div>
             )}
@@ -85,15 +103,9 @@ const TeamCarousel: React.FC = () => {
         </div>
       </div>
 
-      {/* Hairline inferior pegado al borde de la sección (para encadenar con el overlay de la siguiente) */}
-      <div
-        aria-hidden
-        className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
-      />
-       <div
-        aria-hidden
-        className="mt-12 md:mt-16 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
-      />
+      {/* Hairlines inferiores */}
+      <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+      <div aria-hidden className="mt-12 md:mt-16 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
     </section>
   );
 };
