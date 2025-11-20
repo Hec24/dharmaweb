@@ -1,7 +1,6 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-// import Header from "../Components/shared/Header";
 import GenericNav from "../Components/shared/GenericNav";
 
 import IntroEscuela from "../Components/sections/IntroEscuela/IntroEscuela";
@@ -10,13 +9,11 @@ import RuedaVida from "../Components/sections/RuedaVidaSection/RuedaVida";
 import LeadMagnet from "../Components/sections/LeadMagnetSection/LeadMagnet";
 import TeamCarousel from "../Components/sections/TeamSection/TeamCarousel";
 import TestimonialsCarousel from "../Components/sections/Testimonios/TestimonialsCarousel";
-// import TituloEscuela from "../Components/sections/HeaderSection/TituloEscuela";
 import LandingHeader from "../Components/shared/Header/LandingHeader";
-// import HeadingPicture from "../Components/shared/HeadingPicture";
-// import PreFooterPicture from "../Components/shared/preFooterPicture";
 import SchoolValuesSection from "../Components/sections/ValoresSection/SchoolValuesSection";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
+import MembershipSection from "../Components/sections/MembershipSection/MembershipSection";
 
 const ORG_JSON_LD = {
   "@context": "https://schema.org",
@@ -126,22 +123,14 @@ export const LandingPage: React.FC = () => {
           />
         }
       >
-        {/* Contenido del hero (debajo del nav) */}
-        {/* <div className="relative w-full z-20 pb-10">
-          <TituloEscuela />
-        </div> */}
+        
       </LandingHeader>
 
-      {/* <HeadingPicture
-          src="/img/Backgrounds/background4.jpg"
-          alt="formas dharma"
-          height="md"
-          fullBleed
-        /> */}
-
+      
       {/* Resto de secciones */}
       <section className="flex flex-col">
         <IntroEscuela />
+        <MembershipSection />
         <SeccionCursos />
       </section>
 

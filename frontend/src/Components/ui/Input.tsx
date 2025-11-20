@@ -38,7 +38,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block mb-1 text-lg font-gotu text-asparragus"
+            className="block mb-1 text-sm font-gotu text-asparragus"
           >
             {label}
           </label>
@@ -64,7 +64,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <span
             id={`${inputId}-error`}
-            className="text-lg font-gotu text-red-600 mt-1 block"
+            className="text-xs font-gotu text-red-600 mt-1 block"
           >
             {error}
           </span>

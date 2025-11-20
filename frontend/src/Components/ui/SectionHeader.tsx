@@ -1,3 +1,4 @@
+// src/Components/ui/SectionHeader.tsx
 import React from "react";
 
 type Size = "sm" | "md" | "lg" | "xl" | "custom";
@@ -6,13 +7,15 @@ interface SectionHeaderProps {
   title: React.ReactNode;
   subtitle?: string | React.ReactNode;
   subtitleClassName?: string;
-  titleClassName?: string;              // ya lo tenías
+  titleClassName?: string;
   align?: "center" | "left";
-  size?: Size;                          // <-- ahora acepta "custom"
+  size?: Size;
   color?: "asparragus" | "gold" | "raw" | "linen" | "white" | "black";
   className?: string;
   decoration?: React.ReactNode;
   children?: React.ReactNode;
+  id?: string;          // NUEVO: para aria-labelledby / anclas
+  eyebrow?: string;     // NUEVO: línea pequeña encima del título
 }
 
 const sizes: Record<Exclude<Size, "custom">, string> = {
@@ -22,7 +25,6 @@ const sizes: Record<Exclude<Size, "custom">, string> = {
   xl: "text-5xl sm:text-6xl lg:text-7xl mb-10",
 };
 
-// helper para no aplicar nada cuando size="custom"
 function sizeClasses(size?: Size) {
   if (!size || size === "md") return sizes.md;
   if (size === "custom") return "";
@@ -49,6 +51,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
   className = "",
   decoration,
   children,
+  id,
+  eyebrow,
 }) => (
   <header
     className={[
@@ -57,13 +61,26 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
       className,
     ].join(" ")}
   >
+    {eyebrow && (
+      <p
+        className={[
+          "font-degular text-[11px] sm:text-xs uppercase tracking-[0.20em] mb-2",
+          "text-asparragus/80",
+          align === "center" ? "text-center" : "text-left",
+        ].join(" ")}
+      >
+        {eyebrow}
+      </p>
+    )}
+
     <h2
+      id={id}
       className={[
-        sizeClasses(size),            // <-- aplica vacío si size="custom"
+        sizeClasses(size),
         colors[color],
         "font-gotu leading-tight",
         decoration ? "relative" : "",
-        titleClassName || "",         // <-- tú controlas el tamaño aquí
+        titleClassName || "",
       ].join(" ")}
     >
       {title}
