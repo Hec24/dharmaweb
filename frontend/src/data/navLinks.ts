@@ -1,10 +1,14 @@
+
+
 export const leftLinks = [
     { label: "Todos los Cursos", href: "/cursos" },
   ];
   
   export const rightLinks = [
+    { label: "Registrate", href: "/registro"},
     { label: "Acompañamientos 1:1", href: "/acompanamientos" },
     { label: "Blog", href: "https://patriciaholisticyoga.com/estudio-autoconocimiento-yoga-online/" },
+    
 
 
   ];
