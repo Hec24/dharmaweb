@@ -139,8 +139,34 @@ const AcompañamientosPage: React.FC = () => {
   const canonical = "https://dharmaenruta.com/acompanamientos";
   const ogImage = "https://dharmaenruta.com/og/acompanamientos.jpg";
 
+  // Schema.org - FAQPage
+  const FAQ_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqsAcompanamientos.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: `${faq.answer} ${faq.answer2 || ""}`.trim(),
+      },
+    })),
+  };
 
-  
+  // Schema.org - Service
+  const SERVICE_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    serviceType: "Acompañamientos personalizados de yoga y autoconocimiento",
+    provider: {
+      "@type": "Organization",
+      "@id": "https://dharmaenruta.com/#organization",
+      name: "Dharma en Ruta",
+    },
+    areaServed: "ES",
+    availableLanguage: "es",
+    description: description,
+  };
 
   return (
     <>
@@ -158,6 +184,14 @@ const AcompañamientosPage: React.FC = () => {
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(FAQ_SCHEMA)}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify(SERVICE_SCHEMA)}
+        </script>
       </Helmet>
 
       {/* HERO */}
@@ -181,7 +215,7 @@ const AcompañamientosPage: React.FC = () => {
           />
         }
       >
-        
+
 
         <div
           className="
@@ -259,7 +293,7 @@ const AcompañamientosPage: React.FC = () => {
               {[
                 { n: "1", t: "Elige tu área", d: "Explora las 8 áreas de la escuela y elige la que más resuene contigo: evolución personal, bienestar, vínculos, sexualidad, finanzas, etc." },
                 { n: "2", t: "Encuentra tu acompañamiento", d: "Cada profesional ofrece sesiones, lecturas o procesos guiados según su especialidad. Lee su perfil y siente con quién conectas más." },
-                { n: "3", t: "Reserva y comienza", d:"Agenda tu sesión directamente desde la web. Recibirás los pasos a seguir y el acceso a tu sesión en el email que añadiste." },
+                { n: "3", t: "Reserva y comienza", d: "Agenda tu sesión directamente desde la web. Recibirás los pasos a seguir y el acceso a tu sesión en el email que añadiste." },
                 { n: "4", t: "Integra lo aprendido", d: "Los acompañamientos son el puente entre el conocimiento y la práctica. Aquí el aprendizaje se transforma en experiencia real." },
               ].map((s) => (
                 <div key={s.n} className="bg-linen p-6 md:p-7 rounded-xl shadow-sm ring-1 ring-black/5">
@@ -396,9 +430,8 @@ const AcompañamientosPage: React.FC = () => {
                 return (
                   <div
                     key={index}
-                    className={`bg-white/90 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 ring-1 ring-raw/10 ${
-                      isOpen ? "shadow" : "shadow-sm"
-                    } w-full`}
+                    className={`bg-white/90 backdrop-blur rounded-xl overflow-hidden transition-all duration-300 ring-1 ring-raw/10 ${isOpen ? "shadow" : "shadow-sm"
+                      } w-full`}
                   >
                     <button
                       id={buttonId}
@@ -420,9 +453,8 @@ const AcompañamientosPage: React.FC = () => {
                       id={contentId}
                       role="region"
                       aria-labelledby={buttonId}
-                      className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${
-                        isOpen ? "max-h-[520px]" : "max-h-0"
-                      }`}
+                      className={`overflow-hidden transition-[max-height] duration-300 ease-in-out ${isOpen ? "max-h-[520px]" : "max-h-0"
+                        }`}
                     >
                       <div className="px-4 sm:px-6 pb-4 sm:pb-6 text-sm md:text-base text-raw/90">
                         {faq.answer}<br />{faq.answer2}

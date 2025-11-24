@@ -101,6 +101,26 @@ export default function CursosPage() {
   const canonical = "https://dharmaenruta.com/cursos";
   const heroImg = "/img/Backgrounds/background5.jpg";
 
+  // Schema.org - ItemList para el catálogo de cursos
+  const COURSES_ITEMLIST_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: ALL_COURSES.slice(0, 10).map((course, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "Course",
+        name: course.titulo,
+        description: course.descripcion,
+        provider: {
+          "@type": "Organization",
+          name: "Dharma en Ruta",
+          "@id": "https://dharmaenruta.com/#organization",
+        },
+      },
+    })),
+  };
+
   return (
     <>
       <Helmet>
@@ -117,6 +137,11 @@ export default function CursosPage() {
         <meta name="twitter:title" content={seoTitle} />
         <meta name="twitter:description" content={seoDesc} />
         <meta name="twitter:image" content={heroImg} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(COURSES_ITEMLIST_SCHEMA)}
+        </script>
       </Helmet>
 
       {/* NAV */}
