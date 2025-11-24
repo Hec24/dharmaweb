@@ -1,5 +1,5 @@
 // src/Components/modalwizard/FormDatosPersonales.tsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SectionHeader from "../ui/SectionHeader";
 import Input from "../ui/Input";
 
@@ -65,13 +65,13 @@ const FormDatosPersonales: React.FC<Props> = ({ value, onChange }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value]);
 
-  const firstError = useMemo(() => {
+  const firstError = (() => {
     for (const f of fieldOrder) {
       const e = errors[f];
       if (e) return { field: f, message: e };
     }
     return null;
-  }, [errors]);
+  } ) ();
 
   return (
     <form

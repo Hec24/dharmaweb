@@ -1,13 +1,13 @@
 import React from "react";
 import "./App.css";
- 
+
 
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import ScrollToTop from "./Components/shared/ScrollToTop"; // 👈
 
-import {LandingPage} from "./pages/LandingPage"; 
+import { LandingPage } from "./pages/LandingPage";
 import AcompañamientosPage from "./pages/AcompañamientosPage";
 import PagoDatos from "./pages/PagoDatos";
 import PasarelaPago from "./Components/pago/PasarelaPago";
@@ -28,6 +28,7 @@ import ContactPage from "./pages/ContactPage"
 import TestimoniosPage from "./pages/TestimoniosPage";
 import EquipoPage from "./pages/EquipoPage";
 import MembershipRegisterPage from "./pages/MembershipRegisterPage";
+import MembershipLoginPage from "./pages/MembershipLoginPage";
 
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
@@ -53,7 +54,7 @@ const router = createBrowserRouter([
       { path: "gracias", element: <Gracias /> },
       { path: "areas/:slug", element: <AreaPage /> },
       { path: "cursos", element: <CursosPage /> },
-      { path: "proximamente", element:<ComingSoonPage/> },
+      { path: "proximamente", element: <ComingSoonPage /> },
       { path: "/editar-reserva/:id", element: <EditarReservaPage /> },
       { path: "tu-testimonio", element: <TuTestimonioPage /> },
       { path: "faqs", element: <FaqsPage /> },
@@ -62,10 +63,11 @@ const router = createBrowserRouter([
       { path: "aviso-legal", element: <AvisoLegalPage /> },
       { path: "cookies", element: <CookiesPage /> },
       { path: "origen", element: <OrigenPage /> },
-      { path: "contacto", element: <ContactPage />},
+      { path: "contacto", element: <ContactPage /> },
       { path: "testimonios", element: <TestimoniosPage /> },
-      { path: "equipo", element: <EquipoPage/>},
-      { path: "registro", element: <MembershipRegisterPage/> },
+      { path: "equipo", element: <EquipoPage /> },
+      { path: "registro", element: <MembershipRegisterPage /> },
+      { path: "login", element: <MembershipLoginPage /> },
     ],
   },
 ]);

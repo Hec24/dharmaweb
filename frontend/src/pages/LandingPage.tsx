@@ -4,7 +4,7 @@ import { Helmet } from "react-helmet-async";
 import GenericNav from "../Components/shared/GenericNav";
 
 import IntroEscuela from "../Components/sections/IntroEscuela/IntroEscuela";
-import SeccionCursos from "../Components/sections/CursosSection/SeccionCursos";
+// import SeccionCursos from "../Components/sections/CursosSection/SeccionCursos";
 import RuedaVida from "../Components/sections/RuedaVidaSection/RuedaVida";
 import LeadMagnet from "../Components/sections/LeadMagnetSection/LeadMagnet";
 import TeamCarousel from "../Components/sections/TeamSection/TeamCarousel";
@@ -131,7 +131,7 @@ export const LandingPage: React.FC = () => {
       <section className="flex flex-col">
         <IntroEscuela />
         <MembershipSection />
-        <SeccionCursos />
+        {/* <SeccionCursos /> */}
       </section>
 
       <RuedaVida />

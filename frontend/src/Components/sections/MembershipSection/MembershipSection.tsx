@@ -159,7 +159,7 @@ const MembershipSection: React.FC<MembershipSectionProps> = () => {
                   aria-labelledby={cardHeadingId}
                 >
                   <ButtonLink
-                    to="/membresia"
+                    to="/login"
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-3.5 py-2.5 text-sm sm:text-[15px] font-medium text-raw shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-raw"
                   >
                     <FiLogIn aria-hidden className="h-4 w-4" />
