@@ -27,10 +27,10 @@ const Header: React.FC<HeaderProps> = ({
 
   let contentPositionClass = "relative w-full z-20 flex flex-col items-center pt-20 pb-8";
   if (align === "center") contentPositionClass = "relative w-full z-20 flex flex-col items-center justify-center flex-1 py-20";
-  if (align === "bottom") contentPositionClass = "absolute bottom-0 w-full z-20";
+  if (align === "bottom") contentPositionClass = "relative w-full z-20 flex flex-col items-center justify-end flex-1 pb-0";
 
   return (
-    <div className={`relative w-full flex flex-col min-h-screen justify-start ${className}`} style={backgroundStyles}>
+    <div className={`relative w-full flex flex-col min-h-screen ${className}`} style={backgroundStyles}>
       {/* Nav siempre arriba */}
       <div className="relative z-50">{nav}</div>
 

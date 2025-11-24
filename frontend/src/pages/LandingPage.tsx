@@ -2,18 +2,17 @@ import React from "react";
 import { Helmet } from "react-helmet-async";
 
 import GenericNav from "../Components/shared/GenericNav";
+import HeroContent from "../Components/landing/HeroContent";
 
-import IntroEscuela from "../Components/sections/IntroEscuela/IntroEscuela";
-// import SeccionCursos from "../Components/sections/CursosSection/SeccionCursos";
-import RuedaVida from "../Components/sections/RuedaVidaSection/RuedaVida";
-import LeadMagnet from "../Components/sections/LeadMagnetSection/LeadMagnet";
-import TeamCarousel from "../Components/sections/TeamSection/TeamCarousel";
 import TestimonialsCarousel from "../Components/sections/Testimonios/TestimonialsCarousel";
 import LandingHeader from "../Components/shared/Header/LandingHeader";
 import SchoolValuesSection from "../Components/sections/ValoresSection/SchoolValuesSection";
+import MembershipSection from "../Components/sections/MembershipSection/MembershipSection";
+import TestRuedaVidaSection from "../Components/sections/TestRuedaVidaSection/TestRuedaVidaSection";
+import AcompanamientosPreview from "../Components/sections/AcompanamientosPreview/AcompanamientosPreview";
+import FinalCTA from "../Components/sections/FinalCTA/FinalCTA";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
-import MembershipSection from "../Components/sections/MembershipSection/MembershipSection";
 
 const ORG_JSON_LD = {
   "@context": "https://schema.org",
@@ -90,7 +89,6 @@ export const LandingPage: React.FC = () => {
         <meta name="twitter:title" content={title} />
         <meta name="twitter:description" content={description} />
         <meta name="twitter:image" content={ogImage} />
-        {/* <meta name="twitter:site" content="@tu_usuario" />  // opcional si tienes @ */}
 
         {/* Structured Data */}
         <script type="application/ld+json">
@@ -104,6 +102,7 @@ export const LandingPage: React.FC = () => {
         </script>
       </Helmet>
 
+      {/* Hero with content */}
       <LandingHeader
         bgImage="/img/TestPics/fondoheading.jpg"
         align="bottom"
@@ -123,28 +122,16 @@ export const LandingPage: React.FC = () => {
           />
         }
       >
-        
+        <HeroContent />
       </LandingHeader>
 
-      
-      {/* Resto de secciones */}
-      <section className="flex flex-col">
-        <IntroEscuela />
-        <MembershipSection />
-        {/* <SeccionCursos /> */}
-      </section>
-
-      <RuedaVida />
+      {/* Secciones reordenadas según nuevo funnel */}
+      <MembershipSection />
+      <TestRuedaVidaSection />
+      <AcompanamientosPreview />
       <SchoolValuesSection />
-      <LeadMagnet />
-      <TeamCarousel />
       <TestimonialsCarousel />
-       {/* <PreFooterPicture
-        src="/img/Backgrounds/endingPicture.jpg"
-        alt="imagen dharma"
-        height="lg"
-        fullBleed
-      /> */}
+      <FinalCTA />
     </>
   );
 };
