@@ -1,5 +1,5 @@
 // src/Components/sections/RuedaVidaSection/RuedaVida.tsx
-import React, { useId, useMemo } from "react";
+import React, { useId } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiCheck } from "react-icons/fi";
 import SectionHeader from "../../ui/SectionHeader";
@@ -21,6 +21,12 @@ interface RuedaVidaProps {
   evalHref?: string;
 }
 
+ const ALL_AREAS: Area[] = (() => {
+    const entries = Object.entries(AREAS) as Array<[string, AreaValue]>;
+    const list = entries.map(([slug, v]) => ({ slug, nombre: v.nombre }));
+    return Array.from(new Map(list.map((a) => [a.slug, a])).values());
+  }) ();
+
 const RuedaVida: React.FC<RuedaVidaProps> = ({
   currentAreaSlug,
   excludeCurrent = false,
@@ -28,18 +34,13 @@ const RuedaVida: React.FC<RuedaVidaProps> = ({
 }) => {
   const headingId = useId();
 
-  const allAreas: Area[] = useMemo(() => {
-    const entries = Object.entries(AREAS) as Array<[string, AreaValue]>;
-    const list = entries.map(([slug, v]) => ({ slug, nombre: v.nombre }));
-    return Array.from(new Map(list.map((a) => [a.slug, a])).values());
-  }, []);
+ const allAreas = ALL_AREAS
 
-  const chipAreas = useMemo(() => {
-    if (excludeCurrent && currentAreaSlug) {
-      return allAreas.filter((a) => a.slug !== currentAreaSlug);
-    }
-    return allAreas;
-  }, [allAreas, excludeCurrent, currentAreaSlug]);
+ const chipAreas = 
+    excludeCurrent && currentAreaSlug 
+    ? allAreas.filter((a) => a.slug !== currentAreaSlug)
+    : allAreas;
+  
 
   return (
     <section
