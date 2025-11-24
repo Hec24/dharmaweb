@@ -2,6 +2,7 @@
 import React, { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiSend, FiStar } from "react-icons/fi";
+import { Helmet } from "react-helmet-async";
 import GenericNav from "../Components/shared/GenericNav";
 import SectionHeader from "../Components/ui/SectionHeader";
 import ButtonLink from "../Components/ui/ButtonLink";
@@ -45,16 +46,16 @@ export default function TestimoniosPage() {
 
   const onChange =
     (field: keyof TestimonialPayload) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-      const value =
-        e.currentTarget.type === "checkbox"
-          ? (e.currentTarget as HTMLInputElement).checked
-          : e.currentTarget.value;
-      setForm((f) => ({
-        ...f,
-        [field]: field === "rating" ? Number(value) : value,
-      }));
-    };
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+        const value =
+          e.currentTarget.type === "checkbox"
+            ? (e.currentTarget as HTMLInputElement).checked
+            : e.currentTarget.value;
+        setForm((f) => ({
+          ...f,
+          [field]: field === "rating" ? Number(value) : value,
+        }));
+      };
 
   const validate = (data: TestimonialPayload) => {
     if (!data.name.trim()) return "El nombre es obligatorio.";
@@ -91,8 +92,50 @@ export default function TestimoniosPage() {
     }
   };
 
+  // SEO
+  const seoTitle = "Testimonios | Dharma en Ruta";
+  const seoDesc =
+    "Lee las experiencias de personas que han transformado su vida con Dharma en Ruta. Comparte tu testimonio y forma parte de nuestra comunidad.";
+  const canonical = "https://dharmaenruta.com/testimonios";
+  const ogImage = "https://dharmaenruta.com/og/testimonios.jpg";
+
+  const TESTIMONIALS_PAGE_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    url: canonical,
+    name: seoTitle,
+    description: seoDesc,
+    inLanguage: "es",
+    isPartOf: { "@id": "https://dharmaenruta.com/#website" },
+  };
+
   return (
     <>
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(TESTIMONIALS_PAGE_SCHEMA)}
+        </script>
+      </Helmet>
+
       {/* NAV */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav
@@ -345,7 +388,7 @@ export default function TestimoniosPage() {
               >
                 Ver cursos
               </ButtonLink>
-             
+
             </div>
           </div>
         </section>

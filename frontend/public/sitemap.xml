@@ -4,39 +4,63 @@
   <!-- Home -->
   <url>
     <loc>https://dharmaenruta.com/</loc>
-    <lastmod>2025-10-05</lastmod>
-    <changefreq>daily</changefreq>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Páginas principales -->
   <url>
     <loc>https://dharmaenruta.com/acompanamientos</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/cursos</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://dharmaenruta.com/origen</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dharmaenruta.com/equipo</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://dharmaenruta.com/contacto</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://dharmaenruta.com/testimonios</loc>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/proximamente</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/tu-testimonio</loc>
-    <lastmod>2025-10-02</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <lastmod>2025-11-24</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/faqs</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -44,50 +68,50 @@
   <!-- Legales -->
   <url>
     <loc>https://dharmaenruta.com/terminos</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/politica-privacidad</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/aviso-legal</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/cookies</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
 
-  <!-- Gracias (si es una landing pública y útil) -->
+  <!-- Gracias (página de confirmación) -->
   <url>
     <loc>https://dharmaenruta.com/gracias</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
 
-  <!-- Áreas (ACTÍVALAS si existen y quieres priorizarlas) -->
+  <!-- Áreas (activar cuando estén disponibles) -->
   <!--
   <url>
     <loc>https://dharmaenruta.com/areas/el-sendero-del-yo</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://dharmaenruta.com/areas/finanzas-vida-libre</loc>
-    <lastmod>2025-10-02</lastmod>
+    <lastmod>2025-11-24</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
   -->
 

@@ -2,6 +2,7 @@
 import React, { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiSend } from "react-icons/fi";
+import { Helmet } from "react-helmet-async";
 import GenericNav from "../Components/shared/GenericNav";
 import SectionHeader from "../Components/ui/SectionHeader";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
@@ -42,12 +43,12 @@ export default function ContactPage() {
 
   const onChange =
     (field: keyof ContactPayload) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = e.currentTarget.type === "checkbox"
-        ? (e.currentTarget as HTMLInputElement).checked
-        : e.currentTarget.value;
-      setForm((f) => ({ ...f, [field]: value }));
-    };
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value = e.currentTarget.type === "checkbox"
+          ? (e.currentTarget as HTMLInputElement).checked
+          : e.currentTarget.value;
+        setForm((f) => ({ ...f, [field]: value }));
+      };
 
   const validate = (data: ContactPayload) => {
     if (!data.name.trim()) return "El nombre es obligatorio.";
@@ -86,8 +87,52 @@ export default function ContactPage() {
     }
   };
 
+  const isSubmitting = status === "sending";
+
+  // SEO
+  const seoTitle = "Contacto | Dharma en Ruta";
+  const seoDesc =
+    "¿Tienes dudas o quieres empezar tu camino con nosotros? Escríbenos y te respondemos. Estamos aquí para acompañarte en tu proceso de transformación.";
+  const canonical = "https://dharmaenruta.com/contacto";
+  const ogImage = "https://dharmaenruta.com/og/contacto.jpg";
+
+  const CONTACT_PAGE_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    url: canonical,
+    name: seoTitle,
+    description: seoDesc,
+    inLanguage: "es",
+    isPartOf: { "@id": "https://dharmaenruta.com/#website" },
+  };
+
   return (
     <>
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(CONTACT_PAGE_SCHEMA)}
+        </script>
+      </Helmet>
+
       {/* NAV */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav

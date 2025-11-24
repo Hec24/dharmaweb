@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Preview Open Graph - Dharma en Ruta</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .platform-section {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .platform-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        /* Facebook Card */
+        .facebook-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .facebook-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .facebook-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .facebook-card-content {
+            padding: 12px;
+            background: #f2f3f5;
+        }
+        
+        .facebook-card-domain {
+            font-size: 12px;
+            color: #606770;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .facebook-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1c1e21;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        
+        .facebook-card-description {
+            font-size: 14px;
+            color: #606770;
+            line-height: 1.4;
+        }
+        
+        /* Twitter Card */
+        .twitter-card {
+            border: 1px solid rgb(207, 217, 222);
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .twitter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .twitter-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .twitter-card-content {
+            padding: 12px;
+        }
+        
+        .twitter-card-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: rgb(15, 20, 25);
+            margin-bottom: 2px;
+            line-height: 1.3;
+        }
+        
+        .twitter-card-description {
+            font-size: 15px;
+            color: rgb(83, 100, 113);
+            line-height: 1.3;
+            margin-bottom: 4px;
+        }
+        
+        .twitter-card-domain {
+            font-size: 15px;
+            color: rgb(83, 100, 113);
+        }
+        
+        /* WhatsApp Card */
+        .whatsapp-card {
+            background: #e7ffdb;
+            border-radius: 8px;
+            padding: 8px;
+            max-width: 400px;
+        }
+        
+        .whatsapp-card-inner {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .whatsapp-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .whatsapp-card-content {
+            padding: 12px;
+        }
+        
+        .whatsapp-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+        
+        .whatsapp-card-description {
+            font-size: 13px;
+            color: #667781;
+            line-height: 1.4;
+            margin-bottom: 4px;
+        }
+        
+        .whatsapp-card-domain {
+            font-size: 12px;
+            color: #667781;
+        }
+        
+        /* LinkedIn Card */
+        .linkedin-card {
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            transition: transform 0.2s;
+        }
+        
+        .linkedin-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .linkedin-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .linkedin-card-content {
+            padding: 12px;
+        }
+        
+        .linkedin-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(0,0,0,0.9);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        
+        .linkedin-card-domain {
+            font-size: 12px;
+            color: rgba(0,0,0,0.6);
+        }
+        
+        .page-label {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 Preview Open Graph - Dharma en Ruta</h1>
+        
+        <!-- Facebook Preview -->
+        <div class="platform-section">
+            <div class="platform-title">📘 Facebook</div>
+            <div class="cards-grid">
+                <div>
+                    <div class="page-label">Contacto</div>
+                    <div class="facebook-card">
+                        <img src="public/og/contacto.jpg" alt="Contacto">
+                        <div class="facebook-card-content">
+                            <div class="facebook-card-domain">dharmaenruta.com</div>
+                            <div class="facebook-card-title">Contacto | Dharma en Ruta</div>
+                            <div class="facebook-card-description">¿Tienes dudas o quieres empezar tu camino con nosotros? Escríbenos y te respondemos.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="page-label">Testimonios</div>
+                    <div class="facebook-card">
+                        <img src="public/og/testimonios.jpg" alt="Testimonios">
+                        <div class="facebook-card-content">
+                            <div class="facebook-card-domain">dharmaenruta.com</div>
+                            <div class="facebook-card-title">Testimonios | Dharma en Ruta</div>
+                            <div class="facebook-card-description">Lee las experiencias de personas que han transformado su vida con Dharma en Ruta.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="page-label">Origen</div>
+                    <div class="facebook-card">
+                        <img src="public/og/origen.jpg" alt="Origen">
+                        <div class="facebook-card-content">
+                            <div class="facebook-card-domain">dharmaenruta.com</div>
+                            <div class="facebook-card-title">Nuestro Origen | Dharma en Ruta</div>
+                            <div class="facebook-card-description">Descubre la historia detrás de Dharma en Ruta: un viaje de transformación.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Twitter Preview -->
+        <div class="platform-section">
+            <div class="platform-title">🐦 Twitter / X</div>
+            <div class="cards-grid">
+                <div>
+                    <div class="page-label">Equipo</div>
+                    <div class="twitter-card">
+                        <img src="public/og/equipo.jpg" alt="Equipo">
+                        <div class="twitter-card-content">
+                            <div class="twitter-card-domain">dharmaenruta.com</div>
+                            <div class="twitter-card-title">Nuestro Equipo | Dharma en Ruta</div>
+                            <div class="twitter-card-description">Conoce al equipo: docentes, terapeutas y guías que acompañan procesos reales.</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="page-label">Registro</div>
+                    <div class="twitter-card">
+                        <img src="public/og/registro.jpg" alt="Registro">
+                        <div class="twitter-card-content">
+                            <div class="twitter-card-domain">dharmaenruta.com</div>
+                            <div class="twitter-card-title">Registro de Membresía | Dharma en Ruta</div>
+                            <div class="twitter-card-description">Crea tu cuenta y accede a cursos, acompañamientos y recursos.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WhatsApp Preview -->
+        <div class="platform-section">
+            <div class="platform-title">💬 WhatsApp</div>
+            <div class="cards-grid">
+                <div>
+                    <div class="page-label">Contacto</div>
+                    <div class="whatsapp-card">
+                        <div class="whatsapp-card-inner">
+                            <img src="public/og/contacto.jpg" alt="Contacto">
+                            <div class="whatsapp-card-content">
+                                <div class="whatsapp-card-title">Contacto | Dharma en Ruta</div>
+                                <div class="whatsapp-card-description">¿Tienes dudas o quieres empezar tu camino con nosotros?</div>
+                                <div class="whatsapp-card-domain">dharmaenruta.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="page-label">Testimonios</div>
+                    <div class="whatsapp-card">
+                        <div class="whatsapp-card-inner">
+                            <img src="public/og/testimonios.jpg" alt="Testimonios">
+                            <div class="whatsapp-card-content">
+                                <div class="whatsapp-card-title">Testimonios | Dharma en Ruta</div>
+                                <div class="whatsapp-card-description">Lee las experiencias de transformación</div>
+                                <div class="whatsapp-card-domain">dharmaenruta.com</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- LinkedIn Preview -->
+        <div class="platform-section">
+            <div class="platform-title">💼 LinkedIn</div>
+            <div class="cards-grid">
+                <div>
+                    <div class="page-label">Origen</div>
+                    <div class="linkedin-card">
+                        <img src="public/og/origen.jpg" alt="Origen">
+                        <div class="linkedin-card-content">
+                            <div class="linkedin-card-title">Nuestro Origen | Dharma en Ruta</div>
+                            <div class="linkedin-card-domain">dharmaenruta.com</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="page-label">Equipo</div>
+                    <div class="linkedin-card">
+                        <img src="public/og/equipo.jpg" alt="Equipo">
+                        <div class="linkedin-card-content">
+                            <div class="linkedin-card-title">Nuestro Equipo | Dharma en Ruta</div>
+                            <div class="linkedin-card-domain">dharmaenruta.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

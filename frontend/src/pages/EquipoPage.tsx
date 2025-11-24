@@ -124,15 +124,48 @@ function ProfileRow({ p }: { p: ProfesorItem }) {
 const EquipoPage: React.FC = () => {
   const heroTitleId = useId();
 
+  // SEO
+  const seoTitle = "Nuestro Equipo | Dharma en Ruta";
+  const seoDesc =
+    "Conoce al equipo de Dharma en Ruta: docentes, terapeutas y guías que acompañan procesos reales de transformación. Personas que viven lo que enseñan.";
+  const canonical = "https://dharmaenruta.com/equipo";
+  const ogImage = "https://dharmaenruta.com/og/equipo.jpg";
+
+  const TEAM_PAGE_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    url: canonical,
+    name: seoTitle,
+    description: seoDesc,
+    inLanguage: "es",
+    isPartOf: { "@id": "https://dharmaenruta.com/#website" },
+  };
+
   return (
     <main className="bg-linen text-raw">
       <Helmet>
-        <title>Equipo | Dharma en Ruta</title>
-        <meta
-          name="description"
-          content="Conoce al equipo de Dharma en Ruta: docentes, terapeutas y guías que acompañan procesos reales de transformación."
-        />
-        <link rel="canonical" href="https://dharmaenruta.com/equipo" />
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(TEAM_PAGE_SCHEMA)}
+        </script>
       </Helmet>
 
       {/* NAV */}

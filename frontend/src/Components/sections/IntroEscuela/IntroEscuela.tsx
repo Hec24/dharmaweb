@@ -5,7 +5,7 @@ import SectionHeader from "../../../Components/ui/SectionHeader";
 const IntroEscuela: React.FC = () => {
   return (
     <section
-      className="relative bg-[var(--color-linen)]"
+      className="relative py-16 sm:py-20 lg:py-24 overflow-hidden bg-[var(--color-linen)]"
       aria-labelledby="intro-escuela-heading"
       role="region"
     >
@@ -17,7 +17,7 @@ const IntroEscuela: React.FC = () => {
         aria-hidden
         className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
       />
-      
+
       <div
         className="
           max-w-7xl mx-auto
@@ -43,14 +43,14 @@ const IntroEscuela: React.FC = () => {
               la salud o las relaciones—.
               <br />
               <span className="mt-2 inline-block">
-                Aquí encontrarás <span className="font-semibold">cursos grabados y prácticos</span> en 8 áreas clave,
-                <span className="font-semibold"> acompañamientos personalizados</span>, recursos para diseñar tu propia “ruta”
-                y una <span className="font-semibold">comunidad</span> con la que compartir el camino. Todo pensado para que
-                vivas con más <span className="font-semibold">libertad, coherencia y conexión</span>, a tu ritmo y desde cualquier lugar.
+                Aquí encontrarás una <span className="font-semibold">membresía completa</span> con vídeos tutoriales,
+                directos mensuales, foro de comunidad y <span className="font-semibold">acompañamientos personalizados
+                  con descuento</span> en 8 áreas clave. Todo pensado para que vivas con más{" "}
+                <span className="font-semibold">libertad, coherencia y conexión</span>, a tu ritmo y desde cualquier lugar.
               </span>
             </>
           }
-          align="left"                      
+          align="left"
           size="custom"
           color="asparragus"
           titleClassName="text-2xl sm:text-3xl md:text-4xl mb-3 text-left sm:text-center"
@@ -66,24 +66,24 @@ const IntroEscuela: React.FC = () => {
           aria-label="Pilares de la escuela"
         >
           <FeatureCard
-            emoji="🌿"
-            title="Cursos online"
-            subtitle="Grabados y prácticos en 8 áreas clave."
+            emoji="📚"
+            title="Contenidos exclusivos"
+            subtitle="Vídeos tutoriales y directos mensuales con expertos."
           />
           <FeatureCard
             emoji="🧘🏻‍♀️"
-            title="Acompañamientos"
-            subtitle="Personalizados para profundizar."
+            title="Acompañamientos 1:1"
+            subtitle="Sesiones personalizadas con 20% de descuento para miembros."
           />
           <FeatureCard
-            emoji="🏛"
-            title="Comunidad"
-            subtitle="De personas que, como tú, buscan más claridad y conexión."
+            emoji="💬"
+            title="Foro de comunidad"
+            subtitle="Conecta, comparte y crece con personas afines."
           />
           <FeatureCard
             emoji="🧭"
             title="Ruta personalizable"
-            subtitle="Porque no todos necesitamos lo mismo en cada etapa."
+            subtitle="Navega por las 8 áreas según tus necesidades."
           />
         </div>
       </div>

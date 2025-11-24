@@ -1,6 +1,7 @@
 // src/pages/OrigenPage.tsx
 import { FiArrowRight } from "react-icons/fi";
 import { LuCompass, LuFeather, LuMap, LuUsers } from "react-icons/lu";
+import { Helmet } from "react-helmet-async";
 import GenericNav from "../Components/shared/GenericNav";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import SectionHeader from "../Components/ui/SectionHeader";
@@ -19,8 +20,56 @@ export default function OrigenPage({
 }: OrigenPageProps) {
   const bgSrc = "/img/Backgrounds/background4.jpg";
 
+  // SEO
+  const seoTitle = "Nuestro Origen | Dharma en Ruta";
+  const seoDesc =
+    "Descubre la historia detrás de Dharma en Ruta: un viaje de transformación que comenzó en el Sudeste Asiático y se convirtió en una escuela colaborativa de yoga y autoconocimiento.";
+  const canonical = "https://dharmaenruta.com/origen";
+  const ogImage = "https://dharmaenruta.com/og/origen.jpg";
+
+  const ABOUT_PAGE_SCHEMA = {
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    url: canonical,
+    name: seoTitle,
+    description: seoDesc,
+    inLanguage: "es",
+    isPartOf: { "@id": "https://dharmaenruta.com/#website" },
+    mainEntity: {
+      "@type": "Organization",
+      "@id": "https://dharmaenruta.com/#organization",
+      name: "Dharma en Ruta",
+      url: "https://dharmaenruta.com/",
+    },
+  };
+
   return (
     <>
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        <link rel="canonical" href={canonical} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Dharma en Ruta" />
+        <meta property="og:title" content={seoTitle} />
+        <meta property="og:description" content={seoDesc} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImage} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={seoTitle} />
+        <meta name="twitter:description" content={seoDesc} />
+        <meta name="twitter:image" content={ogImage} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(ABOUT_PAGE_SCHEMA)}
+        </script>
+      </Helmet>
+
       {/* NAV */}
       <header className="absolute inset-x-0 top-0 z-40">
         <GenericNav

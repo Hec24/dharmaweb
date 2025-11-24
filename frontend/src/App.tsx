@@ -29,6 +29,8 @@ import TestimoniosPage from "./pages/TestimoniosPage";
 import EquipoPage from "./pages/EquipoPage";
 import MembershipRegisterPage from "./pages/MembershipRegisterPage";
 import MembershipLoginPage from "./pages/MembershipLoginPage";
+import QueIncluyePage from "./pages/QueIncluyePage";
+import ListaEsperaPage from "./pages/ListaEsperaPage";
 
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
@@ -68,6 +70,8 @@ const router = createBrowserRouter([
       { path: "equipo", element: <EquipoPage /> },
       { path: "registro", element: <MembershipRegisterPage /> },
       { path: "login", element: <MembershipLoginPage /> },
+      { path: "que-incluye", element: <QueIncluyePage /> },
+      { path: "lista-espera", element: <ListaEsperaPage /> },
     ],
   },
 ]);

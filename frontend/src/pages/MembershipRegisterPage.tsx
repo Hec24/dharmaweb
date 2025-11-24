@@ -1,5 +1,6 @@
 // src/Components/pages/MembershipRegisterPage.tsx
 import React, { useState, useRef, FormEvent } from "react";
+import { Helmet } from "react-helmet-async";
 import GenericNav from "../Components/shared/GenericNav";
 import SectionHeader from "../Components/ui/SectionHeader";
 import ButtonLink from "../Components/ui/ButtonLink";
@@ -159,34 +160,34 @@ const MembershipRegisterPage: React.FC = () => {
 
   const handleChange =
     (field: keyof RegisterFormValues) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-      const value =
-        field === "acceptsTerms"
-          ? (event as React.ChangeEvent<HTMLInputElement>).target.checked
-          : event.target.value;
+      (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+        const value =
+          field === "acceptsTerms"
+            ? (event as React.ChangeEvent<HTMLInputElement>).target.checked
+            : event.target.value;
 
-      setValues((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-
-      if (errors[field]) {
-        setErrors((prev) => ({
+        setValues((prev) => ({
           ...prev,
-          [field]: undefined,
+          [field]: value,
         }));
-      }
-    };
+
+        if (errors[field]) {
+          setErrors((prev) => ({
+            ...prev,
+            [field]: undefined,
+          }));
+        }
+      };
 
   const handleBlur =
     (field: keyof RegisterFormValues) =>
-    (): void => {
+      (): void => {
         const error = validateField(field, values);
         setErrors((prev) => ({
-        ...prev,
-        [field]: error,
+          ...prev,
+          [field]: error,
         }));
-    };
+      };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
@@ -250,8 +251,22 @@ const MembershipRegisterPage: React.FC = () => {
 
   const isSubmitting = status === "submitting";
 
+  // SEO - noindex para formularios de registro
+  const seoTitle = "Registro de Membresía | Dharma en Ruta";
+  const seoDesc =
+    "Crea tu cuenta en Dharma en Ruta y accede a cursos, acompañamientos y recursos para vivir de forma más consciente.";
+  const canonical = "https://dharmaenruta.com/registro";
+
   return (
     <div className="min-h-screen bg-linen flex flex-col">
+      <Helmet>
+        <title>{seoTitle}</title>
+        <meta name="description" content={seoDesc} />
+        <link rel="canonical" href={canonical} />
+        {/* noindex para evitar indexación de formularios */}
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
+
       <GenericNav
         title="Dharma en Ruta"
         logoSrc="/img/Logos/Logos-08.png"
@@ -335,8 +350,8 @@ const MembershipRegisterPage: React.FC = () => {
                     status === "error" && generalError
                       ? "register-general-error"
                       : status === "success" && successMessage
-                      ? "register-success-message"
-                      : undefined
+                        ? "register-success-message"
+                        : undefined
                   }
                   aria-busy={isSubmitting}
                   className="w-full bg-white/95 border border-raw/10 rounded-2xl shadow-sm px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6 flex flex-col"
@@ -376,183 +391,183 @@ const MembershipRegisterPage: React.FC = () => {
                   )}
 
                   {/* Campos en layout más horizontal en desktop */}
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
-  {/* Nombre */}
-  <div>
-    <Input
-      ref={nameInputRef}
-      name="name"
-      type="text"
-      label="Nombre completo"
-      value={values.name}
-      onChange={handleChange("name")}
-      onBlur={handleBlur("name")}
-      autoComplete="name"
-      error={errors.name}
-      variant="leadmagnet"
-      className="w-full"
-      placeholder="Escribe tu nombre"
-    />
-  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4">
+                    {/* Nombre */}
+                    <div>
+                      <Input
+                        ref={nameInputRef}
+                        name="name"
+                        type="text"
+                        label="Nombre completo"
+                        value={values.name}
+                        onChange={handleChange("name")}
+                        onBlur={handleBlur("name")}
+                        autoComplete="name"
+                        error={errors.name}
+                        variant="leadmagnet"
+                        className="w-full"
+                        placeholder="Escribe tu nombre"
+                      />
+                    </div>
 
-  {/* Email */}
-  <div>
-    <Input
-      ref={emailInputRef}
-      name="email"
-      type="email"
-      label="Email"
-      value={values.email}
-      onChange={handleChange("email")}
-      onBlur={handleBlur("email")}
-      autoComplete="email"
-      error={errors.email}
-      variant="leadmagnet"
-      className="w-full"
-      placeholder="tucorreo@ejemplo.com"
-    />
-  </div>
+                    {/* Email */}
+                    <div>
+                      <Input
+                        ref={emailInputRef}
+                        name="email"
+                        type="email"
+                        label="Email"
+                        value={values.email}
+                        onChange={handleChange("email")}
+                        onBlur={handleBlur("email")}
+                        autoComplete="email"
+                        error={errors.email}
+                        variant="leadmagnet"
+                        className="w-full"
+                        placeholder="tucorreo@ejemplo.com"
+                      />
+                    </div>
 
-  {/* Password */}
-  <div>
-    <Input
-      ref={passwordInputRef}
-      name="password"
-      type="password"
-      label="Contraseña"
-      value={values.password}
-      onChange={handleChange("password")}
-      onBlur={handleBlur("password")}
-      autoComplete="new-password"
-      error={errors.password}
-      variant="leadmagnet"
-      className="w-full"
-      placeholder="Mínimo 8 caracteres"
-    />
-    <p className="mt-1 text-[11px] sm:text-xs text-raw/50 font-degular">
-      Mínimo 8 caracteres. Te recomendamos combinar letras, números y símbolos.
-    </p>
-  </div>
+                    {/* Password */}
+                    <div>
+                      <Input
+                        ref={passwordInputRef}
+                        name="password"
+                        type="password"
+                        label="Contraseña"
+                        value={values.password}
+                        onChange={handleChange("password")}
+                        onBlur={handleBlur("password")}
+                        autoComplete="new-password"
+                        error={errors.password}
+                        variant="leadmagnet"
+                        className="w-full"
+                        placeholder="Mínimo 8 caracteres"
+                      />
+                      <p className="mt-1 text-[11px] sm:text-xs text-raw/50 font-degular">
+                        Mínimo 8 caracteres. Te recomendamos combinar letras, números y símbolos.
+                      </p>
+                    </div>
 
-  {/* Confirmación password */}
-  <div>
-    <Input
-      ref={confirmPasswordInputRef}
-      name="confirmPassword"
-      type="password"
-      label="Repite la contraseña"
-      value={values.confirmPassword}
-      onChange={handleChange("confirmPassword")}
-      onBlur={handleBlur("confirmPassword")}
-      autoComplete="new-password"
-      error={errors.confirmPassword}
-      variant="leadmagnet"
-      className="w-full"
-      placeholder="Vuelve a escribirla"
-    />
-  </div>
+                    {/* Confirmación password */}
+                    <div>
+                      <Input
+                        ref={confirmPasswordInputRef}
+                        name="confirmPassword"
+                        type="password"
+                        label="Repite la contraseña"
+                        value={values.confirmPassword}
+                        onChange={handleChange("confirmPassword")}
+                        onBlur={handleBlur("confirmPassword")}
+                        autoComplete="new-password"
+                        error={errors.confirmPassword}
+                        variant="leadmagnet"
+                        className="w-full"
+                        placeholder="Vuelve a escribirla"
+                      />
+                    </div>
 
-  {/* Mensaje opcional: ocupa todo el ancho */}
-  <div className="md:col-span-2">
-    <label
-      htmlFor="register-message"
-      className="block text-xs sm:text-sm font-degular text-raw/80 mb-1"
-    >
-      ¿Qué estás buscando en Dharma en Ruta?{" "}
-      <span className="text-raw/50">(opcional)</span>
-    </label>
-    <textarea
-      id="register-message"
-      name="message"
-      ref={messageTextareaRef}
-      rows={3}
-      className="block w-full rounded-lg border border-raw/20 bg-white px-3 py-2 text-sm sm:text-base font-degular text-raw placeholder:text-raw/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asparagus focus-visible:ring-offset-2 focus-visible:ring-offset-linen resize-none"
-      value={values.message}
-      onChange={handleChange("message")}
-      onBlur={handleBlur("message")}
-      aria-invalid={Boolean(errors.message)}
-      aria-describedby={errors.message ? "register-message-error" : undefined}
-    />
-    {errors.message && (
-      <p
-        id="register-message-error"
-        className="mt-1 text-xs text-red-700 font-degular"
-      >
-        {errors.message}
-      </p>
-    )}
-  </div>
-</div>
+                    {/* Mensaje opcional: ocupa todo el ancho */}
+                    <div className="md:col-span-2">
+                      <label
+                        htmlFor="register-message"
+                        className="block text-xs sm:text-sm font-degular text-raw/80 mb-1"
+                      >
+                        ¿Qué estás buscando en Dharma en Ruta?{" "}
+                        <span className="text-raw/50">(opcional)</span>
+                      </label>
+                      <textarea
+                        id="register-message"
+                        name="message"
+                        ref={messageTextareaRef}
+                        rows={3}
+                        className="block w-full rounded-lg border border-raw/20 bg-white px-3 py-2 text-sm sm:text-base font-degular text-raw placeholder:text-raw/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asparagus focus-visible:ring-offset-2 focus-visible:ring-offset-linen resize-none"
+                        value={values.message}
+                        onChange={handleChange("message")}
+                        onBlur={handleBlur("message")}
+                        aria-invalid={Boolean(errors.message)}
+                        aria-describedby={errors.message ? "register-message-error" : undefined}
+                      />
+                      {errors.message && (
+                        <p
+                          id="register-message-error"
+                          className="mt-1 text-xs text-red-700 font-degular"
+                        >
+                          {errors.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-{/* Aceptación de términos + botón, más compactos */}
-<div className="mt-4 sm:mt-5 space-y-3">
-  <div>
-    <label className="flex items-start gap-2 cursor-pointer">
-      <input
-        ref={termsCheckboxRef}
-        id="register-accepts-terms"
-        name="acceptsTerms"
-        type="checkbox"
-        className="mt-0.5 h-4 w-4 rounded border-raw/30 text-asparagus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asparagus focus-visible:ring-offset-2 focus-visible:ring-offset-linen"
-        checked={values.acceptsTerms}
-        onChange={handleChange("acceptsTerms")}
-        onBlur={handleBlur("acceptsTerms")}
-        aria-invalid={Boolean(errors.acceptsTerms)}
-        aria-describedby={
-          errors.acceptsTerms ? "register-accepts-terms-error" : undefined
-        }
-      />
-      <span className="text-xs sm:text-sm text-raw/75 font-degular">
-        He leído y acepto los{" "}
-        <a
-          href="/legal/terminos"
-          className="underline underline-offset-2 decoration-raw/40 hover:decoration-asparagus"
-        >
-          términos y condiciones
-        </a>{" "}
-        y la{" "}
-        <a
-          href="/legal/privacidad"
-          className="underline underline-offset-2 decoration-raw/40 hover:decoration-asparagus"
-        >
-          política de privacidad
-        </a>
-        .
-      </span>
-    </label>
-    {errors.acceptsTerms && (
-      <p
-        id="register-accepts-terms-error"
-        className="mt-1 text-xs text-red-700 font-degular"
-      >
-        {errors.acceptsTerms}
-      </p>
-    )}
-  </div>
+                  {/* Aceptación de términos + botón, más compactos */}
+                  <div className="mt-4 sm:mt-5 space-y-3">
+                    <div>
+                      <label className="flex items-start gap-2 cursor-pointer">
+                        <input
+                          ref={termsCheckboxRef}
+                          id="register-accepts-terms"
+                          name="acceptsTerms"
+                          type="checkbox"
+                          className="mt-0.5 h-4 w-4 rounded border-raw/30 text-asparagus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-asparagus focus-visible:ring-offset-2 focus-visible:ring-offset-linen"
+                          checked={values.acceptsTerms}
+                          onChange={handleChange("acceptsTerms")}
+                          onBlur={handleBlur("acceptsTerms")}
+                          aria-invalid={Boolean(errors.acceptsTerms)}
+                          aria-describedby={
+                            errors.acceptsTerms ? "register-accepts-terms-error" : undefined
+                          }
+                        />
+                        <span className="text-xs sm:text-sm text-raw/75 font-degular">
+                          He leído y acepto los{" "}
+                          <a
+                            href="/legal/terminos"
+                            className="underline underline-offset-2 decoration-raw/40 hover:decoration-asparagus"
+                          >
+                            términos y condiciones
+                          </a>{" "}
+                          y la{" "}
+                          <a
+                            href="/legal/privacidad"
+                            className="underline underline-offset-2 decoration-raw/40 hover:decoration-asparagus"
+                          >
+                            política de privacidad
+                          </a>
+                          .
+                        </span>
+                      </label>
+                      {errors.acceptsTerms && (
+                        <p
+                          id="register-accepts-terms-error"
+                          className="mt-1 text-xs text-red-700 font-degular"
+                        >
+                          {errors.acceptsTerms}
+                        </p>
+                      )}
+                    </div>
 
-  {/* Aquí se mantiene tu ButtonLink de submit como ya actualizamos antes */}
-  <div className="space-y-2">
-    <ButtonLink
-      as="button"
-      type="submit"
-      onClick={() => {
-        // El submit real lo maneja el onSubmit del <form>
-      }}
-      variant="primary"
-      size="sm"
-      fullWidth
-      loading={isSubmitting}
-      className="rounded-xl text-sm sm:text-base font-degular"
-      aria-label="Registrarme en la membresía de Dharma en Ruta"
-    >
-      Registrarme en la membresía
-    </ButtonLink>
+                    {/* Aquí se mantiene tu ButtonLink de submit como ya actualizamos antes */}
+                    <div className="space-y-2">
+                      <ButtonLink
+                        as="button"
+                        type="submit"
+                        onClick={() => {
+                          // El submit real lo maneja el onSubmit del <form>
+                        }}
+                        variant="primary"
+                        size="sm"
+                        fullWidth
+                        loading={isSubmitting}
+                        className="rounded-xl text-sm sm:text-base font-degular"
+                        aria-label="Registrarme en la membresía de Dharma en Ruta"
+                      >
+                        Registrarme en la membresía
+                      </ButtonLink>
 
-    <p className="text-[11px] sm:text-xs text-raw/55 font-degular text-center">
-      Si ya tienes una cuenta, podrás iniciar sesión directamente cuando la
-      escuela esté activa.
-    </p>
-  </div>
+                      <p className="text-[11px] sm:text-xs text-raw/55 font-degular text-center">
+                        Si ya tienes una cuenta, podrás iniciar sesión directamente cuando la
+                        escuela esté activa.
+                      </p>
+                    </div>
 
 
                   </div>

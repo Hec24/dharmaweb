@@ -5,7 +5,7 @@ import DropdownMenu from "../ui/DropdownMenu";
 import MobileMenu from "../ui/MobileMenu";
 import { acercaLinks as acercaLinksData } from "../../data/navLinks";
 
-interface NavLink { label: string; href: string; }
+interface NavLink { label: string; href: string; highlighted?: boolean; }
 type WidthPreset = "viewport" | "96rem" | "110rem" | "120rem";
 type Tone = "dark" | "light";
 type MobileMode = "default" | "hidden" | "logoOnly";
@@ -33,10 +33,10 @@ interface GenericNavProps {
 const presetToClass = (p?: WidthPreset) => {
   switch (p) {
     case "viewport": return "w-full";
-    case "96rem":   return "max-w-[96rem] w-full";
-    case "120rem":  return "max-w-[120rem] w-full";
+    case "96rem": return "max-w-[96rem] w-full";
+    case "120rem": return "max-w-[120rem] w-full";
     case "110rem":
-    default:        return "max-w-[110rem] w-full";
+    default: return "max-w-[110rem] w-full";
   }
 };
 
@@ -81,8 +81,8 @@ const GenericNav: React.FC<GenericNavProps> = ({
   const wrapperBg =
     variant === "transparent"
       ? (effectiveTone === "dark"
-          ? "bg-white/40 ring-1 ring-black/5 supports-[backdrop-filter]:backdrop-blur-md shadow-sm"
-          : "bg-asparragus/75 ring-1 ring-white/10 supports-[backdrop-filter]:backdrop-blur-md shadow-sm")
+        ? "bg-white/40 ring-1 ring-black/5 supports-[backdrop-filter]:backdrop-blur-md shadow-sm"
+        : "bg-asparragus/75 ring-1 ring-white/10 supports-[backdrop-filter]:backdrop-blur-md shadow-sm")
       : "bg-white shadow-sm";
 
   const resolvedLogo =
@@ -187,7 +187,11 @@ const GenericNav: React.FC<GenericNavProps> = ({
                 <a
                   key={i}
                   href={link.href}
-                  className={`font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw rounded-md`}
+                  className={
+                    link.highlighted
+                      ? "inline-flex items-center justify-center rounded-full bg-asparragus px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-asparragus/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-asparragus transition-all"
+                      : `font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw rounded-md`
+                  }
                 >
                   {link.label}
                 </a>

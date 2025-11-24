@@ -15,6 +15,8 @@ type LandingHeaderProps = {
   align?: "top" | "bottom" | "center";
   /** Clases extra para el contenedor raíz del Header */
   className?: string;
+  /** Contenido personalizado del hero (reemplaza showTitle si se proporciona) */
+  children?: React.ReactNode;
 };
 
 const LandingHeader: React.FC<LandingHeaderProps> = ({
@@ -24,6 +26,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({
   showTitle = true,
   align = "bottom",
   className = "",
+  children,
 }) => {
   return (
     <Header
@@ -34,7 +37,9 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({
       withBottomStep
       className={className}
     >
-      {showTitle && (
+      {children ? (
+        children
+      ) : showTitle ? (
         <div
           /* 🔧 SUBIR UN PELÍN EL TÍTULO:
              - Mobile: ajusta `max-[767px]:-translate-y-2` (más negativo = más arriba).
@@ -93,7 +98,7 @@ const LandingHeader: React.FC<LandingHeaderProps> = ({
             />
           </div>
         </div>
-      )}
+      ) : null}
     </Header>
   );
 };

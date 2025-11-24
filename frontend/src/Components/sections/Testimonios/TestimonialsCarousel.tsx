@@ -1,241 +1,156 @@
 // src/Components/sections/TestimonialsCarousel.tsx
 import React, { useEffect, useId, useMemo, useState } from "react";
-import { FiArrowRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
+import { FaQuoteLeft } from "react-icons/fa";
 import { testimonialsData, programFilters } from "../../../data/testimonios";
-import TestimonialCard from "../../ui/TestimonialCard";
-import ButtonLink from "../../ui/ButtonLink";
-import Tag from "../../ui/Tag";
 import SectionHeader from "../../ui/SectionHeader";
+import Tag from "../../ui/Tag";
 
 type Testimonial = (typeof testimonialsData)[number];
-
-/** Hook: devuelve 1 en mobile y 2 a partir de 1024px, sin librerías. */
-function usePerPage(lgWidth = 1024): 1 | 2 {
-  const getMatches = (): 1 | 2 =>
-    typeof window !== "undefined" && window.matchMedia(`(min-width:${lgWidth}px)`).matches ? 2 : 1;
-
-  const [perPage, setPerPage] = useState<1 | 2>(getMatches);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const mql = window.matchMedia(`(min-width:${lgWidth}px)`);
-    const handler = (e: MediaQueryListEvent) => setPerPage(e.matches ? 2 : 1);
-
-    if (typeof mql.addEventListener === "function") mql.addEventListener("change", handler);
-    else mql.addListener(handler as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
-
-    setPerPage(mql.matches ? 2 : 1);
-
-    return () => {
-      if (typeof mql.removeEventListener === "function") mql.removeEventListener("change", handler);
-      else mql.removeListener(handler as unknown as (this: MediaQueryList, ev: MediaQueryListEvent) => void);
-    };
-  }, [lgWidth]);
-
-  return perPage;
-}
 
 const TestimonialsCarousel: React.FC = () => {
   const headingId = useId();
   const [activeFilter, setActiveFilter] = useState<string>("Todos");
-  const perPage = usePerPage(1024);
-  const [page, setPage] = useState<number>(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const filtered: Testimonial[] = useMemo(() => {
+  const filtered = useMemo(() => {
     return activeFilter === "Todos"
       ? testimonialsData
       : testimonialsData.filter((t) => t.program === activeFilter);
   }, [activeFilter]);
 
-  const totalPages: number = Math.max(1, Math.ceil(filtered.length / perPage));
-  const clampedPage: number = Math.min(page, totalPages - 1);
-  const startIndex: number = clampedPage * perPage;
-  const visible: Testimonial[] = filtered.slice(startIndex, startIndex + perPage);
-
+  // Reset index when filter changes
   useEffect(() => {
-    setPage(0);
-  }, [activeFilter, perPage]);
+    setCurrentIndex(0);
+  }, [activeFilter]);
+
+  const next = () => {
+    setCurrentIndex((prev) => (prev + 1) % filtered.length);
+  };
+
+  const prev = () => {
+    setCurrentIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+  };
+
+  const currentTestimonial = filtered[currentIndex];
+
+  if (!currentTestimonial) return null;
 
   return (
     <section
       id="testimonios"
-      className="relative bg-[var(--color-linen)] overflow-hidden"
+      className="relative py-20 md:py-28 bg-[var(--color-linen)] overflow-hidden"
       aria-labelledby={headingId}
-      role="region"
     >
-      {/* Escalón superior: overlay oscuro que recoge el hairline del Header */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
-      />
-
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-10 md:pt-12 pb-12 md:pb-16">
-        {/* sr-only por redundancia con SectionHeader */}
-        <h2 id={headingId} className="sr-only">
-          Nuestr@s Alumn@s Dicen
-        </h2>
-
-        <SectionHeader
-          title="Voces de nuestros participantes"
-          subtitle="Experiencias reales que inspiran acción."
-          subtitleClassName="text-sm md:text-base max-w-xl mx-auto text-asparragus/80 mt-2"
-          align="center"
-          size="md"
-          color="asparragus"
-          className="mb-6 md:mb-8"
-        />
-
-        {/* Filtros */}
-        <nav aria-label="Filtrar testimonios por programa" className="mb-8 md:mb-10">
-          <ul role="list" className="flex flex-wrap justify-center gap-2.5 sm:gap-3">
-            {programFilters.map((program) => (
-              <li key={program} role="listitem">
-                <Tag
-                  variant="filter"
-                  size="xl"
-                  active={activeFilter === program}
-                  asButton
-                  onClick={() => setActiveFilter(program)}
-                  aria-pressed={activeFilter === program}
-                >
-                  {program}
-                </Tag>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* === CONTENEDOR BLANCO CON PATRÓN DETRÁS (como CursoSection) === */}
-        <div
-          className="relative rounded-2xl supports-[backdrop-filter]:backdrop-blur-md p-4 sm:p-5 md:p-6 lg:p-8 shadow-sm overflow-hidden"
-          role="group"
-          aria-labelledby={headingId}
-        >
-          {/* Patrón detrás del contenido (solo desktop) */}
-          <div
-            aria-hidden
-            className="
-              hidden md:block
-              absolute inset-0 -z-10 rounded-3xl
-              before:absolute before:inset-0 before:rounded-3xl
-            "
-            style={{
-              backgroundImage: "url('/img/Backgrounds/background2.jpg')",
-              backgroundRepeat: "repeat",
-              backgroundSize: "320px",
-              backgroundPosition: "center",
-              opacity: 0.45,
-              filter: "saturate(0.9)",
-            }}
-          />
-
-          {/* Controles tipo “flechas” (coherentes con TeamCarousel) */}
-          <div className="hidden lg:flex justify-end mb-4 gap-2" aria-hidden={totalPages <= 1}>
-            <IconPager
-              page={clampedPage}
-              totalPages={totalPages}
-              onPrev={() => setPage((p) => Math.max(0, p - 1))}
-              onNext={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-            />
-          </div>
-
-          {/* GRID paginada */}
-          <div role="list" aria-label="Testimonios" className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
-            {visible.length === 0 ? (
-              <div role="status" className="col-span-full text-center text-asparragus/70 font-degular text-sm">
-                No hay testimonios para este filtro.
-              </div>
-            ) : (
-              visible.map((t) => (
-                <div key={t.id} role="listitem">
-                  <TestimonialCard {...t} date={t.date ?? ""} />
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Controles en mobile */}
-          {totalPages > 1 && (
-            <div className="mt-5 flex items-center justify-center lg:hidden">
-              <IconPager
-                page={clampedPage}
-                totalPages={totalPages}
-                onPrev={() => setPage((p) => Math.max(0, p - 1))}
-                onNext={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              />
-            </div>
-          )}
-        </div>
-
-        {/* CTA */}
-        <div className="mt-8 md:mt-10 text-center">
-          <SectionHeader
-            title="¿List@ para tu transformación?"
-            subtitle="Estas historias son solo el comienzo. Tu viaje personal hacia el autoconocimiento te espera."
-            subtitleClassName="text-asparragus/80 text-sm md:text-base font-degular max-w-2xl mx-auto mt-2"
-            align="center"
-            size="sm"
-            color="asparragus"
-            className="mb-5 md:mb-6"
-          />
-          <ButtonLink
-            size="md"
-            variant="primary"
-            href="/cursos"
-            icon={<FiArrowRight aria-hidden />}
-            className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2"
-            aria-label="Ir a los cursos para comenzar tu camino"
-          >
-            Comienza tu camino
-          </ButtonLink>
-        </div>
+      {/* Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/30 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-gold/5 rounded-full blur-[100px]" />
       </div>
 
-      {/* Hairlines inferiores */}
-      <div aria-hidden className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
-      <div aria-hidden className="mt-12 md:mt-16 h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent" />
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <SectionHeader
+          title="Voces de nuestr@s Participantes"
+          subtitle="Voces reales de personas que ya están caminando con nosotras."
+          align="center"
+          className="mb-10"
+        />
+
+        {/* Filters */}
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
+          {programFilters.map((filter) => (
+            <button
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              className={`
+                px-4 py-2 rounded-full text-sm font-medium transition-all duration-300
+                ${activeFilter === filter
+                  ? "bg-asparragus text-white shadow-md transform scale-105"
+                  : "bg-white/50 text-asparragus hover:bg-white hover:shadow-sm"
+                }
+              `}
+            >
+              {filter}
+            </button>
+          ))}
+        </div>
+
+        {/* Carousel Card */}
+        <div className="max-w-4xl mx-auto">
+          <div className="relative bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-white/50 h-[500px] flex flex-col justify-center transition-all duration-300">
+            {/* Decorative Quote */}
+            <div className="absolute top-8 left-8 text-gold/20">
+              <FaQuoteLeft size={60} />
+            </div>
+
+            <div className="relative z-10 flex flex-col items-center text-center animate-fadeIn">
+              {/* Stars */}
+              <div className="flex gap-1 mb-6 text-gold">
+                {[...Array(currentTestimonial.rating)].map((_, i) => (
+                  <FiStar key={i} className="fill-current w-5 h-5" />
+                ))}
+              </div>
+
+              {/* Text */}
+              <blockquote className="font-degular text-lg md:text-xl text-gray-700 italic leading-relaxed mb-8 max-w-2xl">
+                "{currentTestimonial.text}"
+              </blockquote>
+
+              {/* Author Info */}
+              <div className="mt-auto">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold to-asparragus p-[2px] mx-auto mb-3">
+                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-xl font-gotu text-asparragus">
+                    {currentTestimonial.name.charAt(0)}
+                  </div>
+                </div>
+                <cite className="not-italic">
+                  <span className="block font-gotu text-lg text-asparragus">
+                    {currentTestimonial.name}
+                  </span>
+                  <span className="block text-sm text-gray-500 font-medium">
+                    {currentTestimonial.program} • {currentTestimonial.date}
+                  </span>
+                </cite>
+              </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            <button
+              onClick={prev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-left-6"
+              aria-label="Anterior testimonio"
+            >
+              <FiChevronLeft size={24} />
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-right-6"
+              aria-label="Siguiente testimonio"
+            >
+              <FiChevronRight size={24} />
+            </button>
+          </div>
+
+          {/* Dots Pagination */}
+          <div className="flex justify-center gap-2 mt-8">
+            {filtered.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                className={`
+                  h-2 rounded-full transition-all duration-300
+                  ${idx === currentIndex
+                    ? "w-8 bg-asparragus"
+                    : "w-2 bg-asparragus/30 hover:bg-asparragus/50"
+                  }
+                `}
+                aria-label={`Ir al testimonio ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </section>
-  );
-};
-
-const IconPager: React.FC<{
-  page: number;
-  totalPages: number;
-  onPrev: () => void;
-  onNext: () => void;
-}> = ({ page, totalPages, onPrev, onNext }) => {
-  const isPrevDisabled = page === 0;
-  const isNextDisabled = page >= totalPages - 1;
-
-  const btnBase =
-    "inline-flex h-9 w-9 items-center justify-center rounded-full ring-1 ring-black/10 bg-white text-asparragus transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black focus-visible:ring-offset-2 focus-visible:ring-offset-black";
-
-  return (
-    <div className="flex items-center gap-2">
-      <button
-        type="button"
-        onClick={onPrev}
-        disabled={isPrevDisabled}
-        className={btnBase}
-        aria-label="Mostrar testimonios anteriores"
-      >
-        <FiChevronLeft aria-hidden />
-        <span className="sr-only">Anterior</span>
-      </button>
-      <span className="mx-1 text-xs font-degular text-black bg-white" aria-live="polite">
-        {page + 1} / {totalPages}
-      </span>
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={isNextDisabled}
-        className={btnBase}
-        aria-label="Mostrar testimonios siguientes"
-      >
-        <FiChevronRight aria-hidden />
-        <span className="sr-only">Siguiente</span>
-      </button>
-    </div>
   );
 };
 
