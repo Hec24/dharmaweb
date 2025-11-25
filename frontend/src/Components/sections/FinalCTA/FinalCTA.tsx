@@ -59,15 +59,15 @@ const FinalCTA: React.FC = () => {
                 <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                     {isOpen ? (
                         <>
-                            <ButtonLink to="/registro" variant="primary" size="lg">
+                            <ButtonLink to="/registro" variant="primary" size="md">
                                 Únete a la membresía
                             </ButtonLink>
-                            <ButtonLink to="/login" variant="secondary" size="lg">
+                            <ButtonLink to="/login" variant="secondary" size="md">
                                 Ya soy miembro
                             </ButtonLink>
                         </>
                     ) : (
-                        <ButtonLink to="/lista-espera" variant="primary" size="lg">
+                        <ButtonLink to="/lista-espera" variant="primary" size="md">
                             Únete a la lista de espera
                         </ButtonLink>
                     )}

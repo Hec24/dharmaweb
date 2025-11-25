@@ -4,14 +4,13 @@ import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
 import { FaQuoteLeft } from "react-icons/fa";
 import { testimonialsData, programFilters } from "../../../data/testimonios";
 import SectionHeader from "../../ui/SectionHeader";
-import Tag from "../../ui/Tag";
-
-type Testimonial = (typeof testimonialsData)[number];
 
 const TestimonialsCarousel: React.FC = () => {
   const headingId = useId();
   const [activeFilter, setActiveFilter] = useState<string>("Todos");
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   const filtered = useMemo(() => {
     return activeFilter === "Todos"
@@ -30,6 +29,31 @@ const TestimonialsCarousel: React.FC = () => {
 
   const prev = () => {
     setCurrentIndex((prev) => (prev - 1 + filtered.length) % filtered.length);
+  };
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    if (isLeftSwipe) {
+      next();
+    }
+    if (isRightSwipe) {
+      prev();
+    }
   };
 
   const currentTestimonial = filtered[currentIndex];
@@ -77,7 +101,12 @@ const TestimonialsCarousel: React.FC = () => {
 
         {/* Carousel Card */}
         <div className="max-w-4xl mx-auto">
-          <div className="relative bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-white/50 h-[500px] flex flex-col justify-center transition-all duration-300">
+          <div
+            className="relative bg-white rounded-3xl shadow-xl p-6 sm:p-8 md:p-12 border border-white/50 h-[500px] flex flex-col justify-center transition-all duration-300"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
             {/* Decorative Quote */}
             <div className="absolute top-8 left-8 text-gold/20">
               <FaQuoteLeft size={60} />
@@ -92,7 +121,7 @@ const TestimonialsCarousel: React.FC = () => {
               </div>
 
               {/* Text */}
-              <blockquote className="font-degular text-lg md:text-xl text-gray-700 italic leading-relaxed mb-8 max-w-2xl">
+              <blockquote className="font-degular text-base sm:text-lg md:text-xl text-gray-700 italic leading-relaxed mb-8 max-w-2xl">
                 "{currentTestimonial.text}"
               </blockquote>
 
