@@ -27,28 +27,19 @@ export const HeroContent: React.FC = () => {
     }
 
     return (
-        <div className="w-full max-w-xl mx-auto px-6 pb-8">
+        <div className="w-full max-w-3xl mx-auto px-4 sm:px-6 pb-4">
             {/* Layout vertical compacto: Párrafos juntos arriba - CTA abajo */}
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-5">
 
-                {/* Párrafos combinados - Tarjeta decorativa */}
-                <div className="bg-white/50 backdrop-blur-md rounded-xl px-5 py-3 shadow-lg border border-white/60 w-full">
-                    <p className="font-degular text-sm font-medium text-black/90 leading-snug text-center">
-                        Yoga, autoconocimiento y vida consciente
-                        <span className="mx-2">•</span>
-                        Comunidad y acompañamiento para vivir con libertad
-                    </p>
-                </div>
-
-                {/* CTAs - Más estrechos */}
-                <div className="flex flex-col gap-3 w-full max-w-sm">
+                {/* CTAs - Responsive */}
+                <div className="flex flex-col gap-3 w-full max-w-md">
                     {isOpen ? (
                         <div className="flex flex-col sm:flex-row gap-3 justify-center">
                             <ButtonLink
                                 to="/registro"
                                 variant="primary"
                                 size="md"
-                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent"
+                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent text-center"
                                 aria-label="Únete a la membresía de Dharma en Ruta"
                             >
                                 Únete a la membresía
@@ -57,7 +48,7 @@ export const HeroContent: React.FC = () => {
                                 to="/login"
                                 variant="secondary"
                                 size="md"
-                                className="bg-white/40 backdrop-blur hover:bg-white/60 border-black/10 text-black"
+                                className="bg-white/40 backdrop-blur hover:bg-white/60 border-black/10 text-black text-center"
                                 aria-label="Iniciar sesión si ya eres miembro"
                             >
                                 Ya soy miembro
@@ -69,7 +60,7 @@ export const HeroContent: React.FC = () => {
                                 to="/lista-espera"
                                 variant="primary"
                                 size="md"
-                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent w-full"
+                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent w-full text-center"
                                 aria-label="Únete a la lista de espera de la membresía"
                             >
                                 Únete a la lista de espera
@@ -80,7 +71,15 @@ export const HeroContent: React.FC = () => {
                         </div>
                     )}
                 </div>
-
+                {/* Párrafos combinados - Sin fondo, responsive */}
+                <div className="w-full max-w-2xl px-2">
+                    <p className="font-degular text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-black leading-relaxed text-center">
+                        Yoga, autoconocimiento y vida consciente
+                        <span className="hidden sm:inline mx-2">•</span>
+                        <span className="block sm:inline mt-1 sm:mt-0"></span>
+                        Comunidad y acompañamiento para vivir con libertad
+                    </p>
+                </div>
             </div>
         </div>
     );

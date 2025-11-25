@@ -4,12 +4,14 @@ import React, { useId } from "react";
 import { FiLogIn, FiUserPlus } from "react-icons/fi";
 import SectionHeader from "../../ui/SectionHeader";
 import ButtonLink from "../../ui/ButtonLink";
+import { useMembershipStatus } from "../../../hooks/useMembershipStatus";
 
 interface MembershipSectionProps { }
 
 const MembershipSection: React.FC<MembershipSectionProps> = () => {
   const headingId = useId();
   const cardHeadingId = useId();
+  const { isOpen } = useMembershipStatus();
 
   return (
     <section
@@ -49,43 +51,43 @@ const MembershipSection: React.FC<MembershipSectionProps> = () => {
         {/* Contenido Principal: Cards + Lista + CTA */}
         <div className="flex flex-col items-center">
 
-          {/* 1. Grid de Pilares (Estilo Intro) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 w-full">
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-full bg-asparragus/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+          {/* 1. Grid de Pilares (Estilo Intro) - Responsive como SchoolValues */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16 w-full">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-asparragus/10 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
                 📚
               </div>
-              <h3 className="font-gotu text-xl text-asparragus mb-2">Contenidos</h3>
+              <h3 className="font-gotu text-lg text-asparragus mb-2">Contenidos</h3>
               <p className="text-asparragus/80 text-sm leading-relaxed">
                 Biblioteca creciente de vídeos y recursos para tu práctica autónoma.
               </p>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-full bg-gold/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-gold/10 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
                 🎥
               </div>
-              <h3 className="font-gotu text-xl text-asparragus mb-2">Directos</h3>
+              <h3 className="font-gotu text-lg text-asparragus mb-2">Directos</h3>
               <p className="text-asparragus/80 text-sm leading-relaxed">
                 Encuentros mensuales en vivo para profundizar y resolver dudas.
               </p>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-full bg-raw/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-raw/10 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
                 💬
               </div>
-              <h3 className="font-gotu text-xl text-asparragus mb-2">Comunidad</h3>
+              <h3 className="font-gotu text-lg text-asparragus mb-2">Comunidad</h3>
               <p className="text-asparragus/80 text-sm leading-relaxed">
                 Foro privado para compartir y sentir el sostén del grupo.
               </p>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group">
-              <div className="w-12 h-12 rounded-full bg-asparragus/10 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition-transform">
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-white/50 hover:shadow-lg transition-all duration-300 group flex flex-col items-center text-center">
+              <div className="w-14 h-14 rounded-full bg-asparragus/10 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
                 🧘🏻‍♀️
               </div>
-              <h3 className="font-gotu text-xl text-asparragus mb-2">Acompañamiento</h3>
+              <h3 className="font-gotu text-lg text-asparragus mb-2">Acompañamiento</h3>
               <p className="text-asparragus/80 text-sm leading-relaxed">
                 Descuentos exclusivos en sesiones 1:1 para tu proceso individual.
               </p>
@@ -128,21 +130,13 @@ const MembershipSection: React.FC<MembershipSectionProps> = () => {
                     <span>Ya soy miembro: Acceder</span>
                   </ButtonLink>
 
-                  {/* Botón Registro */}
+                  {/* Botón Registro o Lista de Espera (condicional) */}
                   <ButtonLink
-                    to="/registro"
+                    to={isOpen ? "/registro" : "/lista-espera"}
                     className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-medium text-white border border-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                   >
                     <FiUserPlus aria-hidden className="h-4 w-4" />
-                    <span>Quiero unirme: Registro</span>
-                  </ButtonLink>
-
-                  {/* Botón Lista de Espera */}
-                  <ButtonLink
-                    to="/lista-espera"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 px-4 py-3 text-sm font-medium text-white/80 border border-white/10 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                  >
-                    <span>Unirme a la lista de espera</span>
+                    <span>{isOpen ? "Quiero unirme: Registro" : "Unirme a la lista de espera"}</span>
                   </ButtonLink>
                 </div>
               </div>
