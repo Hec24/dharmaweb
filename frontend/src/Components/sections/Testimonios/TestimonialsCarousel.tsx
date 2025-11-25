@@ -66,6 +66,12 @@ const TestimonialsCarousel: React.FC = () => {
       className="relative py-20 md:py-28 bg-[var(--color-linen)] overflow-hidden"
       aria-labelledby={headingId}
     >
+      {/* Escalón superior */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent"
+      />
+
       {/* Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-white/30 rounded-full blur-[100px]" />
@@ -143,17 +149,17 @@ const TestimonialsCarousel: React.FC = () => {
               </div>
             </div>
 
-            {/* Navigation Buttons */}
+            {/* Navigation Buttons - Hidden on mobile */}
             <button
               onClick={prev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-left-6"
+              className="hidden md:block absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-left-6"
               aria-label="Anterior testimonio"
             >
               <FiChevronLeft size={24} />
             </button>
             <button
               onClick={next}
-              className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-right-6"
+              className="hidden md:block absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white shadow-lg text-asparragus hover:bg-asparragus hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold md:-right-6"
               aria-label="Siguiente testimonio"
             >
               <FiChevronRight size={24} />
@@ -179,6 +185,12 @@ const TestimonialsCarousel: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Hairline inferior */}
+      <div
+        aria-hidden
+        className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
+      />
     </section>
   );
 };

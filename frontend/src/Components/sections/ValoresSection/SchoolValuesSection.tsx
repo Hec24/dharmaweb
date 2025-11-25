@@ -48,6 +48,11 @@ export default function SchoolValuesSection({
       aria-labelledby={`${id}-heading`}
       className={`relative isolate py-16 md:py-24 ${className}`}
     >
+      {/* Escalón superior */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/15 to-transparent z-10"
+      />
       {/* Fondo base */}
       <div className="absolute inset-0 -z-20 bg-white" aria-hidden />
 
@@ -91,6 +96,12 @@ export default function SchoolValuesSection({
           ))}
         </ul>
       </div>
+
+      {/* Hairline inferior */}
+      <div
+        aria-hidden
+        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 to-transparent z-10"
+      />
     </section>
   );
 }
