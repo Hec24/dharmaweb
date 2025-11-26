@@ -293,6 +293,13 @@ Equipo Dharma en Ruta
 // ========= JSON normal para el resto =========
 app.use(express.json());
 
+// ========= Autenticación =========
+import { register, login, me } from './auth/authController';
+
+app.post('/api/auth/register', register);
+app.post('/api/auth/login', login);
+app.get('/api/auth/me', me);
+
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];
 

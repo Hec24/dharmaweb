@@ -3,26 +3,34 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/server.js",
-  "engines": { "node": ">=18" },                        
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "nodemon --exec ts-node server.ts",
-    "build": "tsc",                                     
-    "start": "node dist/server.js"                     
+    "build": "tsc",
+    "start": "node dist/server.js"
   },
   "license": "ISC",
   "dependencies": {
     "@types/dotenv": "^8.2.3",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "googleapis": "^154.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.16.3",
     "stripe": "^18.4.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.0.14",
+    "@types/pg": "^8.15.6",
     "@types/uuid": "^10.0.0",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",

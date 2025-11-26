@@ -1,11 +1,10 @@
 import React from "react";
 import "./App.css";
-
-
+import { AuthProvider } from "./contexts/AuthContext";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
-import ScrollToTop from "./Components/shared/ScrollToTop"; // 👈
+import ScrollToTop from "./Components/shared/ScrollToTop";
 
 import { LandingPage } from "./pages/LandingPage";
 import AcompañamientosPage from "./pages/AcompañamientosPage";
@@ -33,6 +32,9 @@ import QueIncluyePage from "./pages/QueIncluyePage";
 import ListaEsperaPage from "./pages/ListaEsperaPage";
 import TestRuedaVidaPage from "./pages/TestRuedaVidaPage";
 import TestConfirmacionPage from "./pages/TestConfirmacionPage";
+import DashboardInicio from "./pages/dashboard/DashboardInicio";
+import { DashboardLayout } from "./layouts/DashboardLayout";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
@@ -78,7 +80,26 @@ const router = createBrowserRouter([
       { path: "test-confirmacion", element: <TestConfirmacionPage /> },
     ],
   },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <DashboardInicio /> },
+      { path: "contenidos", element: <div className="p-8">Contenidos - Próximamente</div> },
+      { path: "reservas", element: <div className="p-8">Mis Reservas - Próximamente</div> },
+      { path: "perfil", element: <div className="p-8">Mi Perfil - Próximamente</div> },
+    ],
+  },
 ]);
 
-const App: React.FC = () => <RouterProvider router={router} />;
+const App: React.FC = () => (
+  <AuthProvider>
+    <RouterProvider router={router} />
+  </AuthProvider>
+);
+
 export default App;
