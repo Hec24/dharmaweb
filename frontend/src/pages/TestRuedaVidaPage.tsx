@@ -18,7 +18,8 @@ const TestRuedaVidaPage: React.FC = () => {
         setLoading(true);
 
         try {
-            const response = await fetch("/api/pagos/checkout-session-test", {
+            const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+            const response = await fetch(`${BACKEND_URL}/api/pagos/checkout-session-test`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
