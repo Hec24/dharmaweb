@@ -4,6 +4,7 @@ export const leftLinks = [
 ];
 
 export const rightLinks = [
+  { label: "Lista de Espera", href: "/lista-espera" },
   { label: "Qué incluye", href: "/que-incluye" },
   { label: "Acceder", href: "/login", highlighted: true },
 ];

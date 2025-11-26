@@ -34,8 +34,8 @@ app.use(cors({
     return cb(allowed ? null : new Error("Not allowed by CORS"), allowed);
   },
   credentials: false,
-  methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-  allowedHeaders: ["Content-Type","Authorization"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
   optionsSuccessStatus: 204,
 }));
 
@@ -117,17 +117,122 @@ app.post(
         } catch {
           return null;
         }
-}
+      }
 
 
       if (event.type === "checkout.session.completed") {
         const session = event.data.object as Stripe.Checkout.Session;
+        const productType = session.metadata?.productType;
 
+        // ========= NUEVO: Manejo de Test Rueda de Vida =========
+        if (productType === "test-rueda-vida") {
+          const email = session.customer_email || session.metadata?.email;
+
+          if (email) {
+            try {
+              // Enviar email con MailerLite
+              const mailerliteApiKey = process.env.MAILERLITE_API_KEY;
+
+              if (mailerliteApiKey) {
+                const emailData = {
+                  to: email,
+                  from: {
+                    email: "info@dharmaenruta.com",
+                    name: "Dharma en Ruta"
+                  },
+                  subject: "Tu Test de la Rueda de Vida está listo 🎯",
+                  html: `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                      <h2 style="color: #4A5D23;">¡Gracias por tu compra!</h2>
+                      <p>Tu Test de la Rueda de Vida ya está disponible.</p>
+                      
+                      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <p style="margin: 0; font-weight: bold;">📥 Descarga tu PDF aquí:</p>
+                        <a href="${FRONTEND_URL}/downloads/test-rueda-vida.pdf" 
+                           style="display: inline-block; background: #4A5D23; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 10px;">
+                          Descargar PDF
+                        </a>
+                      </div>
+
+                      <p><strong>Este PDF incluye:</strong></p>
+                      <ul>
+                        <li>Test de autoevaluación de las 8 áreas de vida</li>
+                        <li>Plantilla para crear tu gráfico personalizado</li>
+                        <li>Más de 50 páginas de ejercicios prácticos</li>
+                        <li>Guía paso a paso para pasar a la acción</li>
+                      </ul>
+
+                      <p>Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.</p>
+
+                      <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+                      <p><strong>¿Quieres profundizar más?</strong></p>
+                      <p>Descubre nuestra membresía con contenidos exclusivos, directos mensuales, comunidad y acompañamiento personalizado.</p>
+                      <a href="${FRONTEND_URL}" style="color: #4A5D23;">Conocer la membresía →</a>
+
+                      <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                        Un abrazo,<br>
+                        Equipo Dharma en Ruta
+                      </p>
+                    </div>
+                  `,
+                  text: `
+¡Gracias por tu compra!
+
+Tu Test de la Rueda de Vida ya está disponible.
+
+Descarga tu PDF aquí: ${FRONTEND_URL}/downloads/test-rueda-vida.pdf
+
+Este PDF incluye:
+- Test de autoevaluación de las 8 áreas de vida
+- Plantilla para crear tu gráfico personalizado
+- Más de 50 páginas de ejercicios prácticos
+- Guía paso a paso para pasar a la acción
+
+Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.
+
+¿Quieres profundizar más?
+Descubre nuestra membresía: ${FRONTEND_URL}
+
+Un abrazo,
+Equipo Dharma en Ruta
+                  `
+                };
+
+                // Llamada a MailerLite API
+                const response = await fetch("https://connect.mailerlite.com/api/emails", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${mailerliteApiKey}`,
+                  },
+                  body: JSON.stringify(emailData),
+                });
+
+                if (response.ok) {
+                  console.log("[WEBHOOK] Email de test enviado correctamente a:", email);
+                } else {
+                  const errorText = await response.text();
+                  console.error("[WEBHOOK] Error enviando email con MailerLite:", errorText);
+                }
+              } else {
+                console.warn("[WEBHOOK] MAILERLITE_API_KEY no configurada, email no enviado");
+              }
+            } catch (err: any) {
+              console.error("[WEBHOOK] Error enviando email de test:", err?.message || err);
+            }
+          }
+
+          // Retornar early para no procesar como reserva
+          return res.json({ received: true });
+        }
+
+        // ========= LÓGICA EXISTENTE: Acompañamientos =========
         // 1 ó varias reservas desde metadata
         const ids: string[] = (() => {
           const raw = session.metadata?.reservaIds;
           if (raw) {
-            try { return JSON.parse(raw) as string[]; } catch {}
+            try { return JSON.parse(raw) as string[]; } catch { }
           }
           return session.metadata?.reservaId ? [session.metadata.reservaId] : [];
         })();
@@ -252,7 +357,7 @@ async function reconcileCalendarVsBackend() {
   let freed = 0, clearedHolds = 0;
 
   const HORIZON_DAYS = 60;
-  const horizonISO = new Date(Date.now() + HORIZON_DAYS * 86400000).toISOString().slice(0,10);
+  const horizonISO = new Date(Date.now() + HORIZON_DAYS * 86400000).toISOString().slice(0, 10);
 
   for (const r of [...reservas]) {
     try {
@@ -288,6 +393,46 @@ setInterval(() => {
 }, 30_000);
 
 // ========= Pagos =========
+
+// ========= Endpoint para Test Rueda de Vida =========
+app.post("/api/pagos/checkout-session-test", async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email es requerido" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      locale: "es",
+      customer_email: email,
+      line_items: [{
+        price_data: {
+          currency: "eur",
+          unit_amount: 1490, // 14.90€
+          product_data: {
+            name: "Test de la Rueda de Vida + Libro de Ejercicios",
+            description: "PDF descargable con test y ejercicios personalizados",
+          },
+        },
+        quantity: 1,
+      }],
+      success_url: `${FRONTEND_URL}/test-confirmacion?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_URL}/test-rueda-vida?cancelled=1`,
+      metadata: {
+        productType: "test-rueda-vida",
+        email,
+      },
+    });
+
+    return res.json({ id: session.id, url: session.url });
+  } catch (err: any) {
+    console.error("[CHECKOUT-TEST] Error creando sesión:", err?.message || err);
+    return res.status(500).json({ error: "Error al crear la sesión de pago" });
+  }
+});
+
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
   try {
     type CarritoItem = {
@@ -434,28 +579,28 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     //   duracionMin: r.duracionMin ?? 60,
     // }));
 
-const first = found[0]!;
-const session = await stripe.checkout.sessions.create({
-  mode: "payment",
-  locale: "es",
-  customer_email: first.email,
-  // NOTE: en APIs recientes no hace falta payment_method_types
-  line_items,
-  success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
-  cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
-  metadata: {
-    // ✅ deja solo esto (corto y suficiente para el webhook y /gracias)
-    reservaIds: JSON.stringify(ids),
-  },
-});
+    const first = found[0]!;
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      locale: "es",
+      customer_email: first.email,
+      // NOTE: en APIs recientes no hace falta payment_method_types
+      line_items,
+      success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
+      metadata: {
+        // ✅ deja solo esto (corto y suficiente para el webhook y /gracias)
+        reservaIds: JSON.stringify(ids),
+      },
+    });
 
-return res.json({ id: session.id, url: session.url });
- } catch (err: any) {
-  const status = err?.statusCode || err?.code || err?.response?.status;
-  const msg = err?.raw?.message || err?.message;
-  console.error("Error creando Checkout Session:", { status, msg, raw: err?.raw });
-  return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
-}
+    return res.json({ id: session.id, url: session.url });
+  } catch (err: any) {
+    const status = err?.statusCode || err?.code || err?.response?.status;
+    const msg = err?.raw?.message || err?.message;
+    console.error("Error creando Checkout Session:", { status, msg, raw: err?.raw });
+    return res.status(500).json({ error: "No se pudo crear la sesión de pago" });
+  }
 });
 
 
@@ -515,7 +660,7 @@ app.get("/api/reservas/find", (req, res) => {
   const list = reservas.filter(r =>
     (!profesor || r.acompanante === profesor) &&
     (!fecha || r.fecha === fecha) &&
-    (!hora  || r.hora  === hora)
+    (!hora || r.hora === hora)
   );
   return res.json({ count: list.length, reservas: list });
 });
@@ -602,7 +747,7 @@ app.get("/api/ocupados", (req: Request, res: Response) => {
   console.log("[/api/ocupados]", req.query);
   const prof = String(req.query.profesor || "").trim();
   const from = String(req.query.from || "");
-  const to   = String(req.query.to || "");
+  const to = String(req.query.to || "");
 
   if (!prof) return res.status(400).json({ error: "profesor requerido" });
 
