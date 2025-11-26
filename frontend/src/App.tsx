@@ -32,7 +32,8 @@ import QueIncluyePage from "./pages/QueIncluyePage";
 import ListaEsperaPage from "./pages/ListaEsperaPage";
 import TestRuedaVidaPage from "./pages/TestRuedaVidaPage";
 import TestConfirmacionPage from "./pages/TestConfirmacionPage";
-import DashboardHome from "./pages/DashboardHome";
+import DashboardInicio from "./pages/dashboard/DashboardInicio";
+import { DashboardLayout } from "./layouts/DashboardLayout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
@@ -77,14 +78,20 @@ const router = createBrowserRouter([
       { path: "lista-espera", element: <ListaEsperaPage /> },
       { path: "test-rueda-vida", element: <TestRuedaVidaPage /> },
       { path: "test-confirmacion", element: <TestConfirmacionPage /> },
-      {
-        path: "dashboard",
-        element: (
-          <ProtectedRoute>
-            <DashboardHome />
-          </ProtectedRoute>
-        )
-      },
+    ],
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <ProtectedRoute>
+        <DashboardLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <DashboardInicio /> },
+      { path: "contenidos", element: <div className="p-8">Contenidos - Próximamente</div> },
+      { path: "reservas", element: <div className="p-8">Mis Reservas - Próximamente</div> },
+      { path: "perfil", element: <div className="p-8">Mi Perfil - Próximamente</div> },
     ],
   },
 ]);
