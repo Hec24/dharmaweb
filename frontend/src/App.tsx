@@ -34,7 +34,10 @@ import TestRuedaVidaPage from "./pages/TestRuedaVidaPage";
 import TestConfirmacionPage from "./pages/TestConfirmacionPage";
 import DashboardInicio from "./pages/dashboard/DashboardInicio";
 import { DashboardLayout } from "./layouts/DashboardLayout";
-import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import ContenidosPage from "./pages/dashboard/ContenidosPage";
+import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
+import MisReservasPage from "./pages/dashboard/MisReservasPage";
+import { ProtectedRoute } from "./Components/auth/ProtectedRoute";
 
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
@@ -89,8 +92,9 @@ const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardInicio /> },
-      { path: "contenidos", element: <div className="p-8">Contenidos - Próximamente</div> },
-      { path: "reservas", element: <div className="p-8">Mis Reservas - Próximamente</div> },
+      { path: "contenidos", element: <ContenidosPage /> },
+      { path: "contenidos/:id", element: <VideoPlayerPage /> },
+      { path: "reservas", element: <MisReservasPage /> },
       { path: "perfil", element: <div className="p-8">Mi Perfil - Próximamente</div> },
     ],
   },

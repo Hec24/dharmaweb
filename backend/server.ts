@@ -300,6 +300,20 @@ app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
 app.get('/api/auth/me', me);
 
+// ========= Vídeos =========
+import { getVideos, getVideoById, saveProgress } from './controllers/videoController';
+import { authenticateToken, optionalAuth } from './auth/authMiddleware';
+
+app.get('/api/contenidos', optionalAuth, getVideos);
+app.get('/api/contenidos/:id', optionalAuth, getVideoById);
+app.post('/api/contenidos/:id/progress', authenticateToken, saveProgress);
+
+// ========= Mis Reservas (Dashboard) =========
+import { getMisReservas, cancelReservation } from './controllers/reservasController';
+
+app.get('/api/reservas/mis-reservas', authenticateToken, getMisReservas);
+app.delete('/api/reservas/:id/cancel', authenticateToken, cancelReservation);
+
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];
 
@@ -621,7 +635,7 @@ app.get("/api/pagos/checkout-session/:id", async (req: Request, res: Response) =
 });
 
 // ========= Reservas =========
-app.post("/api/reservas", (req: Request, res: Response) => {
+app.post("/api/reservas", async (req: Request, res: Response) => {
   try {
     console.log("POST /api/reservas body:", req.body);
     const {
@@ -637,17 +651,36 @@ app.post("/api/reservas", (req: Request, res: Response) => {
       return res.status(409).json({ error: "SLOT_TAKEN", message: "Ese horario ya no está disponible." });
     }
 
+    const newId = uuidv4();
+
+    // Guardar en PostgreSQL
+    const query = `
+      INSERT INTO reservations (
+        id, nombre, apellidos, email, telefono,
+        acompanante, acompanante_email, fecha, hora, duracion_min,
+        estado
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      RETURNING *
+    `;
+
+    await pool.query(query, [
+      newId, nombre, apellidos, email, telefono,
+      acompanante, acompananteEmail ?? "", fecha, hora, duracionMin ?? 60,
+      "pendiente"
+    ]);
+
+    // También guardar en memoria para compatibilidad con código existente
     const nueva: Reserva = {
-      id: uuidv4(),
+      id: newId,
       nombre, apellidos, email, telefono,
       acompanante,
       acompananteEmail: acompananteEmail ?? "",
       fecha, hora, duracionMin,
       estado: "pendiente",
     };
-
     reservas.push(nueva);
-    return res.status(201).json({ id: nueva.id });
+
+    return res.status(201).json({ id: newId });
   } catch (err: any) {
     console.error("Error en POST /api/reservas:", err?.message || err);
     return res.status(500).json({ error: "RESERVA_CREATE_FAILED" });
