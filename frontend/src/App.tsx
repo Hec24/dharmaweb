@@ -4,13 +4,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
-import ScrollToTop from "./Components/shared/ScrollToTop";
+import ScrollToTop from "./components/shared/ScrollToTop";
 
 import { LandingPage } from "./pages/LandingPage";
 import AcompañamientosPage from "./pages/AcompañamientosPage";
 import PagoDatos from "./pages/PagoDatos";
-import PasarelaPago from "./Components/pago/PasarelaPago";
-import Gracias from "./Components/pago/Gracias";
+import PasarelaPago from "./components/pago/PasarelaPago";
+import Gracias from "./components/pago/Gracias";
 import AreaPage from "./pages/AreaPage";
 import CursosPage from "./pages/CursosPage";
 import ComingSoonPage from "./pages/ComingSoonPage";
@@ -22,7 +22,7 @@ import PoliticaPrivacidadPage from "./pages/PoliticaPrivacidadPage";
 import AvisoLegalPage from "./pages/AvisoLegalPage";
 import CookiesPage from "./pages/CookiesPage";
 import OrigenPage from "./pages/OrigenPage";
-import PrewarmBackend from "./Components/PrewarmBackend";
+import PrewarmBackend from "./components/PrewarmBackend";
 import ContactPage from "./pages/ContactPage"
 import TestimoniosPage from "./pages/TestimoniosPage";
 import EquipoPage from "./pages/EquipoPage";
