@@ -37,7 +37,7 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import ContenidosPage from "./pages/dashboard/ContenidosPage";
 import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
 import MisReservasPage from "./pages/dashboard/MisReservasPage";
-import { ProtectedRoute } from "./Components/auth/ProtectedRoute";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout

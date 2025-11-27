@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Video } from '../../data/types';
-import { VideoCard } from '../../Components/dashboard/VideoCard';
+import { VideoCard } from '../../components/dashboard/VideoCard';
 import { FaSearch, FaFilter } from 'react-icons/fa';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
