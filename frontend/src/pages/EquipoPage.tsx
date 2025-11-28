@@ -1,8 +1,8 @@
 // src/pages/EquipoPage.tsx
 import React, { useId } from "react";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
 import { profesores } from "../data/profesores";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 

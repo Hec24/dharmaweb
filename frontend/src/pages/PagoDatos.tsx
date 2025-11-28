@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import Button from "../Components/ui/Button";
-import GenericNav from "../Components/shared/GenericNav";
+import Button from "../components/ui/Button";
+import GenericNav from "../components/shared/GenericNav";
 import { api } from "../lib/api";
 import type { Sesion } from "../data/types";
 import { Helmet } from "react-helmet-async";

@@ -3,7 +3,7 @@ import React from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
-import GenericNav from "../Components/shared/GenericNav";
+import GenericNav from "../components/shared/GenericNav";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 import { FiTool, FiArrowRight } from "react-icons/fi";
 

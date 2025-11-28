@@ -4,11 +4,11 @@ import { FiArrowRight, FiChevronDown, FiChevronUp, FiCalendar } from "react-icon
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 
-import GenericNav from "../Components/shared/GenericNav";
-import Header from "../Components/shared/Header";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
-import ReservaWizard from "../Components/reservas/ReservaWizard";
+import GenericNav from "../components/shared/GenericNav";
+import Header from "../components/shared/Header";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
+import ReservaWizard from "../components/reservas/ReservaWizard";
 
 
 import { profesores } from "../data/profesores";

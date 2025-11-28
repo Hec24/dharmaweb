@@ -3,10 +3,10 @@ import React, { useState, useRef, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
-import Input from "../Components/ui/Input";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
+import Input from "../components/ui/Input";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 

@@ -3,10 +3,10 @@ import React, { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiSend, FiStar } from "react-icons/fi";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
-import TestimonialsCarousel from "../Components/sections/Testimonios/TestimonialsCarousel";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
+import TestimonialsCarousel from "../components/sections/Testimonios/TestimonialsCarousel";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import { programFilters } from "../data/testimonios";
 

@@ -1,8 +1,8 @@
 // src/pages/QueIncluyePage.tsx
 import React from "react";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 const QueIncluyePage: React.FC = () => {
