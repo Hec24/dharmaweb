@@ -25,8 +25,20 @@ export async function getMisReservas(req: Request, res: Response) {
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
         // Separar en próximas y pasadas
-        const upcoming = result.rows.filter(r => r.fecha >= today && r.estado !== 'cancelada');
-        const past = result.rows.filter(r => r.fecha < today || r.estado === 'cancelada');
+        // Convertir fecha de PostgreSQL a string para comparación
+        const upcoming = result.rows.filter(r => {
+            const fechaStr = r.fecha instanceof Date
+                ? r.fecha.toISOString().split('T')[0]
+                : r.fecha;
+            return fechaStr >= today && r.estado !== 'cancelada';
+        });
+
+        const past = result.rows.filter(r => {
+            const fechaStr = r.fecha instanceof Date
+                ? r.fecha.toISOString().split('T')[0]
+                : r.fecha;
+            return fechaStr < today || r.estado === 'cancelada';
+        });
 
         // Ordenar: próximas ASC, pasadas DESC
         upcoming.sort((a, b) => {
