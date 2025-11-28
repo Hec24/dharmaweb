@@ -258,10 +258,64 @@ Un abrazo,
             continue;
           }
 
-          // 2) Marcar pagada y limpiar hold
+          // 2) Buscar user_id por email
+          let userId: string | null = null;
+          try {
+            const userResult = await pool.query(
+              'SELECT id FROM users WHERE email = $1 LIMIT 1',
+              [r.email]
+            );
+            if (userResult.rows.length > 0) {
+              userId = userResult.rows[0].id;
+              console.log("[WEBHOOK] Usuario encontrado:", userId);
+            }
+          } catch (err) {
+            console.error("[WEBHOOK] Error buscando usuario:", err);
+          }
+
+          // 3) Guardar/actualizar en PostgreSQL
+          try {
+            const upsertQuery = `
+              INSERT INTO reservations (
+                id, user_id, nombre, apellidos, email, telefono,
+                acompanante, acompanante_email, fecha, hora, duracion_min,
+                estado, stripe_session_id, precio_pagado
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+              ON CONFLICT (id) DO UPDATE SET
+                estado = EXCLUDED.estado,
+                user_id = COALESCE(EXCLUDED.user_id, reservations.user_id),
+                stripe_session_id = EXCLUDED.stripe_session_id,
+                precio_pagado = EXCLUDED.precio_pagado,
+                updated_at = NOW()
+              RETURNING *
+            `;
+
+            await pool.query(upsertQuery, [
+              reservaId,
+              userId,
+              r.nombre,
+              r.apellidos,
+              r.email,
+              r.telefono,
+              r.acompanante,
+              r.acompananteEmail || '',
+              r.fecha,
+              r.hora,
+              r.duracionMin ?? 60,
+              'pagada',
+              session.id,
+              (session.amount_total ?? 0) / 100 // Convertir de centavos a euros
+            ]);
+
+            console.log("[WEBHOOK] Reserva guardada en PostgreSQL:", reservaId);
+          } catch (err: any) {
+            console.error("[WEBHOOK] Error guardando en PostgreSQL:", err?.message || err);
+          }
+
+          // 4) Marcar pagada en memoria y limpiar hold
           const actualizada = updateReserva(reservaId, { estado: "pagada", holdExpiresAt: undefined })!;
 
-          // 3) Crear/actualizar evento en Calendar
+          // 5) Crear/actualizar evento en Calendar
           try {
             const normalized: Reserva & { eventId?: string } = {
               ...actualizada,
@@ -270,6 +324,11 @@ Un abrazo,
 
             const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
             if (result?.eventId) {
+              // Actualizar event_id en PostgreSQL
+              await pool.query(
+                'UPDATE reservations SET event_id = $1 WHERE id = $2',
+                [result.eventId, reservaId]
+              );
               updateReserva(actualizada.id, { eventId: result.eventId });
             }
             console.log("[WEBHOOK] Reserva confirmada y evento Calendar ok:", {
