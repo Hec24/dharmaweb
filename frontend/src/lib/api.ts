@@ -1,14 +1,16 @@
 // src/lib/api.ts
 import axios from "axios";
 
-const PROD_API = "https://dharma-en-ruta.onrender.com/api";
-const DEV_API  = "http://localhost:4000/api";
+const PROD_API = "https://dharma-en-ruta.onrender.com";
+const DEV_API = "http://localhost:4000";
 
 const isProd = typeof import.meta !== "undefined" && !!import.meta.env?.PROD;
 
-const baseURL = isProd
+const backendUrl = isProd
   ? (import.meta.env?.VITE_BACKEND_URL ?? PROD_API)
   : (import.meta.env?.VITE_BACKEND_URL ?? DEV_API);
+
+const baseURL = `${backendUrl}/api`;
 
 export const api = axios.create({
   baseURL,
