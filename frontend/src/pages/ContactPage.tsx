@@ -3,8 +3,8 @@ import React, { useId, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiSend } from "react-icons/fi";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
 type ContactPayload = {

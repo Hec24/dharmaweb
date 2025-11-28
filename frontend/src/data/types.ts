@@ -10,7 +10,7 @@ export interface Profesor {
   testimonial?: string;
   approach?: string;
   link?: string;
-  
+
 }
 export interface FormValues {
   nombre: string;
@@ -21,14 +21,14 @@ export interface FormValues {
   ciudad?: string;
   codigoPostal?: string;
   pais?: string;
-  
+
 }
 export interface Sesion {
   id: string;
   profesor: string;
   fecha: string;
   precio: number;
-  servicio?: Servicio;  
+  servicio?: Servicio;
 }
 
 export type FechaHora = {
@@ -82,4 +82,20 @@ export interface ProfesorAvailabilityConfig {
   id: number;
   name: string;
   rules: AvailabilityRules;
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  area: string;
+  video_provider: 'youtube' | 'vimeo' | 'bunny';
+  video_id: string;
+  duration_minutes: number;
+  thumbnail_url: string;
+  is_published: boolean;
+  upload_date: string;
+  watched_seconds?: number;
+  total_seconds?: number;
+  is_completed?: boolean;
 }

@@ -3,10 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
-import CursoCard from "../Components/ui/CursoCard";
-import CoursesFilters from "../Components/courses/CoursesFilters";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
+import CursoCard from "../components/ui/CursoCard";
+import CoursesFilters from "../components/courses/CoursesFilters";
 
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import { AREAS } from "../config/areas.config";

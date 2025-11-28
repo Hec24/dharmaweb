@@ -1,5 +1,5 @@
 import React from "react";
-import GenericNav from "../Components/shared/GenericNav";
+import GenericNav from "../components/shared/GenericNav";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 interface SimplePageLayoutProps {

@@ -1,10 +1,12 @@
 // src/Components/pages/MembershipRegisterPage.tsx
 import React, { useState, useRef, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
-import Input from "../Components/ui/Input";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
+import Input from "../components/ui/Input";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
@@ -111,6 +113,8 @@ function validate(values: RegisterFormValues): FieldErrors {
 }
 
 const MembershipRegisterPage: React.FC = () => {
+  const { register } = useAuth();
+  const navigate = useNavigate();
   const [values, setValues] = useState<RegisterFormValues>({
     name: "",
     email: "",
@@ -205,33 +209,18 @@ const MembershipRegisterPage: React.FC = () => {
     setStatus("submitting");
 
     try {
-      const response = await fetch("/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Simulación: no asumimos la lógica real de negocio
-        body: JSON.stringify({
-          name: values.name.trim(),
-          email: values.email.trim(),
-          password: values.password,
-          message: values.message.trim(),
-          acceptsTerms: values.acceptsTerms,
-        }),
-      });
+      // Separar nombre y apellidos
+      const nameParts = values.name.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || 'Usuario'; // Fallback si no hay apellido
 
-      if (!response.ok) {
-        setStatus("error");
-        setGeneralError(
-          "Ha ocurrido un error al registrar tu cuenta. Por favor, inténtalo de nuevo en unos minutos."
-        );
-        return;
-      }
+      await register(values.email, values.password, firstName, lastName);
 
       setStatus("success");
       setSuccessMessage(
-        "Hemos recibido tu registro. Revisa tu correo para confirmar tu cuenta y seguir con el acceso a la membresía."
+        "Hemos recibido tu registro. Redirigiendo a tu panel..."
       );
+
       setValues({
         name: "",
         email: "",
@@ -241,10 +230,16 @@ const MembershipRegisterPage: React.FC = () => {
         acceptsTerms: false,
       });
       setErrors({});
-    } catch {
+
+      // Redirigir tras breve pausa
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
+
+    } catch (error: any) {
       setStatus("error");
       setGeneralError(
-        "No hemos podido conectar con el servidor. Revisa tu conexión o inténtalo de nuevo más tarde."
+        error.message || "Ha ocurrido un error al registrar tu cuenta. Por favor, inténtalo de nuevo."
       );
     }
   };

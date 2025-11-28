@@ -1,16 +1,16 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 
-import GenericNav from "../Components/shared/GenericNav";
-import HeroContent from "../Components/landing/HeroContent";
+import GenericNav from "../components/shared/GenericNav";
+import HeroContent from "../components/landing/HeroContent";
 
-import TestimonialsCarousel from "../Components/sections/Testimonios/TestimonialsCarousel";
-import LandingHeader from "../Components/shared/Header/LandingHeader";
-import SchoolValuesSection from "../Components/sections/ValoresSection/SchoolValuesSection";
-import MembershipSection from "../Components/sections/MembershipSection/MembershipSection";
-import TestRuedaVidaSection from "../Components/sections/TestRuedaVidaSection/TestRuedaVidaSection";
-import AcompanamientosPreview from "../Components/sections/AcompanamientosPreview/AcompanamientosPreview";
-import FinalCTA from "../Components/sections/FinalCTA/FinalCTA";
+import TestimonialsCarousel from "../components/sections/Testimonios/TestimonialsCarousel";
+import LandingHeader from "../components/shared/Header/LandingHeader";
+import SchoolValuesSection from "../components/sections/ValoresSection/SchoolValuesSection";
+import MembershipSection from "../components/sections/MembershipSection/MembershipSection";
+import TestRuedaVidaSection from "../components/sections/TestRuedaVidaSection/TestRuedaVidaSection";
+import AcompanamientosPreview from "../components/sections/AcompanamientosPreview/AcompanamientosPreview";
+import FinalCTA from "../components/sections/FinalCTA/FinalCTA";
 
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 

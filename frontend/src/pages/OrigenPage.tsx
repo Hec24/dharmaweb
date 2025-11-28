@@ -2,10 +2,10 @@
 import { FiArrowRight } from "react-icons/fi";
 import { LuCompass, LuFeather, LuMap, LuUsers } from "react-icons/lu";
 import { Helmet } from "react-helmet-async";
-import GenericNav from "../Components/shared/GenericNav";
+import GenericNav from "../components/shared/GenericNav";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
 
 type OrigenPageProps = {
   heroBgSrc?: string;

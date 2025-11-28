@@ -21,3 +21,28 @@ export interface Reserva {
   eventId?: string;
   holdExpiresAt?: number;
 }
+
+export interface Video {
+  id: string;
+  title: string;
+  description: string;
+  area: string;
+  video_provider: 'youtube' | 'vimeo' | 'bunny';
+  video_id: string;
+  duration_minutes: number;
+  thumbnail_url: string;
+  is_published: boolean;
+  upload_date: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface VideoProgress {
+  id: string;
+  user_id: string;
+  video_id: string;
+  watched_seconds: number;
+  total_seconds: number;
+  is_completed: boolean;
+  last_watched_at: Date;
+}

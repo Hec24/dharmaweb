@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import Footer from "../Components/shared/Footer";
+import Footer from "../components/shared/Footer";
 import React from "react";
 
 

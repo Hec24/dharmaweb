@@ -1,9 +1,9 @@
 // src/pages/TuTestimonioPage.tsx
 import React from "react";
 import SimplePageLayout from "../layouts/SimplePageLayout";
-import Input from "../Components/ui/Input";
-import Checkbox from "../Components/ui/Checkbox";
-import Button from "../Components/ui/Button";
+import Input from "../components/ui/Input";
+import Checkbox from "../components/ui/Checkbox";
+import Button from "../components/ui/Button";
 import { FiStar } from "react-icons/fi";
 
 type Status = "idle" | "loading" | "success" | "error";

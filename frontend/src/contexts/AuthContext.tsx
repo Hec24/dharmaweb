@@ -77,8 +77,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Error al iniciar sesión');
+                let errorMessage = 'Error al iniciar sesión';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    console.error('[AUTH] Login error parsing failed:', e);
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();
@@ -99,8 +105,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Error al crear la cuenta');
+                let errorMessage = 'Error al crear la cuenta';
+                try {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error || errorMessage;
+                } catch (e) {
+                    console.error('[AUTH] Register error parsing failed:', e);
+                }
+                throw new Error(errorMessage);
             }
 
             const data = await response.json();

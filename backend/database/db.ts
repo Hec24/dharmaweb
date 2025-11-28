@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: { rejectUnauthorized: false }, // Render requires SSL even for local connections
     max: 20, // máximo de conexiones
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,

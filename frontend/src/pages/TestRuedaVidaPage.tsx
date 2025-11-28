@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { FiCheckCircle, FiDownload, FiBarChart2, FiMail } from "react-icons/fi";
-import ButtonLink from "../Components/ui/ButtonLink";
-import GenericNav from "../Components/shared/GenericNav";
-import Footer from "../Components/shared/Footer";
+import ButtonLink from "../components/ui/ButtonLink";
+import GenericNav from "../components/shared/GenericNav";
+import Footer from "../components/shared/Footer";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 const TestRuedaVidaPage: React.FC = () => {

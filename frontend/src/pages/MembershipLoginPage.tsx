@@ -1,11 +1,12 @@
 // src/pages/MembershipLoginPage.tsx
 import React, { useState, useRef, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
-import GenericNav from "../Components/shared/GenericNav";
-import SectionHeader from "../Components/ui/SectionHeader";
-import ButtonLink from "../Components/ui/ButtonLink";
-import Input from "../Components/ui/Input";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import GenericNav from "../components/shared/GenericNav";
+import SectionHeader from "../components/ui/SectionHeader";
+import ButtonLink from "../components/ui/ButtonLink";
+import Input from "../components/ui/Input";
 import { FiCheckCircle, FiAlertCircle } from "react-icons/fi";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
@@ -65,6 +66,8 @@ function validate(values: LoginFormValues): FieldErrors {
 }
 
 const MembershipLoginPage: React.FC = () => {
+    const { login } = useAuth();
+    const navigate = useNavigate();
     const [values, setValues] = useState<LoginFormValues>({
         email: "",
         password: "",
@@ -130,43 +133,22 @@ const MembershipLoginPage: React.FC = () => {
         setStatus("submitting");
 
         try {
-            // Simulación: endpoint placeholder
-            const response = await fetch("/api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email: values.email.trim(),
-                    password: values.password,
-                }),
-            });
+            await login(values.email, values.password);
 
-            if (!response.ok) {
-                setStatus("error");
-                if (response.status === 401) {
-                    setGeneralError(
-                        "Email o contraseña incorrectos. Por favor, verifica tus datos."
-                    );
-                } else {
-                    setGeneralError(
-                        "Ha ocurrido un error al iniciar sesión. Por favor, inténtalo de nuevo en unos minutos."
-                    );
-                }
-                return;
-            }
-
-            // Éxito (simulado)
+            // Éxito
             setStatus("success");
             setSuccessMessage(
                 "Has iniciado sesión correctamente. Redirigiendo a tu panel..."
             );
-            // En producción: guardar token, redirigir a dashboard, etc.
-            // Ejemplo: navigate("/dashboard");
-        } catch {
+
+            // Redirigir tras breve pausa o inmediatamente
+            setTimeout(() => {
+                navigate("/dashboard");
+            }, 1000);
+        } catch (error: any) {
             setStatus("error");
             setGeneralError(
-                "No hemos podido conectar con el servidor. Revisa tu conexión o inténtalo de nuevo más tarde."
+                error.message || "Ha ocurrido un error al iniciar sesión. Por favor, inténtalo de nuevo."
             );
         }
     };
