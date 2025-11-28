@@ -315,6 +315,11 @@ import { getMisReservas, cancelReservation } from './controllers/reservasControl
 app.get('/api/reservas/mis-reservas', authenticateToken, getMisReservas);
 app.delete('/api/reservas/:id/cancel', authenticateToken, cancelReservation);
 
+// ========= Admin Routes =========
+import { runMigration } from './routes/adminRoutes';
+
+app.post('/api/admin/migrate', runMigration);
+
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];
 
