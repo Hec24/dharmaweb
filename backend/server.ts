@@ -1,4 +1,3 @@
-```typescript
 // backend/server.ts
 import express, { Request, Response } from "express";
 import cors from "cors";
@@ -10,6 +9,7 @@ dotenv.config();
 
 import { upsertEvento, cancelarEvento, _debugImpersonationAndAccess } from "./googleCalendar";
 import { Reserva } from "./types";
+import pool from "./database/db";
 
 // ========= Config =========
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -42,7 +42,7 @@ app.use(cors({
 
 app.use((req, _res, next) => {
   if (req.method !== "GET") {
-    console.log(`${ req.method } ${ req.path } `, {
+    console.log(`${req.method} ${req.path} `, {
       origin: req.headers.origin,
       contentType: req.headers["content-type"],
     });
@@ -182,7 +182,7 @@ style = "display: inline-block; background: #4A5D23; color: white; padding: 12px
 
 Tu Test de la Rueda de Vida ya está disponible.
 
-Descarga tu PDF aquí: ${ FRONTEND_URL } /downloads/test - rueda - vida.pdf
+Descarga tu PDF aquí: ${FRONTEND_URL} /downloads/test - rueda - vida.pdf
 
 Este PDF incluye:
 - Test de autoevaluación de las 8 áreas de vida
@@ -193,7 +193,7 @@ Este PDF incluye:
 Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.
 
 ¿Quieres profundizar más ?
-  Descubre nuestra membresía: ${ FRONTEND_URL }
+  Descubre nuestra membresía: ${FRONTEND_URL}
 
 Un abrazo,
   Equipo Dharma en Ruta
@@ -205,7 +205,7 @@ Un abrazo,
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${ mailerliteApiKey } `,
+                    "Authorization": `Bearer ${mailerliteApiKey} `,
                   },
                   body: JSON.stringify(emailData),
                 });
@@ -286,7 +286,7 @@ Un abrazo,
       res.json({ received: true });
     } catch (err: any) {
       console.error("Error en webhook Stripe:", err?.message || err);
-      res.status(400).send(`Webhook Error: ${ err.message } `);
+      res.status(400).send(`Webhook Error: ${err.message} `);
     }
   }
 );
@@ -342,7 +342,7 @@ function hasEventRelevantChanges(prev: Reserva, next: Reserva) {
 }
 
 function slotKey(fecha: string, hora: string, profName: string) {
-  return `${ fecha }T${ hora }__${ profName } `;
+  return `${fecha}T${hora}__${profName} `;
 }
 
 // Considera tomadas las reservas pagadas y las pendientes con hold no expirado
@@ -369,7 +369,7 @@ setInterval(() => {
       cleaned++;
     }
   }
-  if (cleaned) console.log(`[HOLD] Limpiados ${ cleaned } holds caducados`);
+  if (cleaned) console.log(`[HOLD] Limpiados ${cleaned} holds caducados`);
 }, 60_000);
 
 import { existeEventoParaReserva } from "./googleCalendar";
@@ -404,7 +404,7 @@ async function reconcileCalendarVsBackend() {
   }
 
   if (freed || clearedHolds) {
-    console.log(`[RECONCILE] liberadas ${ freed } reservas pagadas; holds limpiados: ${ clearedHolds } `);
+    console.log(`[RECONCILE] liberadas ${freed} reservas pagadas; holds limpiados: ${clearedHolds} `);
   }
 }
 
@@ -440,19 +440,19 @@ app.post("/api/pagos/checkout-session-test", async (req: Request, res: Response)
         },
         quantity: 1,
       }],
-      success_url: `${ FRONTEND_URL }/test-confirmacion?session_id={CHECKOUT_SESSION_ID}`,
-cancel_url: `${FRONTEND_URL}/test-rueda-vida?cancelled=1`,
-  metadata: {
-  productType: "test-rueda-vida",
-    email,
+      success_url: `${FRONTEND_URL}/test-confirmacion?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${FRONTEND_URL}/test-rueda-vida?cancelled=1`,
+      metadata: {
+        productType: "test-rueda-vida",
+        email,
       },
     });
 
-return res.json({ id: session.id, url: session.url });
+    return res.json({ id: session.id, url: session.url });
   } catch (err: any) {
-  console.error("[CHECKOUT-TEST] Error creando sesión:", err?.message || err);
-  return res.status(500).json({ error: "Error al crear la sesión de pago" });
-}
+    console.error("[CHECKOUT-TEST] Error creando sesión:", err?.message || err);
+    return res.status(500).json({ error: "Error al crear la sesión de pago" });
+  }
 });
 
 app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
