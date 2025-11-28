@@ -9,6 +9,7 @@ dotenv.config();
 
 import { upsertEvento, cancelarEvento, _debugImpersonationAndAccess } from "./googleCalendar";
 import { Reserva } from "./types";
+import pool from "./database/db";
 
 // ========= Config =========
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -41,7 +42,7 @@ app.use(cors({
 
 app.use((req, _res, next) => {
   if (req.method !== "GET") {
-    console.log(`${req.method} ${req.path}`, {
+    console.log(`${req.method} ${req.path} `, {
       origin: req.headers.origin,
       contentType: req.headers["content-type"],
     });
@@ -142,60 +143,60 @@ app.post(
                   },
                   subject: "Tu Test de la Rueda de Vida está listo 🎯",
                   html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                      <h2 style="color: #4A5D23;">¡Gracias por tu compra!</h2>
-                      <p>Tu Test de la Rueda de Vida ya está disponible.</p>
-                      
-                      <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <p style="margin: 0; font-weight: bold;">📥 Descarga tu PDF aquí:</p>
-                        <a href="${FRONTEND_URL}/downloads/test-rueda-vida.pdf" 
-                           style="display: inline-block; background: #4A5D23; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 10px;">
-                          Descargar PDF
-                        </a>
-                      </div>
+  < div style = "font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;" >
+    <h2 style="color: #4A5D23;" >¡Gracias por tu compra! </h2>
+      < p > Tu Test de la Rueda de Vida ya está disponible.</p>
 
-                      <p><strong>Este PDF incluye:</strong></p>
-                      <ul>
-                        <li>Test de autoevaluación de las 8 áreas de vida</li>
-                        <li>Plantilla para crear tu gráfico personalizado</li>
-                        <li>Más de 50 páginas de ejercicios prácticos</li>
-                        <li>Guía paso a paso para pasar a la acción</li>
-                      </ul>
+        < div style = "background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;" >
+          <p style="margin: 0; font-weight: bold;" >📥 Descarga tu PDF aquí: </p>
+            < a href = "${FRONTEND_URL}/downloads/test-rueda-vida.pdf"
+style = "display: inline-block; background: #4A5D23; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-top: 10px;" >
+  Descargar PDF
+    </a>
+    </div>
 
-                      <p>Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.</p>
+    < p > <strong>Este PDF incluye: </strong></p >
+      <ul>
+      <li>Test de autoevaluación de las 8 áreas de vida </li>
+        < li > Plantilla para crear tu gráfico personalizado </li>
+          < li > Más de 50 páginas de ejercicios prácticos </li>
+            < li > Guía paso a paso para pasar a la acción </li>
+              </ul>
 
-                      <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+              < p > Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.</p>
 
-                      <p><strong>¿Quieres profundizar más?</strong></p>
-                      <p>Descubre nuestra membresía con contenidos exclusivos, directos mensuales, comunidad y acompañamiento personalizado.</p>
-                      <a href="${FRONTEND_URL}" style="color: #4A5D23;">Conocer la membresía →</a>
+                < hr style = "border: none; border-top: 1px solid #ddd; margin: 30px 0;" >
 
-                      <p style="margin-top: 30px; color: #666; font-size: 14px;">
-                        Un abrazo,<br>
-                        Equipo Dharma en Ruta
-                      </p>
-                    </div>
-                  `,
+                  <p><strong>¿Quieres profundizar más ? </strong></p >
+                    <p>Descubre nuestra membresía con contenidos exclusivos, directos mensuales, comunidad y acompañamiento personalizado.</p>
+                      < a href = "${FRONTEND_URL}" style = "color: #4A5D23;" > Conocer la membresía →</a>
+
+                        < p style = "margin-top: 30px; color: #666; font-size: 14px;" >
+                          Un abrazo, <br>
+                            Equipo Dharma en Ruta
+                              </p>
+                              </div>
+                                `,
                   text: `
 ¡Gracias por tu compra!
 
 Tu Test de la Rueda de Vida ya está disponible.
 
-Descarga tu PDF aquí: ${FRONTEND_URL}/downloads/test-rueda-vida.pdf
+Descarga tu PDF aquí: ${FRONTEND_URL} /downloads/test - rueda - vida.pdf
 
 Este PDF incluye:
 - Test de autoevaluación de las 8 áreas de vida
-- Plantilla para crear tu gráfico personalizado
-- Más de 50 páginas de ejercicios prácticos
-- Guía paso a paso para pasar a la acción
+  - Plantilla para crear tu gráfico personalizado
+    - Más de 50 páginas de ejercicios prácticos
+      - Guía paso a paso para pasar a la acción
 
 Recuerda que puedes imprimirlo para trabajar de forma más introspectiva.
 
-¿Quieres profundizar más?
-Descubre nuestra membresía: ${FRONTEND_URL}
+¿Quieres profundizar más ?
+  Descubre nuestra membresía: ${FRONTEND_URL}
 
 Un abrazo,
-Equipo Dharma en Ruta
+  Equipo Dharma en Ruta
                   `
                 };
 
@@ -204,7 +205,7 @@ Equipo Dharma en Ruta
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${mailerliteApiKey}`,
+                    "Authorization": `Bearer ${mailerliteApiKey} `,
                   },
                   body: JSON.stringify(emailData),
                 });
@@ -285,7 +286,7 @@ Equipo Dharma en Ruta
       res.json({ received: true });
     } catch (err: any) {
       console.error("Error en webhook Stripe:", err?.message || err);
-      res.status(400).send(`Webhook Error: ${err.message}`);
+      res.status(400).send(`Webhook Error: ${err.message} `);
     }
   }
 );
@@ -314,6 +315,11 @@ import { getMisReservas, cancelReservation } from './controllers/reservasControl
 app.get('/api/reservas/mis-reservas', authenticateToken, getMisReservas);
 app.delete('/api/reservas/:id/cancel', authenticateToken, cancelReservation);
 
+// ========= Admin Routes =========
+import { runMigration } from './routes/adminRoutes';
+
+app.post('/api/admin/migrate', runMigration);
+
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];
 
@@ -341,7 +347,7 @@ function hasEventRelevantChanges(prev: Reserva, next: Reserva) {
 }
 
 function slotKey(fecha: string, hora: string, profName: string) {
-  return `${fecha}T${hora}__${profName}`;
+  return `${fecha}T${hora}__${profName} `;
 }
 
 // Considera tomadas las reservas pagadas y las pendientes con hold no expirado
@@ -403,7 +409,7 @@ async function reconcileCalendarVsBackend() {
   }
 
   if (freed || clearedHolds) {
-    console.log(`[RECONCILE] liberadas ${freed} reservas pagadas; holds limpiados: ${clearedHolds}`);
+    console.log(`[RECONCILE] liberadas ${freed} reservas pagadas; holds limpiados: ${clearedHolds} `);
   }
 }
 
