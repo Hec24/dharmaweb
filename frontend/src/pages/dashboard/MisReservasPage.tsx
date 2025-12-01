@@ -195,14 +195,23 @@ const MisReservasPage: React.FC = () => {
 
             <div className="flex gap-2 pt-4 border-t border-stone-100">
                 {isUpcoming && reserva.estado === 'pagada' && (
-                    <button
-                        onClick={() => handleCancel(reserva.id)}
-                        disabled={cancelling === reserva.id}
-                        className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                        <FaTimesCircle />
-                        {cancelling === reserva.id ? 'Cancelando...' : 'Cancelar'}
-                    </button>
+                    <>
+                        <button
+                            onClick={() => alert('Funcionalidad de reprogramar próximamente')}
+                            className="flex items-center gap-2 px-4 py-2 text-asparragus hover:bg-asparragus/5 rounded-lg transition-colors"
+                        >
+                            <FaCalendar />
+                            Reprogramar
+                        </button>
+                        <button
+                            onClick={() => handleCancel(reserva.id)}
+                            disabled={cancelling === reserva.id}
+                            className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        >
+                            <FaTimesCircle />
+                            {cancelling === reserva.id ? 'Cancelando...' : 'Cancelar'}
+                        </button>
+                    </>
                 )}
                 <button
                     onClick={() => downloadICS(reserva)}
@@ -223,8 +232,18 @@ const MisReservasPage: React.FC = () => {
 
             {/* Header */}
             <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                <h1 className="font-serif text-2xl text-stone-800 mb-2">Mis Reservas</h1>
-                <p className="text-stone-500 text-sm">Gestiona tus sesiones de acompañamiento</p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="font-serif text-2xl text-stone-800 mb-2">Mis Reservas</h1>
+                        <p className="text-stone-500 text-sm">Gestiona tus sesiones de acompañamiento</p>
+                    </div>
+                    <a
+                        href="/acompanamientos"
+                        className="px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
+                    >
+                        Nueva Reserva
+                    </a>
+                </div>
             </div>
 
             {/* Tabs */}
