@@ -700,7 +700,7 @@ app.get("/api/pagos/checkout-session/:id", async (req: Request, res: Response) =
 });
 
 // ========= Reservas =========
-app.post("/api/reservas", async (req: Request, res: Response) => {
+app.post("/api/reservas", optionalAuth, async (req: Request, res: Response) => {
   try {
     console.log("POST /api/reservas body:", req.body);
     const {
@@ -718,18 +718,27 @@ app.post("/api/reservas", async (req: Request, res: Response) => {
 
     const newId = uuidv4();
 
+    // Obtener user_id si el usuario está autenticado
+    const userId = (req as any).userId || null;
+
+    if (userId) {
+      console.log("[RESERVAS] Creating reservation for authenticated user:", userId);
+    } else {
+      console.log("[RESERVAS] Creating reservation for guest user");
+    }
+
     // Guardar en PostgreSQL
     const query = `
       INSERT INTO reservations (
-        id, nombre, apellidos, email, telefono,
+        id, user_id, nombre, apellidos, email, telefono,
         acompanante, acompanante_email, fecha, hora, duracion_min,
         estado
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `;
 
     await pool.query(query, [
-      newId, nombre, apellidos, email, telefono,
+      newId, userId, nombre, apellidos, email, telefono,
       acompanante, acompananteEmail ?? "", fecha, hora, duracionMin ?? 60,
       "pendiente"
     ]);

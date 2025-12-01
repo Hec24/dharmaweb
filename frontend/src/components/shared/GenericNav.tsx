@@ -1,9 +1,10 @@
 // src/Components/shared/GenericNav.tsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import DropdownMenu from "../ui/DropdownMenu";
 import MobileMenu from "../ui/MobileMenu";
 import { acercaLinks as acercaLinksData } from "../../data/navLinks";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface NavLink { label: string; href: string; highlighted?: boolean; }
 type WidthPreset = "viewport" | "96rem" | "110rem" | "120rem";
@@ -183,19 +184,54 @@ const GenericNav: React.FC<GenericNavProps> = ({
 
             {/* DERECHA */}
             <div className="flex items-center justify-end gap-6 xl:gap-8 2xl:gap-10 min-w-0">
-              {hasMenus && _right.map((link, i) => (
-                <a
-                  key={i}
-                  href={link.href}
-                  className={
-                    link.highlighted
-                      ? "inline-flex items-center justify-center rounded-full bg-asparragus px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-asparragus/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-asparragus transition-all"
-                      : `font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw rounded-md`
-                  }
-                >
-                  {link.label}
-                </a>
-              ))}
+              {hasMenus && (() => {
+                const { user, logout } = useAuth();
+                const navigate = useNavigate();
+
+                // Si el usuario está autenticado, mostrar menú de usuario
+                if (user) {
+                  return (
+                    <DropdownMenu
+                      label={
+                        <span className={`font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap flex items-center gap-2`}>
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          {user.email?.split('@')[0] || 'Mi Cuenta'}
+                        </span>
+                      }
+                      items={[
+                        { label: 'Dashboard', href: '/dashboard' },
+                        { label: 'Mis Reservas', href: '/dashboard/reservas' },
+                        { label: 'Contenidos', href: '/dashboard/contenidos' },
+                      ]}
+                      align="right"
+                      menuClassName="bg-raw text-sm md:text-[0.95rem]"
+                      onItemClick={(item) => {
+                        if (item.label === 'Cerrar Sesión') {
+                          logout();
+                          navigate('/');
+                        }
+                      }}
+                    />
+                  );
+                }
+
+                // Si no está autenticado, mostrar botones normales
+                return _right.map((link, i) => (
+                  <a
+                    key={i}
+                    href={link.href}
+                    className={
+                      link.highlighted
+                        ? "inline-flex items-center justify-center rounded-full bg-asparragus px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-asparragus/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-asparragus transition-all"
+                        : `font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw rounded-md`
+                    }
+                  >
+                    {link.label}
+                  </a>
+                ));
+              })()}
               {hasMenus && _acerca.length > 0 && (
                 <DropdownMenu
                   label={
