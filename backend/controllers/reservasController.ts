@@ -22,54 +22,34 @@ export async function getMisReservas(req: Request, res: Response) {
         `;
 
         const result = await pool.query(query, [userEmail, userId]);
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
-        console.log('[RESERVAS] Raw query results:', {
-            count: result.rows.length,
-            today,
-            rows: result.rows.map(r => ({
-                id: r.id,
-                fecha: r.fecha,
-                fechaType: typeof r.fecha,
-                estado: r.estado
-            }))
-        });
+        // Obtener fecha actual en timezone del servidor
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         // Separar en próximas y pasadas
-        // Convertir fecha de PostgreSQL a string para comparación
         const upcoming = result.rows.filter(r => {
-            const fechaStr = r.fecha instanceof Date
-                ? r.fecha.toISOString().split('T')[0]
-                : r.fecha;
-            const isUpcoming = fechaStr >= today && r.estado !== 'cancelada';
-            console.log('[RESERVAS] Filter check:', {
-                id: String(r.id).substring(0, 8),
-                fechaStr,
-                today,
-                comparison: fechaStr >= today,
-                estado: r.estado,
-                isUpcoming
-            });
-            return isUpcoming;
+            const reservaDate = new Date(r.fecha);
+            return reservaDate >= today && r.estado !== 'cancelada';
         });
 
         const past = result.rows.filter(r => {
-            const fechaStr = r.fecha instanceof Date
-                ? r.fecha.toISOString().split('T')[0]
-                : r.fecha;
-            return fechaStr < today || r.estado === 'cancelada';
+            const reservaDate = new Date(r.fecha);
+            return reservaDate < today || r.estado === 'cancelada';
         });
 
         // Ordenar: próximas ASC, pasadas DESC
         upcoming.sort((a, b) => {
-            const dateCompare = a.fecha.localeCompare(b.fecha);
-            if (dateCompare !== 0) return dateCompare;
+            const dateA = new Date(a.fecha).getTime();
+            const dateB = new Date(b.fecha).getTime();
+            if (dateA !== dateB) return dateA - dateB;
             return a.hora.localeCompare(b.hora);
         });
 
         past.sort((a, b) => {
-            const dateCompare = b.fecha.localeCompare(a.fecha);
-            if (dateCompare !== 0) return dateCompare;
+            const dateA = new Date(a.fecha).getTime();
+            const dateB = new Date(b.fecha).getTime();
+            if (dateA !== dateB) return dateB - dateA;
             return b.hora.localeCompare(a.hora);
         });
 
