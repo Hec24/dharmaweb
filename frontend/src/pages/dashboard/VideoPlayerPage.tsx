@@ -105,6 +105,38 @@ const VideoPlayerPage: React.FC = () => {
         return '';
     };
 
+    // Si el usuario no tiene membresía activa, mostrar estado bloqueado
+    if (user?.membershipStatus !== 'active') {
+        return (
+            <div className="space-y-8 pt-6">
+                <Helmet>
+                    <title>Contenido Exclusivo | Dharma en Ruta</title>
+                </Helmet>
+
+                <div className="px-6 pb-8">
+                    <div className="bg-white rounded-2xl border border-stone-100 p-12 text-center max-w-2xl mx-auto shadow-sm">
+                        <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <svg className="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <h2 className="font-serif text-2xl text-stone-800 mb-4">Contenido Exclusivo para Miembros</h2>
+                        <p className="text-stone-600 mb-8 leading-relaxed">
+                            Este vídeo está reservado para miembros activos de la comunidad Dharma en Ruta.
+                            Activa tu membresía para acceder a este y otros contenidos exclusivos.
+                        </p>
+                        <a
+                            href="/dashboard"
+                            className="inline-flex items-center justify-center px-8 py-3 bg-asparragus text-white font-medium rounded-lg hover:bg-asparragus/90 transition-colors shadow-sm hover:shadow-md"
+                        >
+                            Activar Membresía
+                        </a>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
