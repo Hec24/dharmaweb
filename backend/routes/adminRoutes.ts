@@ -91,3 +91,34 @@ export async function runMigration(req: Request, res: Response) {
         });
     }
 }
+
+export async function debugReservations(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(`
+            SELECT 
+                id, user_id, nombre, apellidos, email, 
+                acompanante, fecha, hora, estado,
+                created_at, updated_at
+            FROM reservations 
+            ORDER BY created_at DESC 
+            LIMIT 20
+        `);
+
+        return res.json({
+            count: result.rows.length,
+            reservations: result.rows
+        });
+    } catch (error: any) {
+        console.error('❌ Debug error:', error);
+        return res.status(500).json({
+            error: 'Debug failed',
+            details: error.message
+        });
+    }
+}
