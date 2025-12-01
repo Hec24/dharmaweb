@@ -43,7 +43,7 @@ export async function getMisReservas(req: Request, res: Response) {
                 : r.fecha;
             const isUpcoming = fechaStr >= today && r.estado !== 'cancelada';
             console.log('[RESERVAS] Filter check:', {
-                id: r.id.substring(0, 8),
+                id: String(r.id).substring(0, 8),
                 fechaStr,
                 today,
                 comparison: fechaStr >= today,
