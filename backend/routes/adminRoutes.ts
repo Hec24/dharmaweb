@@ -150,3 +150,41 @@ export async function clearReservations(req: Request, res: Response) {
         });
     }
 }
+
+export async function setUserStatus(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { email, status } = req.body;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        if (!email || !status) {
+            return res.status(400).json({ error: 'Email and status are required' });
+        }
+
+        const result = await pool.query(
+            'UPDATE users SET membership_status = $1 WHERE email = $2 RETURNING id, email, membership_status',
+            [status, email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log(`✅ User ${email} status updated to ${status}`);
+
+        return res.json({
+            success: true,
+            user: result.rows[0]
+        });
+    } catch (error: any) {
+        console.error('❌ Update status error:', error);
+        return res.status(500).json({
+            error: 'Update failed',
+            details: error.message
+        });
+    }
+}
+```
