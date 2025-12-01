@@ -122,3 +122,31 @@ export async function debugReservations(req: Request, res: Response) {
         });
     }
 }
+
+export async function clearReservations(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🧹 Clearing all reservations...');
+
+        // TRUNCATE es más rápido y resetea contadores si los hubiera
+        await pool.query('TRUNCATE TABLE reservations CASCADE');
+
+        console.log('✅ Reservations table cleared');
+
+        return res.json({
+            success: true,
+            message: 'All reservations deleted successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Clear error:', error);
+        return res.status(500).json({
+            error: 'Clear failed',
+            details: error.message
+        });
+    }
+}
