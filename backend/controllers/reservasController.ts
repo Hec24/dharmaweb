@@ -24,13 +24,33 @@ export async function getMisReservas(req: Request, res: Response) {
         const result = await pool.query(query, [userEmail, userId]);
         const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
 
+        console.log('[RESERVAS] Raw query results:', {
+            count: result.rows.length,
+            today,
+            rows: result.rows.map(r => ({
+                id: r.id,
+                fecha: r.fecha,
+                fechaType: typeof r.fecha,
+                estado: r.estado
+            }))
+        });
+
         // Separar en próximas y pasadas
         // Convertir fecha de PostgreSQL a string para comparación
         const upcoming = result.rows.filter(r => {
             const fechaStr = r.fecha instanceof Date
                 ? r.fecha.toISOString().split('T')[0]
                 : r.fecha;
-            return fechaStr >= today && r.estado !== 'cancelada';
+            const isUpcoming = fechaStr >= today && r.estado !== 'cancelada';
+            console.log('[RESERVAS] Filter check:', {
+                id: r.id.substring(0, 8),
+                fechaStr,
+                today,
+                comparison: fechaStr >= today,
+                estado: r.estado,
+                isUpcoming
+            });
+            return isUpcoming;
         });
 
         const past = result.rows.filter(r => {
