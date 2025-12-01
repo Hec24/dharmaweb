@@ -191,30 +191,37 @@ const GenericNav: React.FC<GenericNavProps> = ({
                 // Si el usuario está autenticado, mostrar menú de usuario
                 if (user) {
                   return (
-                    <DropdownMenu
-                      label={
-                        <span className={`font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap flex items-center gap-2`}>
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          {user.email?.split('@')[0] || 'Mi Cuenta'}
-                        </span>
-                      }
-                      items={[
-                        { label: 'Dashboard', href: '/dashboard' },
-                        { label: 'Mis Reservas', href: '/dashboard/reservas' },
-                        { label: 'Contenidos', href: '/dashboard/contenidos' },
-                        { label: 'Cerrar Sesión', href: '#' },
-                      ]}
-                      align="right"
-                      menuClassName="bg-raw text-sm md:text-[0.95rem]"
-                      onItemClick={(item) => {
-                        if (item.label === 'Cerrar Sesión') {
+                    <>
+                      <DropdownMenu
+                        label={
+                          <span className={`font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap flex items-center gap-2`}>
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {user.email?.split('@')[0] || 'Mi Cuenta'}
+                          </span>
+                        }
+                        items={[
+                          { label: 'Dashboard', href: '/dashboard' },
+                          { label: 'Mis Reservas', href: '/dashboard/reservas' },
+                          { label: 'Contenidos', href: '/dashboard/contenidos' },
+                        ]}
+                        align="right"
+                        menuClassName="bg-raw text-sm md:text-[0.95rem]"
+                      />
+                      <button
+                        onClick={() => {
                           logout();
                           navigate('/');
-                        }
-                      }}
-                    />
+                        }}
+                        className={`font-degular ${navText} ${hoverColor} transition-colors text-[0.95rem] whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw rounded-md flex items-center gap-2`}
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Salir
+                      </button>
+                    </>
                   );
                 }
 
