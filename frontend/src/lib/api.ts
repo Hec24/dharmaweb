@@ -21,7 +21,7 @@ export const api = axios.create({
 // Request interceptor: añadir token automáticamente si existe
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('dharma_auth_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
