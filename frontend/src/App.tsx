@@ -38,6 +38,8 @@ import ContenidosPage from "./pages/dashboard/ContenidosPage";
 import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
 import MisReservasPage from "./pages/dashboard/MisReservasPage";
 import PerfilPage from "./pages/dashboard/PerfilPage";
+import DirectosPage from "./pages/dashboard/DirectosPage";
+import DirectoDetailPage from "./pages/dashboard/DirectoDetailPage";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
@@ -96,6 +98,8 @@ const router = createBrowserRouter([
       { path: "contenidos", element: <ContenidosPage /> },
       { path: "contenidos/:id", element: <VideoPlayerPage /> },
       { path: "reservas", element: <MisReservasPage /> },
+      { path: "directos", element: <DirectosPage /> },
+      { path: "directos/:id", element: <DirectoDetailPage /> },
       { path: "perfil", element: <PerfilPage /> },
     ],
   },

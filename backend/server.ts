@@ -384,6 +384,23 @@ import { createPortalSession } from './controllers/stripeController';
 
 app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
 
+// ========= Live Events (Directos) =========
+import {
+  getUpcomingEvents,
+  getPastEvents,
+  getEventById,
+  registerForEvent,
+  unregisterFromEvent,
+  getMyRegistrations
+} from './controllers/liveEventsController';
+
+app.get('/api/live-events/upcoming', authenticateToken, getUpcomingEvents);
+app.get('/api/live-events/past', authenticateToken, getPastEvents);
+app.get('/api/live-events/my-registrations', authenticateToken, getMyRegistrations);
+app.get('/api/live-events/:id', authenticateToken, getEventById);
+app.post('/api/live-events/:id/register', authenticateToken, registerForEvent);
+app.delete('/api/live-events/:id/register', authenticateToken, unregisterFromEvent);
+
 // ========= Admin Routes =========
 import { runMigration, debugReservations, clearReservations, setUserStatus } from './routes/adminRoutes';
 
