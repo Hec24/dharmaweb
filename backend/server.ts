@@ -353,6 +353,9 @@ Un abrazo,
 // ========= JSON normal para el resto =========
 app.use(express.json());
 
+// ========= Import Middleware FIRST =========
+import { authenticateToken, optionalAuth } from './auth/authMiddleware';
+
 // ========= Autenticación =========
 import { register, login, me, updateProfile, updatePassword } from './auth/authController';
 
@@ -364,7 +367,6 @@ app.put('/api/auth/password', authenticateToken, updatePassword);
 
 // ========= Vídeos =========
 import { getVideos, getVideoById, saveProgress, getLastWatchedVideo } from './controllers/videoController';
-import { authenticateToken, optionalAuth } from './auth/authMiddleware';
 
 app.get('/api/contenidos', optionalAuth, getVideos);
 app.get('/api/contenidos/:id', optionalAuth, getVideoById);
