@@ -25,9 +25,9 @@ export default function DashboardInicio() {
                     <div>
                         <h2 className="text-xl font-gotu mb-2">Estado de membresía</h2>
                         <p className="text-white/90 mb-4">
-                            {user?.isMember ? 'Tu membresía está activa' : 'Membresía inactiva'}
+                            {user?.membershipStatus === 'active' ? 'Tu membresía está activa' : 'Membresía inactiva'}
                         </p>
-                        {!user?.isMember && (
+                        {user?.membershipStatus !== 'active' && (
                             <Link
                                 to="/registro"
                                 className="inline-block bg-white text-asparragus px-4 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
@@ -36,9 +36,9 @@ export default function DashboardInicio() {
                             </Link>
                         )}
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${user?.isMember ? 'bg-green-500' : 'bg-white/20'
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${user?.membershipStatus === 'active' ? 'bg-green-500' : 'bg-white/20'
                         }`}>
-                        {user?.isMember ? 'Activo' : 'Inactivo'}
+                        {user?.membershipStatus === 'active' ? 'Activo' : 'Inactivo'}
                     </div>
                 </div>
             </div>
