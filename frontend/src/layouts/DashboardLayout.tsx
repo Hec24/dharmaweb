@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { FiHome, FiVideo, FiCalendar, FiUser, FiLogOut, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiVideo, FiCalendar, FiUser, FiLogOut, FiMenu, FiX, FiRadio } from 'react-icons/fi';
 
 interface NavItem {
     name: string;
@@ -13,6 +13,7 @@ interface NavItem {
 const navItems: NavItem[] = [
     { name: 'Inicio', path: '/dashboard', icon: <FiHome className="w-5 h-5" /> },
     { name: 'Contenidos', path: '/dashboard/contenidos', icon: <FiVideo className="w-5 h-5" /> },
+    { name: 'Directos', path: '/dashboard/directos', icon: <FiRadio className="w-5 h-5" /> },
     { name: 'Mis Reservas', path: '/dashboard/reservas', icon: <FiCalendar className="w-5 h-5" /> },
     { name: 'Mi Perfil', path: '/dashboard/perfil', icon: <FiUser className="w-5 h-5" /> },
 ];
