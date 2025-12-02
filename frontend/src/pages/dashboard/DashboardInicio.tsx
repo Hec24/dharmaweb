@@ -32,19 +32,23 @@ export default function DashboardInicio() {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                console.log('[DASHBOARD] Fetching dashboard data...');
+
                 // Fetch last watched video
                 const videoResponse = await api.get('/contenidos/last-watched');
+                console.log('[DASHBOARD] Last watched video response:', videoResponse.data);
                 if (videoResponse.data) {
                     setLastVideo(videoResponse.data);
                 }
 
                 // Fetch upcoming reservations
                 const reservasResponse = await api.get('/reservas/mis-reservas');
+                console.log('[DASHBOARD] Reservations response:', reservasResponse.data);
                 if (reservasResponse.data.upcoming && reservasResponse.data.upcoming.length > 0) {
                     setNextReservation(reservasResponse.data.upcoming[0]);
                 }
             } catch (error) {
-                console.error('Error fetching dashboard data:', error);
+                console.error('[DASHBOARD] Error fetching dashboard data:', error);
             } finally {
                 setLoading(false);
             }
@@ -244,8 +248,8 @@ export default function DashboardInicio() {
                                     </div>
                                     <div className="mt-3">
                                         <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${nextReservation.estado === 'pagada'
-                                                ? 'bg-green-100 text-green-700'
-                                                : 'bg-yellow-100 text-yellow-700'
+                                            ? 'bg-green-100 text-green-700'
+                                            : 'bg-yellow-100 text-yellow-700'
                                             }`}>
                                             {nextReservation.estado === 'pagada' ? 'Confirmada' : 'Pendiente'}
                                         </span>

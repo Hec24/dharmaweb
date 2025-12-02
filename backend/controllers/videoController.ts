@@ -132,8 +132,11 @@ export async function getLastWatchedVideo(req: Request, res: Response) {
         const userId = (req as any).userId; // Del middleware authenticateToken
 
         if (!userId) {
+            console.log('[VIDEOS] No userId in getLastWatchedVideo');
             return res.status(401).json({ error: 'No autorizado' });
         }
+
+        console.log('[VIDEOS] Getting last watched video for user:', userId);
 
         const query = `
             SELECT v.*, 
@@ -151,6 +154,11 @@ export async function getLastWatchedVideo(req: Request, res: Response) {
         `;
 
         const result = await pool.query(query, [userId]);
+
+        console.log('[VIDEOS] Last watched query result:', {
+            rowCount: result.rows.length,
+            video: result.rows[0] ? { id: result.rows[0].id, title: result.rows[0].title } : null
+        });
 
         if (result.rows.length === 0) {
             return res.json(null);
