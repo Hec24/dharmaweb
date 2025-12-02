@@ -125,3 +125,40 @@ export async function saveProgress(req: Request, res: Response) {
         return res.status(500).json({ error: 'Error al guardar el progreso' });
     }
 }
+
+// Obtener último vídeo visto
+export async function getLastWatchedVideo(req: Request, res: Response) {
+    try {
+        const userId = (req as any).userId; // Del middleware authenticateToken
+
+        if (!userId) {
+            return res.status(401).json({ error: 'No autorizado' });
+        }
+
+        const query = `
+            SELECT v.*, 
+                   vp.watched_seconds, 
+                   vp.total_seconds, 
+                   vp.is_completed,
+                   vp.last_watched_at
+            FROM video_progress vp
+            INNER JOIN videos v ON v.id = vp.video_id
+            WHERE vp.user_id = $1 
+              AND v.is_published = true
+              AND vp.is_completed = false
+            ORDER BY vp.last_watched_at DESC
+            LIMIT 1
+        `;
+
+        const result = await pool.query(query, [userId]);
+
+        if (result.rows.length === 0) {
+            return res.json(null);
+        }
+
+        return res.json(result.rows[0]);
+    } catch (error) {
+        console.error('[VIDEOS] Error getting last watched video:', error);
+        return res.status(500).json({ error: 'Error al obtener el último vídeo' });
+    }
+}

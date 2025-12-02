@@ -1,5 +1,5 @@
 // frontend/src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 interface User {
     id: string;
@@ -20,6 +20,7 @@ interface AuthContextType {
     register: (email: string, password: string, nombre: string, apellidos: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
+    updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -130,6 +131,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(TOKEN_KEY);
     };
 
+    const updateUser = (userData: Partial<User>) => {
+        if (user) {
+            setUser({ ...user, ...userData });
+        }
+    };
+
     const value: AuthContextType = {
         user,
         token,
@@ -138,6 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         isAuthenticated: !!user,
+        updateUser,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
