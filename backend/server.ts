@@ -354,25 +354,33 @@ Un abrazo,
 app.use(express.json());
 
 // ========= Autenticación =========
-import { register, login, me } from './auth/authController';
+import { register, login, me, updateProfile, updatePassword } from './auth/authController';
 
 app.post('/api/auth/register', register);
 app.post('/api/auth/login', login);
 app.get('/api/auth/me', me);
+app.put('/api/auth/profile', authenticateToken, updateProfile);
+app.put('/api/auth/password', authenticateToken, updatePassword);
 
 // ========= Vídeos =========
-import { getVideos, getVideoById, saveProgress } from './controllers/videoController';
+import { getVideos, getVideoById, saveProgress, getLastWatchedVideo } from './controllers/videoController';
 import { authenticateToken, optionalAuth } from './auth/authMiddleware';
 
 app.get('/api/contenidos', optionalAuth, getVideos);
 app.get('/api/contenidos/:id', optionalAuth, getVideoById);
 app.post('/api/contenidos/:id/progress', authenticateToken, saveProgress);
+app.get('/api/contenidos/last-watched', authenticateToken, getLastWatchedVideo);
 
 // ========= Mis Reservas (Dashboard) =========
 import { getMisReservas, cancelReservation } from './controllers/reservasController';
 
 app.get('/api/reservas/mis-reservas', authenticateToken, getMisReservas);
 app.delete('/api/reservas/:id/cancel', authenticateToken, cancelReservation);
+
+// ========= Stripe Customer Portal =========
+import { createPortalSession } from './controllers/stripeController';
+
+app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
 
 // ========= Admin Routes =========
 import { runMigration, debugReservations, clearReservations, setUserStatus } from './routes/adminRoutes';

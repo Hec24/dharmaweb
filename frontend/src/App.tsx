@@ -37,6 +37,7 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import ContenidosPage from "./pages/dashboard/ContenidosPage";
 import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
 import MisReservasPage from "./pages/dashboard/MisReservasPage";
+import PerfilPage from "./pages/dashboard/PerfilPage";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 
@@ -95,7 +96,7 @@ const router = createBrowserRouter([
       { path: "contenidos", element: <ContenidosPage /> },
       { path: "contenidos/:id", element: <VideoPlayerPage /> },
       { path: "reservas", element: <MisReservasPage /> },
-      { path: "perfil", element: <div className="p-8">Mi Perfil - Próximamente</div> },
+      { path: "perfil", element: <PerfilPage /> },
     ],
   },
 ]);

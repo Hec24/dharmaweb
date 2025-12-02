@@ -1,11 +1,72 @@
 // frontend/src/pages/dashboard/DashboardInicio.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { Link } from 'react-router-dom';
-import { FiVideo, FiCalendar, FiUsers, FiTrendingUp } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiVideo, FiCalendar, FiUsers, FiTrendingUp, FiPlay, FiClock } from 'react-icons/fi';
+import { api } from '../../lib/api';
+
+interface Video {
+    id: string;
+    title: string;
+    area: string;
+    thumbnail_url?: string;
+    watched_seconds?: number;
+    total_seconds?: number;
+}
+
+interface Reservation {
+    id: string;
+    fecha: string;
+    hora: string;
+    acompanante: string;
+    estado: string;
+}
 
 export default function DashboardInicio() {
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const [lastVideo, setLastVideo] = useState<Video | null>(null);
+    const [nextReservation, setNextReservation] = useState<Reservation | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                // Fetch last watched video
+                const videoResponse = await api.get('/contenidos/last-watched');
+                if (videoResponse.data) {
+                    setLastVideo(videoResponse.data);
+                }
+
+                // Fetch upcoming reservations
+                const reservasResponse = await api.get('/reservas/mis-reservas');
+                if (reservasResponse.data.upcoming && reservasResponse.data.upcoming.length > 0) {
+                    setNextReservation(reservasResponse.data.upcoming[0]);
+                }
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const formatDate = (fecha: string) => {
+        const date = new Date(fecha);
+        return date.toLocaleDateString('es-ES', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    const getProgressPercentage = (watched: number, total: number) => {
+        if (!total) return 0;
+        return Math.min(Math.round((watched / total) * 100), 100);
+    };
 
     return (
         <div className="p-6 lg:p-8 max-w-7xl mx-auto">
@@ -84,20 +145,134 @@ export default function DashboardInicio() {
                 </div>
             </div>
 
-            {/* Placeholder sections */}
+            {/* Content sections */}
             <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-white rounded-xl p-6">
+                {/* Continúa donde lo dejaste */}
+                <div className="bg-white rounded-xl p-6 shadow-sm">
                     <h3 className="font-gotu text-lg text-asparragus mb-4">Continúa donde lo dejaste</h3>
-                    <p className="text-sm text-asparragus/60">
-                        Aquí aparecerán los vídeos que estés viendo
-                    </p>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-asparragus"></div>
+                        </div>
+                    ) : lastVideo ? (
+                        <div
+                            onClick={() => navigate(`/dashboard/contenidos/${lastVideo.id}`)}
+                            className="cursor-pointer group"
+                        >
+                            <div className="relative aspect-video bg-gradient-to-br from-asparragus/10 to-asparragus/5 rounded-lg mb-3 overflow-hidden">
+                                {lastVideo.thumbnail_url ? (
+                                    <img
+                                        src={lastVideo.thumbnail_url}
+                                        alt={lastVideo.title}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <FiVideo className="w-12 h-12 text-asparragus/30" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <FiPlay className="w-6 h-6 text-asparragus ml-1" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h4 className="font-medium text-asparragus mb-1 group-hover:text-asparragus/80 transition-colors">
+                                {lastVideo.title}
+                            </h4>
+                            <p className="text-sm text-asparragus/60 mb-3">{lastVideo.area}</p>
+
+                            {/* Progress bar */}
+                            {lastVideo.watched_seconds && lastVideo.total_seconds && (
+                                <div>
+                                    <div className="flex items-center justify-between text-xs text-asparragus/60 mb-1">
+                                        <span>Progreso</span>
+                                        <span>{getProgressPercentage(lastVideo.watched_seconds, lastVideo.total_seconds)}%</span>
+                                    </div>
+                                    <div className="w-full bg-asparragus/10 rounded-full h-2">
+                                        <div
+                                            className="bg-asparragus h-2 rounded-full transition-all"
+                                            style={{ width: `${getProgressPercentage(lastVideo.watched_seconds, lastVideo.total_seconds)}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <FiVideo className="w-12 h-12 text-asparragus/20 mx-auto mb-3" />
+                            <p className="text-sm text-asparragus/60 mb-4">
+                                Aún no has empezado a ver ningún vídeo
+                            </p>
+                            <Link
+                                to="/dashboard/contenidos"
+                                className="inline-block px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors text-sm"
+                            >
+                                Explorar contenidos
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
-                <div className="bg-white rounded-xl p-6">
+                {/* Próximas sesiones */}
+                <div className="bg-white rounded-xl p-6 shadow-sm">
                     <h3 className="font-gotu text-lg text-asparragus mb-4">Próximas sesiones</h3>
-                    <p className="text-sm text-asparragus/60">
-                        Tus reservas confirmadas aparecerán aquí
-                    </p>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                        </div>
+                    ) : nextReservation ? (
+                        <div className="border border-gold/20 rounded-lg p-4 hover:border-gold/40 transition-colors">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <FiCalendar className="w-5 h-5 text-gold" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-asparragus mb-1">
+                                        Sesión con {nextReservation.acompanante}
+                                    </p>
+                                    <div className="flex items-center gap-2 text-sm text-asparragus/70 mb-2">
+                                        <FiCalendar className="w-4 h-4" />
+                                        <span className="capitalize">{formatDate(nextReservation.fecha)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-asparragus/70">
+                                        <FiClock className="w-4 h-4" />
+                                        <span>{nextReservation.hora}</span>
+                                    </div>
+                                    <div className="mt-3">
+                                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${nextReservation.estado === 'pagada'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-yellow-100 text-yellow-700'
+                                            }`}>
+                                            {nextReservation.estado === 'pagada' ? 'Confirmada' : 'Pendiente'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            <Link
+                                to="/dashboard/reservas"
+                                className="block mt-4 text-center px-4 py-2 bg-gold/10 text-gold rounded-lg hover:bg-gold/20 transition-colors text-sm font-medium"
+                            >
+                                Ver todas mis reservas
+                            </Link>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <FiCalendar className="w-12 h-12 text-gold/20 mx-auto mb-3" />
+                            <p className="text-sm text-asparragus/60 mb-4">
+                                No tienes sesiones programadas
+                            </p>
+                            <a
+                                href="/acompanamientos"
+                                className="inline-block px-4 py-2 bg-gold text-white rounded-lg hover:bg-gold/90 transition-colors text-sm"
+                            >
+                                Reservar sesión
+                            </a>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
