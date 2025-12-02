@@ -21,7 +21,7 @@ const areaNames: Record<string, string> = {
 const VideoPlayerPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
     const [markingComplete, setMarkingComplete] = useState(false);
