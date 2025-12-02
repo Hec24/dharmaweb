@@ -5,6 +5,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Video } from '../../data/types';
 import { FaArrowLeft, FaCheck, FaClock } from 'react-icons/fa';
 
+// YouTube API type declaration
+declare global {
+    interface Window {
+        YT: any;
+        onYouTubeIframeAPIReady: () => void;
+    }
+}
+
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
 const areaNames: Record<string, string> = {
@@ -24,7 +32,106 @@ const VideoPlayerPage: React.FC = () => {
     const { token, user } = useAuth();
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
-    const [markingComplete, setMarkingComplete] = useState(false);
+    const [player, setPlayer] = useState<any>(null);
+    const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null);
+
+    // Load YouTube IFrame API
+    useEffect(() => {
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        }
+    }, []);
+
+    // Initialize player when video loads
+    useEffect(() => {
+        if (video && video.video_provider === 'youtube' && window.YT && window.YT.Player) {
+            const newPlayer = new window.YT.Player('youtube-player', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            setPlayer(newPlayer);
+        }
+
+        return () => {
+            if (progressInterval) {
+                clearInterval(progressInterval);
+            }
+        };
+    }, [video]);
+
+    const onPlayerReady = () => {
+        console.log('[VIDEO] Player ready');
+    };
+
+    const onPlayerStateChange = (event: any) => {
+        // YT.PlayerState.PLAYING = 1
+        if (event.data === 1) {
+            console.log('[VIDEO] Started playing, setting up progress tracking');
+            startProgressTracking();
+        } else if (event.data === 2 || event.data === 0) {
+            // Paused or ended
+            console.log('[VIDEO] Paused or ended, saving progress');
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                setProgressInterval(null);
+            }
+            saveCurrentProgress();
+        }
+    };
+
+    const startProgressTracking = () => {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+        }
+
+        // Save progress every 10 seconds
+        const interval = setInterval(() => {
+            saveCurrentProgress();
+        }, 10000);
+
+        setProgressInterval(interval);
+    };
+
+    const saveCurrentProgress = async () => {
+        if (!player || !video || !token) return;
+
+        try {
+            const currentTime = player.getCurrentTime();
+            const duration = player.getDuration();
+
+            if (!currentTime || !duration) return;
+
+            const isCompleted = currentTime >= duration * 0.95; // 95% watched = completed
+
+            console.log('[VIDEO] Saving progress:', {
+                currentTime: Math.floor(currentTime),
+                duration: Math.floor(duration),
+                isCompleted
+            });
+
+            await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    watchedSeconds: Math.floor(currentTime),
+                    totalSeconds: Math.floor(duration),
+                    isCompleted
+                })
+            });
+
+            console.log('[VIDEO] Progress saved');
+        } catch (error) {
+            console.error('[VIDEO] Error saving progress:', error);
+        }
+    };
 
     useEffect(() => {
         if (id) {
@@ -55,50 +162,31 @@ const VideoPlayerPage: React.FC = () => {
     };
 
     const handleMarkComplete = async () => {
-        if (!video || !token) {
-            console.log('[DEBUG] Cannot mark complete:', { hasVideo: !!video, hasToken: !!token });
-            return;
-        }
+        if (!video || !token) return;
 
-        console.log('[DEBUG] Marking video as complete:', video.id);
-        setMarkingComplete(true);
         try {
-            const payload = {
-                watchedSeconds: video.duration_minutes * 60,
-                totalSeconds: video.duration_minutes * 60,
-                isCompleted: true
-            };
-            console.log('[DEBUG] Sending payload:', payload);
-
-            const response = await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
+            await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    watchedSeconds: video.duration_minutes * 60,
+                    totalSeconds: video.duration_minutes * 60,
+                    isCompleted: true
+                })
             });
 
-            console.log('[DEBUG] Response status:', response.status);
-            const data = await response.json();
-            console.log('[DEBUG] Response data:', data);
-
-            if (response.ok) {
-                setVideo({ ...video, is_completed: true });
-                console.log('[DEBUG] Video marked as complete');
-            } else {
-                console.error('[DEBUG] Failed to mark complete:', data);
-            }
+            setVideo({ ...video, is_completed: true });
         } catch (error) {
-            console.error('[DEBUG] Error marking complete:', error);
-        } finally {
-            setMarkingComplete(false);
+            console.error('[VIDEO] Error marking complete:', error);
         }
     };
 
     const getEmbedUrl = (video: Video) => {
         if (video.video_provider === 'youtube') {
-            return `https://www.youtube.com/embed/${video.video_id}`;
+            return `https://www.youtube.com/embed/${video.video_id}?enablejsapi=1`;
         } else if (video.video_provider === 'vimeo') {
             return `https://player.vimeo.com/video/${video.video_id}`;
         }
@@ -178,6 +266,7 @@ const VideoPlayerPage: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="aspect-video bg-black">
                     <iframe
+                        id="youtube-player"
                         src={getEmbedUrl(video)}
                         className="w-full h-full"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -210,11 +299,10 @@ const VideoPlayerPage: React.FC = () => {
                         {!video.is_completed && (
                             <button
                                 onClick={handleMarkComplete}
-                                disabled={markingComplete}
-                                className="flex items-center gap-2 px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                                className="flex items-center gap-2 px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors whitespace-nowrap"
                             >
                                 <FaCheck />
-                                {markingComplete ? 'Guardando...' : 'Marcar como visto'}
+                                Marcar como visto
                             </button>
                         )}
 
