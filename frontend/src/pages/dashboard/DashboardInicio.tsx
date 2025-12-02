@@ -150,7 +150,7 @@ export default function DashboardInicio() {
             </div>
 
             {/* Content sections */}
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 gap-6 items-start">
                 {/* Continúa donde lo dejaste */}
                 <div className="bg-white rounded-xl p-6 shadow-sm">
                     <h3 className="font-gotu text-lg text-asparragus mb-4">Continúa donde lo dejaste</h3>
