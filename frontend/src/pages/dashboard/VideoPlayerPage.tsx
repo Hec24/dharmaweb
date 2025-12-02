@@ -98,13 +98,23 @@ const VideoPlayerPage: React.FC = () => {
     };
 
     const saveCurrentProgress = async () => {
-        if (!player || !video || !token) return;
+        console.log('[VIDEO] saveCurrentProgress called', { hasPlayer: !!player, hasVideo: !!video, hasToken: !!token });
+
+        if (!player || !video || !token) {
+            console.log('[VIDEO] Missing required data, skipping save');
+            return;
+        }
 
         try {
             const currentTime = player.getCurrentTime();
             const duration = player.getDuration();
 
-            if (!currentTime || !duration) return;
+            console.log('[VIDEO] Player state:', { currentTime, duration, type: typeof currentTime });
+
+            if (!currentTime || !duration) {
+                console.log('[VIDEO] Invalid time data, skipping save');
+                return;
+            }
 
             const isCompleted = currentTime >= duration * 0.95; // 95% watched = completed
 
@@ -114,7 +124,7 @@ const VideoPlayerPage: React.FC = () => {
                 isCompleted
             });
 
-            await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
+            const response = await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,7 +137,12 @@ const VideoPlayerPage: React.FC = () => {
                 })
             });
 
-            console.log('[VIDEO] Progress saved');
+            if (response.ok) {
+                console.log('[VIDEO] Progress saved successfully');
+            } else {
+                const errorData = await response.json();
+                console.error('[VIDEO] Failed to save progress:', response.status, errorData);
+            }
         } catch (error) {
             console.error('[VIDEO] Error saving progress:', error);
         }
