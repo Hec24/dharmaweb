@@ -133,12 +133,26 @@ const VideoPlayerPage: React.FC = () => {
     };
 
     const getEmbedUrl = (video: Video) => {
+        let url = '';
+
         if (video.video_provider === 'youtube') {
-            return `https://www.youtube.com/embed/${video.video_id}`;
+            url = `https://www.youtube.com/embed/${video.video_id}`;
+
+            // If video has progress and is not completed, start from where user left off
+            if (video.watched_seconds && !video.is_completed && video.watched_seconds > 10) {
+                url += `?start=${Math.floor(video.watched_seconds)}`;
+                console.log('[VIDEO] Resuming from', Math.floor(video.watched_seconds), 'seconds');
+            }
         } else if (video.video_provider === 'vimeo') {
-            return `https://player.vimeo.com/video/${video.video_id}`;
+            url = `https://player.vimeo.com/video/${video.video_id}`;
+
+            // Vimeo uses #t= for time
+            if (video.watched_seconds && !video.is_completed && video.watched_seconds > 10) {
+                url += `#t=${Math.floor(video.watched_seconds)}s`;
+            }
         }
-        return '';
+
+        return url;
     };
 
     // Si el usuario no tiene membresía activa, mostrar estado bloqueado
