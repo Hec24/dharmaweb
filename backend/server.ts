@@ -384,27 +384,6 @@ import { createPortalSession } from './controllers/stripeController';
 
 app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
 
-<<<<<<< HEAD
-// ========= Live Events (Directos) =========
-import {
-  getUpcomingEvents,
-  getPastEvents,
-  getEventById,
-  registerForEvent,
-  unregisterFromEvent,
-  getMyRegistrations
-} from './controllers/liveEventsController';
-
-app.get('/api/live-events/upcoming', authenticateToken, getUpcomingEvents);
-app.get('/api/live-events/past', authenticateToken, getPastEvents);
-app.get('/api/live-events/my-registrations', authenticateToken, getMyRegistrations);
-app.get('/api/live-events/:id', authenticateToken, getEventById);
-app.post('/api/live-events/:id/register', authenticateToken, registerForEvent);
-app.delete('/api/live-events/:id/register', authenticateToken, unregisterFromEvent);
-
-// ========= Admin Routes =========
-import { runMigration, debugReservations, clearReservations, setUserStatus, migrateLiveEvents, seedEvents, deleteEvent } from './routes/adminRoutes';
-=======
 // ========= Community (Comunidad) =========
 import {
   getPosts,
@@ -444,17 +423,12 @@ import {
   deleteCommentAdmin,
   pinPost
 } from './routes/adminRoutes';
->>>>>>> feature/dashboard-mvp
 
 app.post('/api/admin/migrate', runMigration);
 app.get('/api/admin/debug/reservations', debugReservations);
 app.delete('/api/admin/reservations', clearReservations);
 app.post('/api/admin/users/status', setUserStatus);
 app.post('/api/admin/migrate-live-events', migrateLiveEvents);
-<<<<<<< HEAD
-app.post('/api/admin/seed-events', seedEvents);
-app.delete('/api/admin/live-events/:id', deleteEvent);
-=======
 app.post('/api/admin/migrate-community', migrateCommunity);
 app.post('/api/admin/seed-events', seedEvents);
 app.delete('/api/admin/live-events/:id', deleteEvent);
@@ -465,7 +439,6 @@ app.put('/api/admin/community/reports/:id', reviewReport);
 app.delete('/api/admin/community/posts/:id', deletePostAdmin);
 app.delete('/api/admin/community/comments/:id', deleteCommentAdmin);
 app.put('/api/admin/community/posts/:id/pin', pinPost);
->>>>>>> feature/dashboard-mvp
 
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];
