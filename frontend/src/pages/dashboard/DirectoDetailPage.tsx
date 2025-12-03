@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api';
 import { FiCalendar, FiClock, FiUsers, FiArrowLeft, FiExternalLink } from 'react-icons/fi';
+import QuestionSubmission from '../../components/community/QuestionSubmission';
 
 interface LiveEvent {
     id: string;
@@ -329,6 +330,14 @@ export default function DirectoDetailPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Questions section for upcoming events */}
+                {!isPast && (
+                    <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-6">
+                        <h2 className="font-gotu text-2xl text-asparragus mb-6">Preguntas para el directo</h2>
+                        <QuestionSubmission eventId={event.id} />
+                    </div>
+                )}
             </div>
         </div>
     );

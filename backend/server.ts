@@ -424,6 +424,28 @@ app.put('/api/community/comments/:id', authenticateToken, updateComment);
 app.delete('/api/community/comments/:id', authenticateToken, deleteComment);
 app.post('/api/community/report', authenticateToken, reportContent);
 
+// ========= Community Resources =========
+import {
+  getResources,
+  getFeaturedResources,
+  getResourceById
+} from './controllers/resourcesController';
+
+app.get('/api/community/resources', authenticateToken, getResources);
+app.get('/api/community/resources/featured', authenticateToken, getFeaturedResources);
+app.get('/api/community/resources/:id', authenticateToken, getResourceById);
+
+// ========= Event Questions =========
+import {
+  getEventQuestions,
+  submitQuestion,
+  voteQuestion
+} from './controllers/questionsController';
+
+app.get('/api/live-events/:eventId/questions', authenticateToken, getEventQuestions);
+app.post('/api/live-events/:eventId/questions', authenticateToken, submitQuestion);
+app.post('/api/live-events/questions/:id/vote', authenticateToken, voteQuestion);
+
 // ========= Admin Routes =========
 import {
   runMigration,
@@ -439,7 +461,13 @@ import {
   reviewReport,
   deletePostAdmin,
   deleteCommentAdmin,
-  pinPost
+  pinPost,
+  migrateResources,
+  createResourceAdmin,
+  deleteResourceAdmin,
+  migrateQuestions,
+  markQuestionAnswered,
+  deleteQuestionAdmin
 } from './routes/adminRoutes';
 
 app.post('/api/admin/migrate', runMigration);
@@ -458,6 +486,16 @@ app.put('/api/admin/community/reports/:id', reviewReport);
 app.delete('/api/admin/community/posts/:id', deletePostAdmin);
 app.delete('/api/admin/community/comments/:id', deleteCommentAdmin);
 app.put('/api/admin/community/posts/:id/pin', pinPost);
+
+// Resources admin
+app.post('/api/admin/migrate-resources', migrateResources);
+app.post('/api/admin/resources', createResourceAdmin);
+app.delete('/api/admin/resources/:id', deleteResourceAdmin);
+
+// Questions admin
+app.post('/api/admin/migrate-questions', migrateQuestions);
+app.put('/api/admin/questions/:id/status', markQuestionAnswered);
+app.delete('/api/admin/questions/:id', deleteQuestionAdmin);
 
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];

@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { api } from '../../lib/api';
-import { FiMessageSquare, FiUser, FiClock, FiPlus } from 'react-icons/fi';
+import { FiMessageSquare, FiUser, FiClock, FiPlus, FiBook } from 'react-icons/fi';
 import CreatePostModal from '../../components/community/CreatePostModal';
+import RecursosTab from '../../components/community/RecursosTab';
 
 interface Post {
     id: string;
@@ -30,6 +31,7 @@ const areaNames: Record<string, string> = {
 };
 
 export default function ComunidadPage() {
+    const [activeTab, setActiveTab] = useState<'posts' | 'recursos'>('posts');
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedArea, setSelectedArea] = useState<string>('');
@@ -139,57 +141,99 @@ export default function ComunidadPage() {
                         Conecta, comparte y aprende con otros miembros
                     </p>
                 </div>
+                {activeTab === 'posts' && (
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
+                    >
+                        <FiPlus className="w-5 h-5" />
+                        Crear Post
+                    </button>
+                )}
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-4 border-b border-stone-200">
                 <button
-                    onClick={() => setShowCreateModal(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
+                    onClick={() => setActiveTab('posts')}
+                    className={`pb-3 px-1 font-medium transition-colors relative ${activeTab === 'posts'
+                        ? 'text-asparragus'
+                        : 'text-asparragus/50 hover:text-asparragus/70'
+                        }`}
                 >
-                    <FiPlus className="w-5 h-5" />
-                    Crear Post
+                    <div className="flex items-center gap-2">
+                        <FiMessageSquare className="w-4 h-4" />
+                        Posts
+                    </div>
+                    {activeTab === 'posts' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-asparragus" />
+                    )}
+                </button>
+                <button
+                    onClick={() => setActiveTab('recursos')}
+                    className={`pb-3 px-1 font-medium transition-colors relative ${activeTab === 'recursos'
+                        ? 'text-asparragus'
+                        : 'text-asparragus/50 hover:text-asparragus/70'
+                        }`}
+                >
+                    <div className="flex items-center gap-2">
+                        <FiBook className="w-4 h-4" />
+                        Recursos
+                    </div>
+                    {activeTab === 'recursos' && (
+                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-asparragus" />
+                    )}
                 </button>
             </div>
 
-            {/* Filter by area */}
-            <div>
-                <select
-                    value={selectedArea}
-                    onChange={(e) => setSelectedArea(e.target.value)}
-                    className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-asparragus focus:outline-none focus:ring-2 focus:ring-asparragus/20"
-                >
-                    <option value="">Todas las áreas</option>
-                    {Object.entries(areaNames).map(([key, name]) => (
-                        <option key={key} value={key}>{name}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Posts list */}
-            {loading ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-asparragus"></div>
-                </div>
-            ) : posts.length > 0 ? (
-                <div className="space-y-4">
-                    {posts.map(post => (
-                        <PostCard key={post.id} post={post} />
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-12 bg-white rounded-xl">
-                    <FiMessageSquare className="w-16 h-16 text-asparragus/20 mx-auto mb-4" />
-                    <p className="text-asparragus/60 mb-2">
-                        {selectedArea ? 'No hay posts en esta área' : 'Aún no hay posts en la comunidad'}
-                    </p>
-                    <p className="text-sm text-asparragus/50 mb-4">
-                        Sé el primero en compartir algo
-                    </p>
-                    <button
-                        onClick={() => setShowCreateModal(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors text-sm"
+            {/* Filter by area (only for posts) */}
+            {activeTab === 'posts' && (
+                <div>
+                    <select
+                        value={selectedArea}
+                        onChange={(e) => setSelectedArea(e.target.value)}
+                        className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-asparragus focus:outline-none focus:ring-2 focus:ring-asparragus/20"
                     >
-                        <FiPlus className="w-4 h-4" />
-                        Crear Post
-                    </button>
+                        <option value="">Todas las áreas</option>
+                        {Object.entries(areaNames).map(([key, name]) => (
+                            <option key={key} value={key}>{name}</option>
+                        ))}
+                    </select>
                 </div>
+            )}
+
+            {/* Tab content */}
+            {activeTab === 'posts' ? (
+                loading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-asparragus"></div>
+                    </div>
+                ) : posts.length > 0 ? (
+                    <div className="space-y-4">
+                        {posts.map(post => (
+                            <PostCard key={post.id} post={post} />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-12 bg-white rounded-xl">
+                        <FiMessageSquare className="w-16 h-16 text-asparragus/20 mx-auto mb-4" />
+                        <p className="text-asparragus/60 mb-2">
+                            {selectedArea ? 'No hay posts en esta área' : 'Aún no hay posts en la comunidad'}
+                        </p>
+                        <p className="text-sm text-asparragus/50 mb-4">
+                            Sé el primero en compartir algo
+                        </p>
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors text-sm"
+                        >
+                            <FiPlus className="w-4 h-4" />
+                            Crear Post
+                        </button>
+                    </div>
+                )
+            ) : (
+                <RecursosTab />
             )}
 
             {/* Create Post Modal */}

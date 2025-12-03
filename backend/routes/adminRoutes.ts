@@ -700,3 +700,233 @@ export async function pinPost(req: Request, res: Response) {
         });
     }
 }
+
+// ========= Resources Admin Functions =========
+
+export async function migrateResources(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🔧 Running resources migration...');
+
+        const schema = `
+            CREATE TABLE IF NOT EXISTS community_resources (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                title VARCHAR(255) NOT NULL,
+                description TEXT,
+                resource_type VARCHAR(50) NOT NULL CHECK (resource_type IN ('pdf', 'link', 'guide', 'video', 'article')),
+                url TEXT NOT NULL,
+                area VARCHAR(100),
+                is_featured BOOLEAN DEFAULT false,
+                created_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_resources_area ON community_resources(area);
+            CREATE INDEX IF NOT EXISTS idx_resources_featured ON community_resources(is_featured);
+            CREATE INDEX IF NOT EXISTS idx_resources_created ON community_resources(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_resources_type ON community_resources(resource_type);
+        `;
+
+        await pool.query(schema);
+
+        console.log('✅ Resources migration completed');
+
+        return res.json({
+            success: true,
+            message: 'Resources tables created successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Migration error:', error);
+        return res.status(500).json({
+            error: 'Migration failed',
+            details: error.message
+        });
+    }
+}
+
+export async function createResourceAdmin(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { title, description, resource_type, url, area, is_featured } = req.body;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(`
+            INSERT INTO community_resources (title, description, resource_type, url, area, is_featured)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *
+        `, [title, description, resource_type, url, area || null, is_featured || false]);
+
+        console.log('✅ Resource created:', result.rows[0].title);
+
+        return res.status(201).json(result.rows[0]);
+    } catch (error: any) {
+        console.error('❌ Create resource error:', error);
+        return res.status(500).json({
+            error: 'Failed to create resource',
+            details: error.message
+        });
+    }
+}
+
+export async function deleteResourceAdmin(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'DELETE FROM community_resources WHERE id = $1 RETURNING id, title',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+
+        console.log('✅ Resource deleted:', result.rows[0].title);
+
+        return res.json({
+            success: true,
+            message: `Resource "${result.rows[0].title}" deleted successfully`
+        });
+    } catch (error: any) {
+        console.error('❌ Delete resource error:', error);
+        return res.status(500).json({
+            error: 'Failed to delete resource',
+            details: error.message
+        });
+    }
+}
+
+// ========= Questions Admin Functions =========
+
+export async function migrateQuestions(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🔧 Running questions migration...');
+
+        const schema = `
+            CREATE TABLE IF NOT EXISTS event_questions (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                event_id UUID REFERENCES live_events(id) ON DELETE CASCADE,
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                question TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'answered', 'featured')),
+                votes INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS question_votes (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                question_id UUID REFERENCES event_questions(id) ON DELETE CASCADE,
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                created_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(question_id, user_id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_questions_event ON event_questions(event_id);
+            CREATE INDEX IF NOT EXISTS idx_questions_user ON event_questions(user_id);
+            CREATE INDEX IF NOT EXISTS idx_questions_status ON event_questions(status);
+            CREATE INDEX IF NOT EXISTS idx_questions_votes ON event_questions(votes DESC);
+            CREATE INDEX IF NOT EXISTS idx_question_votes_question ON question_votes(question_id);
+            CREATE INDEX IF NOT EXISTS idx_question_votes_user ON question_votes(user_id);
+        `;
+
+        await pool.query(schema);
+
+        console.log('✅ Questions migration completed');
+
+        return res.json({
+            success: true,
+            message: 'Questions tables created successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Migration error:', error);
+        return res.status(500).json({
+            error: 'Migration failed',
+            details: error.message
+        });
+    }
+}
+
+export async function markQuestionAnswered(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+        const { status } = req.body;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'UPDATE event_questions SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *',
+            [status, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        console.log('✅ Question status updated:', status);
+
+        return res.json(result.rows[0]);
+    } catch (error: any) {
+        console.error('❌ Update question error:', error);
+        return res.status(500).json({
+            error: 'Failed to update question',
+            details: error.message
+        });
+    }
+}
+
+export async function deleteQuestionAdmin(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'DELETE FROM event_questions WHERE id = $1 RETURNING id',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+
+        console.log('✅ Question deleted:', id);
+
+        return res.json({
+            success: true,
+            message: 'Question deleted successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Delete question error:', error);
+        return res.status(500).json({
+            error: 'Failed to delete question',
+            details: error.message
+        });
+    }
+}
