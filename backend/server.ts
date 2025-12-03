@@ -417,6 +417,7 @@ import {
   migrateCommunity,
   seedEvents,
   deleteEvent,
+  debugEvents,
   getReports,
   reviewReport,
   deletePostAdmin,
@@ -429,6 +430,7 @@ app.get('/api/admin/debug/reservations', debugReservations);
 app.delete('/api/admin/reservations', clearReservations);
 app.post('/api/admin/users/status', setUserStatus);
 app.post('/api/admin/migrate-live-events', migrateLiveEvents);
+app.get('/api/admin/debug/events', debugEvents);
 app.post('/api/admin/migrate-community', migrateCommunity);
 app.post('/api/admin/seed-events', seedEvents);
 app.delete('/api/admin/live-events/:id', deleteEvent);

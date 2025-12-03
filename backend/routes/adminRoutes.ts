@@ -388,6 +388,29 @@ export async function deleteEvent(req: Request, res: Response) {
         });
     }
 }
+// Debug events
+export async function debugEvents(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query('SELECT * FROM live_events ORDER BY created_at DESC');
+
+        return res.json({
+            count: result.rows.length,
+            events: result.rows
+        });
+    } catch (error: any) {
+        console.error('❌ Debug events error:', error);
+        return res.status(500).json({
+            error: 'Debug failed',
+            details: error.message
+        });
+    }
+}
 
 // ========= Community Admin Functions =========
 
