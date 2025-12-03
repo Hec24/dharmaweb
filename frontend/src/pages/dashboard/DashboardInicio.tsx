@@ -1,5 +1,5 @@
 // frontend/src/pages/dashboard/DashboardInicio.tsx
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiVideo, FiCalendar, FiUsers, FiTrendingUp, FiPlay, FiClock } from 'react-icons/fi';
@@ -22,11 +22,21 @@ interface Reservation {
     estado: string;
 }
 
+interface LiveEvent {
+    id: string;
+    title: string;
+    instructor: string;
+    scheduled_at: string;
+    duration_minutes: number;
+    area: string;
+}
+
 export default function DashboardInicio() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [lastVideo, setLastVideo] = useState<Video | null>(null);
     const [nextReservation, setNextReservation] = useState<Reservation | null>(null);
+    const [nextEvent, setNextEvent] = useState<LiveEvent | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -46,6 +56,13 @@ export default function DashboardInicio() {
                 console.log('[DASHBOARD] Reservations response:', reservasResponse.data);
                 if (reservasResponse.data.upcoming && reservasResponse.data.upcoming.length > 0) {
                     setNextReservation(reservasResponse.data.upcoming[0]);
+                }
+
+                // Fetch next registered live event
+                const eventsResponse = await api.get('/live-events/my-registrations');
+                console.log('[DASHBOARD] My events response:', eventsResponse.data);
+                if (eventsResponse.data && eventsResponse.data.length > 0) {
+                    setNextEvent(eventsResponse.data[0]);
                 }
             } catch (error) {
                 console.error('[DASHBOARD] Error fetching dashboard data:', error);
@@ -215,6 +232,57 @@ export default function DashboardInicio() {
                                 className="inline-block px-4 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors text-sm"
                             >
                                 Explorar contenidos
+                            </Link>
+                        </div>
+                    )}
+                </div>
+
+                {/* Próximo Directo */}
+                <div className="bg-white rounded-xl p-6 shadow-sm">
+                    <h3 className="font-gotu text-lg text-asparragus mb-4">Próximo Directo</h3>
+
+                    {loading ? (
+                        <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                        </div>
+                    ) : nextEvent ? (
+                        <Link
+                            to={`/dashboard/directos/${nextEvent.id}`}
+                            className="block border border-gold/20 rounded-lg p-4 hover:border-gold/40 transition-colors"
+                        >
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 bg-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <FiCalendar className="w-5 h-5 text-gold" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-medium text-asparragus mb-1">
+                                        {nextEvent.title}
+                                    </p>
+                                    <div className="flex items-center gap-2 text-sm text-asparragus/70 mb-2">
+                                        <FiCalendar className="w-4 h-4" />
+                                        <span className="capitalize">{formatDate(nextEvent.scheduled_at)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 text-sm text-asparragus/70">
+                                        <FiClock className="w-4 h-4" />
+                                        <span>{new Date(nextEvent.scheduled_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} • {nextEvent.duration_minutes} min</span>
+                                    </div>
+                                    <p className="text-sm text-asparragus/60 mt-2">
+                                        Con <span className="font-medium text-asparragus">{nextEvent.instructor}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </Link>
+                    ) : (
+                        <div className="text-center py-8">
+                            <FiCalendar className="w-12 h-12 text-gold/20 mx-auto mb-3" />
+                            <p className="text-sm text-asparragus/60 mb-4">
+                                No estás registrado en ningún directo
+                            </p>
+                            <Link
+                                to="/dashboard/directos"
+                                className="inline-block px-4 py-2 bg-gold text-white rounded-lg hover:bg-gold/90 transition-colors text-sm"
+                            >
+                                Ver directos
                             </Link>
                         </div>
                     )}

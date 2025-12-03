@@ -402,7 +402,7 @@ app.post('/api/live-events/:id/register', authenticateToken, registerForEvent);
 app.delete('/api/live-events/:id/register', authenticateToken, unregisterFromEvent);
 
 // ========= Admin Routes =========
-import { runMigration, debugReservations, clearReservations, setUserStatus, migrateLiveEvents, seedEvents } from './routes/adminRoutes';
+import { runMigration, debugReservations, clearReservations, setUserStatus, migrateLiveEvents, seedEvents, deleteEvent } from './routes/adminRoutes';
 
 app.post('/api/admin/migrate', runMigration);
 app.get('/api/admin/debug/reservations', debugReservations);
@@ -410,6 +410,7 @@ app.delete('/api/admin/reservations', clearReservations);
 app.post('/api/admin/users/status', setUserStatus);
 app.post('/api/admin/migrate-live-events', migrateLiveEvents);
 app.post('/api/admin/seed-events', seedEvents);
+app.delete('/api/admin/live-events/:id', deleteEvent);
 
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];

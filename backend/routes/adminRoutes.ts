@@ -352,3 +352,39 @@ export async function seedEvents(req: Request, res: Response) {
         });
     }
 }
+
+// Delete event
+export async function deleteEvent(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🗑️ Deleting event:', id);
+
+        const result = await pool.query(
+            'DELETE FROM live_events WHERE id = $1 RETURNING id, title',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Event not found' });
+        }
+
+        console.log('✅ Event deleted:', result.rows[0].title);
+
+        return res.json({
+            success: true,
+            message: `Event "${result.rows[0].title}" deleted successfully`
+        });
+    } catch (error: any) {
+        console.error('❌ Delete error:', error);
+        return res.status(500).json({
+            error: 'Delete failed',
+            details: error.message
+        });
+    }
+}

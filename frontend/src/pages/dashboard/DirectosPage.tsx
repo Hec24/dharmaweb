@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { api } from '../../lib/api';
-import { FiCalendar, FiClock, FiUsers, FiVideo, FiPlay } from 'react-icons/fi';
+import { FiCalendar, FiClock, FiUsers, FiPlay } from 'react-icons/fi';
 
 interface LiveEvent {
     id: string;
@@ -94,9 +94,11 @@ export default function DirectosPage() {
                         className="w-full h-full object-cover"
                     />
                 ) : (
-                    <div className="flex items-center justify-center h-full">
-                        <FiVideo className="w-16 h-16 text-gold/30" />
-                    </div>
+                    <img
+                        src="/img/patrones/patron04.png"
+                        alt="Dharma en Ruta"
+                        className="w-full h-full object-cover opacity-40"
+                    />
                 )}
 
                 {/* Area badge */}
@@ -156,7 +158,7 @@ export default function DirectosPage() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="p-6 lg:p-8 space-y-6">
             <Helmet>
                 <title>Directos | Dharma en Ruta</title>
             </Helmet>
