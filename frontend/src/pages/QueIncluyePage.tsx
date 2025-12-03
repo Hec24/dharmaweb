@@ -2,7 +2,6 @@
 import React from "react";
 import { Helmet } from "react-helmet-async";
 import GenericNav from "../components/shared/GenericNav";
-import SectionHeader from "../components/ui/SectionHeader";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 import MembershipSection from "../components/sections/MembershipSection/MembershipSection";
