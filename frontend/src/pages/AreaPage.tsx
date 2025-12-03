@@ -178,13 +178,17 @@ export default function AreaPage() {
 
                     <div className="space-y-3" role="group" aria-labelledby={cardHeadingId}>
                       {user ? (
-                        <ButtonLink
-                          to="/dashboard"
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                        >
-                          <FiLogIn aria-hidden className="h-4 w-4" />
-                          <span>Ir a mi Dashboard</span>
-                        </ButtonLink>
+                        <>
+                          <ButtonLink
+                            to="/dashboard"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          >
+                            <FiLogIn aria-hidden className="h-4 w-4" />
+                            <span>Ir a mi Dashboard</span>
+                          </ButtonLink>
+                          {/* Spacer to match height of two-button layout */}
+                          <div className="h-[52px]" aria-hidden="true" />
+                        </>
                       ) : (
                         <>
                           {/* Botón Acceder */}
