@@ -41,7 +41,7 @@ export const HeroContent: React.FC = () => {
                                 to="/dashboard"
                                 variant="primary"
                                 size="md"
-                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent w-full text-center"
+                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent text-center"
                                 aria-label="Ir a mi Dashboard"
                             >
                                 Ir a mi Dashboard
