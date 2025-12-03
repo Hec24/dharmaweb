@@ -104,25 +104,26 @@ const TestRuedaVidaSection: React.FC = () => {
                         </ul>
 
                         {/* Card de precio y CTA */}
-                        <div className="bg-white/60 border border-raw/10 rounded-2xl p-6 shadow-sm">
-                            <div className="flex items-baseline gap-3 mb-4">
+                        <div className="bg-white/60 border border-raw/10 rounded-2xl p-6 shadow-sm max-w-md">
+                            <div className="flex items-baseline gap-3 mb-4 justify-center">
                                 <span className="text-4xl md:text-5xl font-gotu text-raw">14,90€</span>
                                 <span className="text-sm text-raw/60 line-through">29,90€</span>
-                                <span className="ml-auto bg-gold/20 text-raw px-2 py-1 rounded text-xs font-medium">
+                                <span className="bg-gold/20 text-raw px-2 py-1 rounded text-xs font-medium">
                                     -50%
                                 </span>
                             </div>
 
-                            <ButtonLink
-                                to="/test-rueda-vida"
-                                variant="primary"
-                                size="sm"
-                                fullWidth
-                                className="mb-3"
-                                aria-label="Comprar Test de la Rueda de Vida personalizado"
-                            >
-                                Comprar mi Test Personalizado
-                            </ButtonLink>
+                            <div className="flex justify-center">
+                                <ButtonLink
+                                    to="/test-rueda-vida"
+                                    variant="primary"
+                                    size="md"
+                                    className="mb-3 text-sm sm:text-base"
+                                    aria-label="Comprar Test de la Rueda de Vida personalizado"
+                                >
+                                    Comprar mi Test Personalizado
+                                </ButtonLink>
+                            </div>
 
                             <p className="text-xs text-raw/60 text-center leading-relaxed">
                                 Pago único. Acceso inmediato tras la compra. PDF descargable e imprimible.

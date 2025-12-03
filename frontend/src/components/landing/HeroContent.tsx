@@ -53,7 +53,7 @@ export const HeroContent: React.FC = () => {
                                 to="/lista-espera"
                                 variant="primary"
                                 size="md"
-                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent w-full text-center"
+                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent text-center"
                                 aria-label="Únete a la lista de espera de la membresía"
                             >
                                 Únete a la lista de espera
@@ -65,7 +65,7 @@ export const HeroContent: React.FC = () => {
                                 to="/lista-espera"
                                 variant="primary"
                                 size="md"
-                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent w-full text-center"
+                                className="shadow-lg bg-asparragus text-white hover:bg-asparragus/90 border-transparent text-center"
                                 aria-label="Únete a la lista de espera de la membresía"
                             >
                                 Únete a la lista de espera

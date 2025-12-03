@@ -27,6 +27,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   rightLinks,
   logoSrc,
 }) => {
+  // Hooks must be at the top level
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
   const [aboutDropdownOpen, setAboutDropdownOpen] = useState(false);
 
@@ -187,10 +190,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
         {/* Links móviles (resto) - Reordenados alfabéticamente */}
         <nav className="space-y-4" aria-label="Navegación principal móvil">
           {(() => {
-            const { user, logout } = useAuth();
-            const navigate = useNavigate();
-
-            // Reorder: Acceder, Acerca de, Acompañamientos, Áreas (dropdown above), Lista espera, Qué incluye
+            // Reorder: Acceder, Acompañamientos, Lista espera, Qué incluye
             const orderedLinks = [
               ...leftLinks.filter(l => l.label.toLowerCase().includes('acompañamiento')),
               ...rightLinks.filter(l => l.label.toLowerCase().includes('lista')),
