@@ -379,6 +379,23 @@ import { getMisReservas, cancelReservation } from './controllers/reservasControl
 app.get('/api/reservas/mis-reservas', authenticateToken, getMisReservas);
 app.delete('/api/reservas/:id/cancel', authenticateToken, cancelReservation);
 
+// ========= Live Events (Directos) =========
+import {
+  getUpcomingEvents,
+  getPastEvents,
+  getEventById,
+  registerForEvent,
+  unregisterFromEvent,
+  getMyRegistrations
+} from './controllers/liveEventsController';
+
+app.get('/api/live-events/upcoming', authenticateToken, getUpcomingEvents);
+app.get('/api/live-events/past', authenticateToken, getPastEvents);
+app.get('/api/live-events/my-registrations', authenticateToken, getMyRegistrations);
+app.get('/api/live-events/:id', authenticateToken, getEventById);
+app.post('/api/live-events/:id/register', authenticateToken, registerForEvent);
+app.delete('/api/live-events/:id/unregister', authenticateToken, unregisterFromEvent);
+
 // ========= Stripe Customer Portal =========
 import { createPortalSession } from './controllers/stripeController';
 
