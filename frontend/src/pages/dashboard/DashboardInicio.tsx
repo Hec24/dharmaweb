@@ -149,13 +149,17 @@ export default function DashboardInicio() {
                     <p className="text-sm text-asparragus/60">Ver sesiones</p>
                 </Link>
 
-                <div className="bg-white rounded-xl p-6 opacity-60">
-                    <div className="w-12 h-12 bg-raw/10 rounded-lg flex items-center justify-center mb-4">
+                <Link
+                    to="/dashboard/comunidad"
+                    className="bg-white rounded-xl p-6 hover:shadow-lg transition-shadow group"
+                >
+                    <div className="w-12 h-12 bg-raw/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-raw/20 transition-colors">
                         <FiUsers className="w-6 h-6 text-raw" />
                     </div>
                     <h3 className="font-gotu text-lg text-asparragus mb-1">Comunidad</h3>
-                    <p className="text-sm text-asparragus/60">Próximamente</p>
-                </div>
+                    <p className="text-sm text-asparragus/60">Conecta con otros miembros</p>
+                </Link>
+
 
                 <Link to="/dashboard/directos" className="bg-white rounded-xl p-6 hover:shadow-md transition-shadow">
                     <div className="w-12 h-12 bg-gold/10 rounded-lg flex items-center justify-center mb-4">
