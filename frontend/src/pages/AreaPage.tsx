@@ -14,12 +14,14 @@ import ButtonLink from "../components/ui/ButtonLink";
 import { AREAS } from "../config/areas.config";
 import { useMembershipStatus } from "../hooks/useMembershipStatus";
 import { trackListView } from "../utils/tracking";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function AreaPage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const area = AREAS[slug];
   const cardHeadingId = useId();
   const { isOpen } = useMembershipStatus();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (area) trackListView(slug);
@@ -175,23 +177,35 @@ export default function AreaPage() {
                     </header>
 
                     <div className="space-y-3" role="group" aria-labelledby={cardHeadingId}>
-                      {/* Botón Acceder */}
-                      <ButtonLink
-                        to="/login"
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                      >
-                        <FiLogIn aria-hidden className="h-4 w-4" />
-                        <span>Ya soy miembro: Acceder</span>
-                      </ButtonLink>
+                      {user ? (
+                        <ButtonLink
+                          to="/dashboard"
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                        >
+                          <FiLogIn aria-hidden className="h-4 w-4" />
+                          <span>Ir a mi Dashboard</span>
+                        </ButtonLink>
+                      ) : (
+                        <>
+                          {/* Botón Acceder */}
+                          <ButtonLink
+                            to="/login"
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-asparragus px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-asparragus/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          >
+                            <FiLogIn aria-hidden className="h-4 w-4" />
+                            <span>Ya soy miembro: Acceder</span>
+                          </ButtonLink>
 
-                      {/* Botón Registro o Lista de Espera (condicional) */}
-                      <ButtonLink
-                        to={isOpen ? "/registro" : "/lista-espera"}
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-medium text-white border border-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-                      >
-                        <FiUserPlus aria-hidden className="h-4 w-4" />
-                        <span>{isOpen ? "Quiero unirme: Registro" : "Unirme a la lista de espera"}</span>
-                      </ButtonLink>
+                          {/* Botón Registro o Lista de Espera (condicional) */}
+                          <ButtonLink
+                            to={isOpen ? "/registro" : "/lista-espera"}
+                            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-medium text-white border border-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+                          >
+                            <FiUserPlus aria-hidden className="h-4 w-4" />
+                            <span>{isOpen ? "Quiero unirme: Registro" : "Unirme a la lista de espera"}</span>
+                          </ButtonLink>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>

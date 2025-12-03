@@ -116,7 +116,7 @@ const TestRuedaVidaSection: React.FC = () => {
                             <ButtonLink
                                 to="/test-rueda-vida"
                                 variant="primary"
-                                size="md"
+                                size="sm"
                                 fullWidth
                                 className="mb-3"
                                 aria-label="Comprar Test de la Rueda de Vida personalizado"

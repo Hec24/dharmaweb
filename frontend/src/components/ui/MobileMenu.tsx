@@ -1,6 +1,7 @@
 // src/Components/ui/MobileMenu.tsx
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface NavLink {
   label: string;
@@ -183,18 +184,63 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           )}
         </div>
 
-        {/* Links móviles (resto) */}
+        {/* Links móviles (resto) - Reordenados alfabéticamente */}
         <nav className="space-y-4" aria-label="Navegación principal móvil">
-          {[...leftLinks, ...rightLinks].map((link, index) => (
-            <Link
-              key={index}
-              to={link.href}
-              className="block font-degular text-raw text-xl py-2 border-b border-asparragus rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw"
-              onClick={() => setIsOpen(false)}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {(() => {
+            const { user, logout } = useAuth();
+            const navigate = useNavigate();
+
+            // Reorder: Acceder, Acerca de, Acompañamientos, Áreas (dropdown above), Lista espera, Qué incluye
+            const orderedLinks = [
+              ...leftLinks.filter(l => l.label.toLowerCase().includes('acompañamiento')),
+              ...rightLinks.filter(l => l.label.toLowerCase().includes('lista')),
+              ...rightLinks.filter(l => l.label.toLowerCase().includes('qué') || l.label.toLowerCase().includes('incluye')),
+            ];
+
+            return (
+              <>
+                {user ? (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="block font-degular text-raw text-xl py-2 border-b border-asparragus rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        navigate('/');
+                        setIsOpen(false);
+                      }}
+                      className="block w-full text-left font-degular text-raw text-xl py-2 border-b border-asparragus rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw"
+                    >
+                      Cerrar sesión
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/login"
+                    className="block font-degular text-raw text-xl py-2 border-b border-asparragus rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Acceder
+                  </Link>
+                )}
+                {orderedLinks.map((link, index) => (
+                  <Link
+                    key={index}
+                    to={link.href}
+                    className="block font-degular text-raw text-xl py-2 border-b border-asparragus rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-raw"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </>
+            );
+          })()}
         </nav>
 
         {/* Imagen decorativa inferior -> link a home y cierra */}

@@ -3,6 +3,7 @@ import React from "react";
 import SectionHeader from "../../ui/SectionHeader";
 import ButtonLink from "../../ui/ButtonLink";
 import { useMembershipStatus } from "../../../hooks/useMembershipStatus";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -15,6 +16,12 @@ const formatDate = (dateString: string): string => {
 
 const FinalCTA: React.FC = () => {
     const { isOpen, nextOpeningDate, loading } = useMembershipStatus();
+    const { user } = useAuth();
+
+    // Hide CTA completely for logged-in users
+    if (user) {
+        return null;
+    }
 
     if (loading) {
         return (
