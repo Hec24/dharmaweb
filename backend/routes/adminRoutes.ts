@@ -388,3 +388,264 @@ export async function deleteEvent(req: Request, res: Response) {
         });
     }
 }
+
+// ========= Community Admin Functions =========
+
+export async function migrateCommunity(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🔧 Running community migration...');
+
+        const schema = `
+            CREATE TABLE IF NOT EXISTS community_posts (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                area VARCHAR(100) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                content TEXT NOT NULL,
+                is_pinned BOOLEAN DEFAULT false,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS community_comments (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                post_id UUID REFERENCES community_posts(id) ON DELETE CASCADE,
+                user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                content TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+
+            CREATE TABLE IF NOT EXISTS community_reports (
+                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                reporter_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+                reported_item_type VARCHAR(20) NOT NULL CHECK (reported_item_type IN ('post', 'comment')),
+                reported_item_id UUID NOT NULL,
+                reason TEXT NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'dismissed')),
+                created_at TIMESTAMP DEFAULT NOW(),
+                reviewed_at TIMESTAMP,
+                reviewed_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_posts_area ON community_posts(area);
+            CREATE INDEX IF NOT EXISTS idx_posts_user ON community_posts(user_id);
+            CREATE INDEX IF NOT EXISTS idx_posts_created ON community_posts(created_at DESC);
+            CREATE INDEX IF NOT EXISTS idx_posts_pinned ON community_posts(is_pinned);
+
+            CREATE INDEX IF NOT EXISTS idx_comments_post ON community_comments(post_id);
+            CREATE INDEX IF NOT EXISTS idx_comments_user ON community_comments(user_id);
+            CREATE INDEX IF NOT EXISTS idx_comments_created ON community_comments(created_at);
+
+            CREATE INDEX IF NOT EXISTS idx_reports_status ON community_reports(status);
+            CREATE INDEX IF NOT EXISTS idx_reports_reporter ON community_reports(reporter_user_id);
+            CREATE INDEX IF NOT EXISTS idx_reports_created ON community_reports(created_at DESC);
+        `;
+
+        await pool.query(schema);
+
+        console.log('✅ Community migration completed');
+
+        return res.json({
+            success: true,
+            message: 'Community tables created successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Migration error:', error);
+        return res.status(500).json({
+            error: 'Migration failed',
+            details: error.message
+        });
+    }
+}
+
+// Get all pending reports
+export async function getReports(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(`
+            SELECT 
+                r.id,
+                r.reported_item_type,
+                r.reported_item_id,
+                r.reason,
+                r.status,
+                r.created_at,
+                r.reviewed_at,
+                reporter.nombre as reporter_name,
+                reviewer.nombre as reviewer_name
+            FROM community_reports r
+            JOIN users reporter ON r.reporter_user_id = reporter.id
+            LEFT JOIN users reviewer ON r.reviewed_by_user_id = reviewer.id
+            ORDER BY 
+                CASE WHEN r.status = 'pending' THEN 0 ELSE 1 END,
+                r.created_at DESC
+        `);
+
+        return res.json({
+            count: result.rows.length,
+            reports: result.rows
+        });
+    } catch (error: any) {
+        console.error('❌ Get reports error:', error);
+        return res.status(500).json({
+            error: 'Failed to get reports',
+            details: error.message
+        });
+    }
+}
+
+// Review a report (mark as reviewed or dismissed)
+export async function reviewReport(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+        const { status, adminUserId } = req.body;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        if (!status || (status !== 'reviewed' && status !== 'dismissed')) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+
+        const result = await pool.query(`
+            UPDATE community_reports
+            SET status = $1, reviewed_at = NOW(), reviewed_by_user_id = $2
+            WHERE id = $3
+            RETURNING *
+        `, [status, adminUserId, id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Report not found' });
+        }
+
+        console.log(`✅ Report ${id} marked as ${status}`);
+
+        return res.json({
+            success: true,
+            report: result.rows[0]
+        });
+    } catch (error: any) {
+        console.error('❌ Review report error:', error);
+        return res.status(500).json({
+            error: 'Failed to review report',
+            details: error.message
+        });
+    }
+}
+
+// Delete any post (admin)
+export async function deletePostAdmin(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'DELETE FROM community_posts WHERE id = $1 RETURNING id, title',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        console.log('✅ Post deleted by admin:', result.rows[0].title);
+
+        return res.json({
+            success: true,
+            message: `Post "${result.rows[0].title}" deleted successfully`
+        });
+    } catch (error: any) {
+        console.error('❌ Delete post error:', error);
+        return res.status(500).json({
+            error: 'Failed to delete post',
+            details: error.message
+        });
+    }
+}
+
+// Delete any comment (admin)
+export async function deleteCommentAdmin(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'DELETE FROM community_comments WHERE id = $1 RETURNING id',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        console.log('✅ Comment deleted by admin:', id);
+
+        return res.json({
+            success: true,
+            message: 'Comment deleted successfully'
+        });
+    } catch (error: any) {
+        console.error('❌ Delete comment error:', error);
+        return res.status(500).json({
+            error: 'Failed to delete comment',
+            details: error.message
+        });
+    }
+}
+
+// Pin/unpin a post
+export async function pinPost(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+        const { id } = req.params;
+        const { pinned } = req.body;
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        const result = await pool.query(
+            'UPDATE community_posts SET is_pinned = $1 WHERE id = $2 RETURNING id, title, is_pinned',
+            [pinned, id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+
+        console.log(`✅ Post ${pinned ? 'pinned' : 'unpinned'}:`, result.rows[0].title);
+
+        return res.json({
+            success: true,
+            post: result.rows[0]
+        });
+    } catch (error: any) {
+        console.error('❌ Pin post error:', error);
+        return res.status(500).json({
+            error: 'Failed to pin/unpin post',
+            details: error.message
+        });
+    }
+}
