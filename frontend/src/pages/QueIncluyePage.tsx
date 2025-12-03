@@ -5,6 +5,9 @@ import GenericNav from "../components/shared/GenericNav";
 import SectionHeader from "../components/ui/SectionHeader";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
+import MembershipSection from "../components/sections/MembershipSection/MembershipSection";
+import FinalCTA from "../components/sections/FinalCTA/FinalCTA";
+
 const QueIncluyePage: React.FC = () => {
     return (
         <div className="min-h-screen bg-linen flex flex-col">
@@ -32,19 +35,11 @@ const QueIncluyePage: React.FC = () => {
             />
 
             <main className="flex-1">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-                    <SectionHeader
-                        title="Qué incluye la membresía"
-                        subtitle="Descubre todos los beneficios y contenidos exclusivos de Dharma en Ruta"
-                        align="center"
-                    />
+                {/* Reutilizamos la sección de membresía que ya detalla qué incluye */}
+                <MembershipSection />
 
-                    <div className="mt-12 text-center text-asparragus">
-                        <p className="text-lg">
-                            Esta página está en construcción. Pronto tendrás información detallada sobre la membresía.
-                        </p>
-                    </div>
-                </div>
+                {/* Añadimos CTA final para cerrar la página */}
+                <FinalCTA />
             </main>
         </div>
     );
