@@ -95,7 +95,7 @@ export default function DirectosPage() {
                     />
                 ) : (
                     <img
-                        src="/img/Backgrounds/background3.jpg"
+                        src="/img/Backgrounds/background4.jpg"
                         alt="Dharma en Ruta"
                         className="w-full h-full object-cover opacity-40"
                     />
@@ -120,15 +120,15 @@ export default function DirectosPage() {
 
             {/* Content */}
             <div className="p-5">
-                <h3 className="font-gotu text-lg text-asparragus mb-2 line-clamp-2">
+                <h3 className="font-serif text-lg text-stone-800 mb-2 line-clamp-2">
                     {event.title}
                 </h3>
 
-                <p className="text-sm text-asparragus/70 mb-3 line-clamp-2">
+                <p className="text-sm text-stone-600 mb-3 line-clamp-2">
                     {event.description}
                 </p>
 
-                <div className="space-y-2 text-sm text-asparragus/60">
+                <div className="space-y-2 text-sm text-stone-500">
                     <div className="flex items-center gap-2">
                         <FiCalendar className="w-4 h-4" />
                         <span className="capitalize">{formatDate(event.scheduled_at)}</span>
@@ -148,113 +148,92 @@ export default function DirectosPage() {
                     </div>
                 </div>
 
+                {/* CTA */}
                 <div className="mt-4 pt-4 border-t border-stone-100">
-                    <p className="text-sm text-asparragus/60">
-                        Con <span className="font-medium text-asparragus">{event.instructor}</span>
-                    </p>
+                    <span className="text-asparragus font-medium text-sm">
+                        {activeTab === 'upcoming' ? 'Ver detalles →' : 'Ver grabación →'}
+                    </span>
                 </div>
             </div>
         </Link>
     );
 
     return (
-        <div className="p-6 lg:p-8 space-y-6">
+        <div className="space-y-6">
             <Helmet>
                 <title>Directos | Dharma en Ruta</title>
             </Helmet>
 
             {/* Header */}
-            <div>
-                <h1 className="font-gotu text-3xl text-asparragus mb-2">Directos</h1>
-                <p className="text-asparragus/70">
-                    Sesiones en vivo con la comunidad
-                </p>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex gap-4 border-b border-stone-200">
-                <button
-                    onClick={() => setActiveTab('upcoming')}
-                    className={`pb-3 px-1 font-medium transition-colors relative ${activeTab === 'upcoming'
-                        ? 'text-gold'
-                        : 'text-asparragus/50 hover:text-asparragus/70'
-                        }`}
-                >
-                    Próximos
-                    {activeTab === 'upcoming' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold" />
-                    )}
-                </button>
-                <button
-                    onClick={() => setActiveTab('past')}
-                    className={`pb-3 px-1 font-medium transition-colors relative ${activeTab === 'past'
-                        ? 'text-gold'
-                        : 'text-asparragus/50 hover:text-asparragus/70'
-                        }`}
-                >
-                    Archivo
-                    {activeTab === 'past' && (
-                        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold" />
-                    )}
-                </button>
-            </div>
-
-            {/* Filter by area */}
-            <div>
-                <select
-                    value={selectedArea}
-                    onChange={(e) => setSelectedArea(e.target.value)}
-                    className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-asparragus focus:outline-none focus:ring-2 focus:ring-gold/20"
-                >
-                    <option value="">Todas las áreas</option>
-                    {Object.entries(areaNames).map(([key, name]) => (
-                        <option key={key} value={key}>{name}</option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Events grid */}
-            {loading ? (
-                <div className="flex items-center justify-center py-12">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gold"></div>
+            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <h1 className="font-serif text-2xl text-stone-800">Directos</h1>
+                        <p className="text-stone-500 text-sm">
+                            Sesiones en vivo con la comunidad
+                        </p>
+                    </div>
                 </div>
-            ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {activeTab === 'upcoming' ? (
-                        upcomingEvents.length > 0 ? (
-                            upcomingEvents.map(event => (
+
+                {/* Tabs */}
+                <div className="flex gap-2 border-b border-stone-200">
+                    <button
+                        onClick={() => setActiveTab('upcoming')}
+                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'upcoming'
+                            ? 'text-asparragus border-b-2 border-asparragus'
+                            : 'text-stone-500 hover:text-stone-700'
+                            }`}
+                    >
+                        Próximos ({upcomingEvents.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('past')}
+                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'past'
+                            ? 'text-asparragus border-b-2 border-asparragus'
+                            : 'text-stone-500 hover:text-stone-700'
+                            }`}
+                    >
+                        Grabaciones ({pastEvents.length})
+                    </button>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 pb-8">
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+                        {[1, 2, 3].map((n) => (
+                            <div key={n} className="bg-white rounded-xl h-80 shadow-sm"></div>
+                        ))}
+                    </div>
+                ) : activeTab === 'upcoming' ? (
+                    upcomingEvents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {upcomingEvents.map((event) => (
                                 <EventCard key={event.id} event={event} />
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center py-12">
-                                <FiCalendar className="w-16 h-16 text-gold/20 mx-auto mb-4" />
-                                <p className="text-asparragus/60 mb-2">
-                                    No hay eventos próximos
-                                </p>
-                                <p className="text-sm text-asparragus/50">
-                                    Vuelve pronto para ver nuevas sesiones
-                                </p>
-                            </div>
-                        )
+                            ))}
+                        </div>
                     ) : (
-                        pastEvents.length > 0 ? (
-                            pastEvents.map(event => (
+                        <div className="text-center py-12 bg-white rounded-2xl border border-stone-100 border-dashed">
+                            <FiCalendar className="mx-auto text-4xl text-stone-300 mb-4" />
+                            <p className="text-stone-500">No hay eventos próximos</p>
+                        </div>
+                    )
+                ) : (
+                    pastEvents.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {pastEvents.map((event) => (
                                 <EventCard key={event.id} event={event} />
-                            ))
-                        ) : (
-                            <div className="col-span-full text-center py-12">
-                                <FiPlay className="w-16 h-16 text-gold/20 mx-auto mb-4" />
-                                <p className="text-asparragus/60 mb-2">
-                                    No hay grabaciones disponibles
-                                </p>
-                                <p className="text-sm text-asparragus/50">
-                                    Las grabaciones de eventos pasados aparecerán aquí
-                                </p>
-                            </div>
-                        )
-                    )}
-                </div>
-            )}
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 bg-white rounded-2xl border border-stone-100 border-dashed">
+                            <FiPlay className="mx-auto text-4xl text-stone-300 mb-4" />
+                            <p className="text-stone-500">No hay grabaciones disponibles</p>
+                        </div>
+                    )
+                )}
+            </div>
         </div>
     );
 }

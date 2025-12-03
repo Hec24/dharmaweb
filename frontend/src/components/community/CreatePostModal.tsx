@@ -5,7 +5,7 @@ import { api } from '../../lib/api';
 
 interface CreatePostModalProps {
     onClose: () => void;
-    onPostCreated: () => void;
+    onSuccess: () => void;
 }
 
 const areaNames: Record<string, string> = {
@@ -19,7 +19,7 @@ const areaNames: Record<string, string> = {
     cuerpoplaceryconexion: 'Cuerpo y Placer',
 };
 
-export default function CreatePostModal({ onClose, onPostCreated }: CreatePostModalProps) {
+export default function CreatePostModal({ onClose, onSuccess }: CreatePostModalProps) {
     const [formData, setFormData] = useState({
         area: '',
         title: '',
@@ -40,7 +40,7 @@ export default function CreatePostModal({ onClose, onPostCreated }: CreatePostMo
         setSubmitting(true);
         try {
             await api.post('/community/posts', formData);
-            onPostCreated();
+            onSuccess();
             onClose();
         } catch (error: any) {
             console.error('[COMMUNITY] Error creating post:', error);
