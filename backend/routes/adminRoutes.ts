@@ -397,11 +397,39 @@ export async function debugEvents(req: Request, res: Response) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
+        // 1. Raw dump
         const result = await pool.query('SELECT * FROM live_events ORDER BY created_at DESC');
 
+        // 2. Simulate getUpcomingEvents query
+        const userId = '00000000-0000-0000-0000-000000000000';
+        const upcomingQuery = `
+            SELECT 
+                e.*,
+                COUNT(DISTINCT r.id) as attendees_count,
+                CASE 
+                    WHEN ur.id IS NOT NULL THEN true 
+                    ELSE false 
+                END as is_registered
+            FROM live_events e
+            LEFT JOIN event_registrations r ON e.id = r.event_id
+            LEFT JOIN event_registrations ur ON e.id = ur.event_id AND ur.user_id = $1
+            WHERE e.is_published = true 
+              AND e.scheduled_at > NOW()
+            GROUP BY e.id, ur.id
+            ORDER BY e.scheduled_at ASC
+        `;
+        const upcomingResult = await pool.query(upcomingQuery, [userId]);
+
+        // 3. Check DB time
+        const timeResult = await pool.query('SELECT NOW() as db_time');
+
         return res.json({
-            count: result.rows.length,
-            events: result.rows
+            serverTime: new Date().toISOString(),
+            dbTime: timeResult.rows[0].db_time,
+            totalCount: result.rows.length,
+            upcomingCount: upcomingResult.rows.length,
+            upcomingEvents: upcomingResult.rows,
+            allEvents: result.rows
         });
     } catch (error: any) {
         console.error('❌ Debug events error:', error);
