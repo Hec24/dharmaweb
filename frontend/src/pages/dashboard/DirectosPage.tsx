@@ -95,7 +95,7 @@ export default function DirectosPage() {
                     />
                 ) : (
                     <img
-                        src="/img/patrones/patron04.png"
+                        src="img/Backgrounds/background3.jpg"
                         alt="Dharma en Ruta"
                         className="w-full h-full object-cover opacity-40"
                     />
