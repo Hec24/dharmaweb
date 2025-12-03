@@ -384,13 +384,61 @@ import { createPortalSession } from './controllers/stripeController';
 
 app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
 
+// ========= Community (Comunidad) =========
+import {
+  getPosts,
+  getPostById,
+  createPost,
+  updatePost,
+  deletePost,
+  createComment,
+  updateComment,
+  deleteComment,
+  reportContent
+} from './controllers/communityController';
+
+app.get('/api/community/posts', authenticateToken, getPosts);
+app.get('/api/community/posts/:id', authenticateToken, getPostById);
+app.post('/api/community/posts', authenticateToken, createPost);
+app.put('/api/community/posts/:id', authenticateToken, updatePost);
+app.delete('/api/community/posts/:id', authenticateToken, deletePost);
+app.post('/api/community/posts/:id/comments', authenticateToken, createComment);
+app.put('/api/community/comments/:id', authenticateToken, updateComment);
+app.delete('/api/community/comments/:id', authenticateToken, deleteComment);
+app.post('/api/community/report', authenticateToken, reportContent);
+
 // ========= Admin Routes =========
-import { runMigration, debugReservations, clearReservations, setUserStatus } from './routes/adminRoutes';
+import {
+  runMigration,
+  debugReservations,
+  clearReservations,
+  setUserStatus,
+  migrateLiveEvents,
+  migrateCommunity,
+  seedEvents,
+  deleteEvent,
+  getReports,
+  reviewReport,
+  deletePostAdmin,
+  deleteCommentAdmin,
+  pinPost
+} from './routes/adminRoutes';
 
 app.post('/api/admin/migrate', runMigration);
 app.get('/api/admin/debug/reservations', debugReservations);
 app.delete('/api/admin/reservations', clearReservations);
 app.post('/api/admin/users/status', setUserStatus);
+app.post('/api/admin/migrate-live-events', migrateLiveEvents);
+app.post('/api/admin/migrate-community', migrateCommunity);
+app.post('/api/admin/seed-events', seedEvents);
+app.delete('/api/admin/live-events/:id', deleteEvent);
+
+// Community moderation
+app.get('/api/admin/community/reports', getReports);
+app.put('/api/admin/community/reports/:id', reviewReport);
+app.delete('/api/admin/community/posts/:id', deletePostAdmin);
+app.delete('/api/admin/community/comments/:id', deleteCommentAdmin);
+app.put('/api/admin/community/posts/:id/pin', pinPost);
 
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];

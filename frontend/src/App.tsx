@@ -37,6 +37,9 @@ import { DashboardLayout } from "./layouts/DashboardLayout";
 import ContenidosPage from "./pages/dashboard/ContenidosPage";
 import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
 import MisReservasPage from "./pages/dashboard/MisReservasPage";
+import DirectoDetailPage from "./pages/dashboard/DirectoDetailPage";
+import ComunidadPage from "./pages/dashboard/ComunidadPage";
+import PostDetailPage from "./pages/dashboard/PostDetailPage";
 import PerfilPage from "./pages/dashboard/PerfilPage";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
@@ -95,6 +98,9 @@ const router = createBrowserRouter([
       { index: true, element: <DashboardInicio /> },
       { path: "contenidos", element: <ContenidosPage /> },
       { path: "contenidos/:id", element: <VideoPlayerPage /> },
+      { path: "directos/:id", element: <DirectoDetailPage /> },
+      { path: "comunidad", element: <ComunidadPage /> },
+      { path: "comunidad/:postId", element: <PostDetailPage /> },
       { path: "reservas", element: <MisReservasPage /> },
       { path: "perfil", element: <PerfilPage /> },
     ],
