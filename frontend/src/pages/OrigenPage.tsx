@@ -6,6 +6,7 @@ import GenericNav from "../components/shared/GenericNav";
 import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 import SectionHeader from "../components/ui/SectionHeader";
 import ButtonLink from "../components/ui/ButtonLink";
+import { useAuth } from "../contexts/AuthContext";
 
 type OrigenPageProps = {
   heroBgSrc?: string;
@@ -42,6 +43,8 @@ export default function OrigenPage({
       url: "https://dharmaenruta.com/",
     },
   };
+
+  const { user } = useAuth();
 
   return (
     <>
@@ -328,18 +331,20 @@ export default function OrigenPage({
                   manera de vivir, y que puedes empezar a caminar hacia ella ahora.
                 </p>
               </div>
-              <div className="md:col-span-5 flex md:justify-start">
-                <ButtonLink
-                  as="a"
-                  size="md"
-                  variant="secondary"
-                  icon={<FiArrowRight aria-hidden />}
-                  href="https://dashboard.mailerlite.com/forms/779309/143072527599535592/share"
-                  className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-                >
-                  Da tu primer paso: Descarga Gratis tu Mapa del Dharma
-                </ButtonLink>
-              </div>
+              {!user && (
+                <div className="md:col-span-5 flex md:justify-start">
+                  <ButtonLink
+                    as="a"
+                    size="md"
+                    variant="secondary"
+                    icon={<FiArrowRight aria-hidden />}
+                    href="/register"
+                    className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  >
+                    Únete a la comunidad
+                  </ButtonLink>
+                </div>
+              )}
             </div>
           </div>
         </section>
