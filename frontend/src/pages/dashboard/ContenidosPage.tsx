@@ -82,9 +82,20 @@ const ContenidosPage: React.FC = () => {
                     <title>Biblioteca de Contenidos | Dharma en Ruta</title>
                 </Helmet>
 
-                <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                    <h1 className="font-serif text-2xl text-stone-800">Biblioteca de Contenidos</h1>
-                    <p className="text-stone-500 text-sm">Explora recursos para tu crecimiento</p>
+                <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100 relative overflow-hidden">
+                    {/* Background image with overlay */}
+                    <div
+                        className="absolute inset-0 opacity-10"
+                        style={{
+                            backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}
+                    />
+                    <div className="relative z-10">
+                        <h1 className="font-serif text-2xl text-stone-800 mb-2">Biblioteca de Contenidos</h1>
+                        <p className="text-stone-500 text-sm">Explora recursos para tu crecimiento</p>
+                    </div>
                 </div>
 
                 <div className="px-6 pb-8">
@@ -118,15 +129,25 @@ const ContenidosPage: React.FC = () => {
             </Helmet>
 
             {/* Header & Filters */}
-            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100 relative overflow-hidden">
+                {/* Background image with overlay */}
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                />
+
+                <div className="relative z-10 flex items-center justify-between">
                     <div>
-                        <h1 className="font-serif text-2xl text-stone-800">Biblioteca de Contenidos</h1>
+                        <h1 className="font-serif text-2xl text-stone-800 mb-2">Biblioteca de Contenidos</h1>
                         <p className="text-stone-500 text-sm">Explora recursos para tu crecimiento</p>
                     </div>
 
                     {/* Search */}
-                    <div className="relative w-full md:w-64">
+                    <div className="relative w-64">
                         <input
                             type="text"
                             placeholder="Buscar vídeo..."
@@ -137,26 +158,24 @@ const ContenidosPage: React.FC = () => {
                         <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
                     </div>
                 </div>
-
-                {/* Area Filters */}
-                <div className="flex flex-wrap gap-2">
-                    {areas.map((area) => (
-                        <button
-                            key={area.id}
-                            onClick={() => setSelectedArea(area.id)}
-                            className={`px-4 py-1.5 rounded-full text-sm transition-all ${selectedArea === area.id
-                                ? 'bg-asparragus text-white shadow-md'
-                                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                }`}
-                        >
-                            {area.label}
-                        </button>
-                    ))}
-                </div>
             </div>
 
             {/* Video Grid */}
             <div className="px-6 pb-8">
+                {/* Area Filter Dropdown */}
+                <div className="mb-6">
+                    <select
+                        value={selectedArea}
+                        onChange={(e) => setSelectedArea(e.target.value === 'all' ? '' : e.target.value)}
+                        className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus bg-white"
+                    >
+                        {areas.map((area) => (
+                            <option key={area.id} value={area.id === 'all' ? '' : area.id}>
+                                {area.label}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
                         {[1, 2, 3, 4, 5, 6].map((n) => (

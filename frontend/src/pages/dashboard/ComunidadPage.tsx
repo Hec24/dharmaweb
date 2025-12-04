@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { api } from '../../lib/api';
-import { FiMessageSquare, FiUser, FiClock, FiPlus, FiBook } from 'react-icons/fi';
+import { FiMessageSquare, FiUser, FiClock, FiPlus, FiBook, FiSearch } from 'react-icons/fi';
 import CreatePostModal from '../../components/community/CreatePostModal';
 import RecursosTab from '../../components/community/RecursosTab';
 
@@ -36,15 +36,28 @@ export default function ComunidadPage() {
     const [loading, setLoading] = useState(true);
     const [selectedArea, setSelectedArea] = useState<string>('');
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     useEffect(() => {
         fetchPosts();
-    }, [selectedArea]);
+    }, [selectedArea, debouncedSearch]);
 
     const fetchPosts = async () => {
         setLoading(true);
         try {
             const params = selectedArea ? { area: selectedArea } : {};
+            if (debouncedSearch) {
+                (params as any).search = debouncedSearch;
+            }
             const response = await api.get('/community/posts', { params });
             setPosts(response.data);
         } catch (error) {
@@ -128,86 +141,98 @@ export default function ComunidadPage() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <Helmet>
                 <title>Comunidad | Dharma en Ruta</title>
             </Helmet>
 
             {/* Header */}
-            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                <div className="flex items-start justify-between mb-6">
+            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100 relative overflow-hidden">
+                {/* Background image with overlay */}
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                />
+
+                <div className="relative z-10 flex items-center justify-between">
                     <div>
                         <h1 className="font-serif text-2xl text-stone-800 mb-2">Comunidad</h1>
                         <p className="text-stone-500 text-sm">
                             Conecta, comparte y aprende con otros miembros
                         </p>
                     </div>
-                    {activeTab === 'posts' && (
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
-                        >
-                            <FiPlus className="w-5 h-5" />
-                            Crear Post
-                        </button>
-                    )}
-                </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 border-b border-stone-200">
-                    <button
-                        onClick={() => setActiveTab('posts')}
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'posts'
-                            ? 'text-asparragus border-b-2 border-asparragus'
-                            : 'text-stone-500 hover:text-stone-700'
-                            }`}
-                    >
-                        <FiMessageSquare className="inline w-4 h-4 mr-2" />
-                        Conversaciones
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('recursos')}
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'recursos'
-                            ? 'text-asparragus border-b-2 border-asparragus'
-                            : 'text-stone-500 hover:text-stone-700'
-                            }`}
-                    >
-                        <FiBook className="inline w-4 h-4 mr-2" />
-                        Recursos
-                    </button>
+                    <div className="flex items-center gap-3">
+                        {/* Search */}
+                        <div className="relative w-64">
+                            <input
+                                type="text"
+                                placeholder="Buscar posts..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus text-sm"
+                            />
+                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                        </div>
+
+                        {activeTab === 'posts' && (
+                            <button
+                                onClick={() => setShowCreateModal(true)}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium whitespace-nowrap"
+                            >
+                                <FiPlus className="w-5 h-5" />
+                                Crear Post
+                            </button>
+                        )}
+                    </div>
                 </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-2 border-b border-stone-200">
+                <button
+                    onClick={() => setActiveTab('posts')}
+                    className={`px-6 py-3 font-medium transition-colors ${activeTab === 'posts'
+                        ? 'text-asparragus border-b-2 border-asparragus'
+                        : 'text-stone-500 hover:text-stone-700'
+                        }`}
+                >
+                    <FiMessageSquare className="inline w-4 h-4 mr-2" />
+                    Conversaciones
+                </button>
+                <button
+                    onClick={() => setActiveTab('recursos')}
+                    className={`px-6 py-3 font-medium transition-colors ${activeTab === 'recursos'
+                        ? 'text-asparragus border-b-2 border-asparragus'
+                        : 'text-stone-500 hover:text-stone-700'
+                        }`}
+                >
+                    <FiBook className="inline w-4 h-4 mr-2" />
+                    Recursos
+                </button>
             </div>
 
             {/* Content */}
             <div className="px-6 pb-8">
                 {activeTab === 'posts' ? (
                     <>
-                        {/* Area Filters */}
-                        {Object.keys(areaNames).length > 0 && (
-                            <div className="flex flex-wrap gap-2 mb-6">
-                                <button
-                                    onClick={() => setSelectedArea('')}
-                                    className={`px-4 py-1.5 rounded-full text-sm transition-all ${!selectedArea
-                                        ? 'bg-asparragus text-white shadow-md'
-                                        : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                        }`}
-                                >
-                                    Todas las áreas
-                                </button>
+                        {/* Area Filter Dropdown */}
+                        <div className="mb-6">
+                            <select
+                                value={selectedArea}
+                                onChange={(e) => setSelectedArea(e.target.value)}
+                                className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus bg-white"
+                            >
+                                <option value="">Todas las áreas</option>
                                 {Object.entries(areaNames).map(([key, name]) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => setSelectedArea(key)}
-                                        className={`px-4 py-1.5 rounded-full text-sm transition-all ${selectedArea === key
-                                            ? 'bg-asparragus text-white shadow-md'
-                                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
-                                            }`}
-                                    >
-                                        {name}
-                                    </button>
+                                    <option key={key} value={key}>{name}</option>
                                 ))}
-                            </div>
-                        )}
+                            </select>
+                        </div>
 
                         {/* Posts */}
                         {loading ? (

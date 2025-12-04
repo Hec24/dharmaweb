@@ -4,7 +4,7 @@ import pool from '../database/db';
 // Get upcoming events
 export async function getUpcomingEvents(req: Request, res: Response) {
     try {
-        const { area } = req.query;
+        const { area, search } = req.query;
         const userId = (req as any).userId; // From authenticateToken middleware
 
         let query = `
@@ -25,8 +25,13 @@ export async function getUpcomingEvents(req: Request, res: Response) {
         const params: any[] = [userId];
 
         if (area) {
-            query += ` AND e.area = $2`;
+            query += ` AND e.area = $${params.length + 1}`;
             params.push(area);
+        }
+
+        if (search) {
+            query += ` AND (LOWER(e.title) LIKE $${params.length + 1} OR LOWER(e.description) LIKE $${params.length + 1})`;
+            params.push(`%${(search as string).toLowerCase()}%`);
         }
 
         query += `
@@ -46,7 +51,7 @@ export async function getUpcomingEvents(req: Request, res: Response) {
 // Get past events with recordings
 export async function getPastEvents(req: Request, res: Response) {
     try {
-        const { area, limit = 20, offset = 0 } = req.query;
+        const { area, search, limit = 20, offset = 0 } = req.query;
 
         let query = `
             SELECT 
@@ -74,13 +79,19 @@ export async function getPastEvents(req: Request, res: Response) {
             paramIndex++;
         }
 
+        if (search) {
+            query += ` AND (LOWER(e.title) LIKE $${paramIndex} OR LOWER(e.description) LIKE $${paramIndex})`;
+            params.push(`%${(search as string).toLowerCase()}%`);
+            paramIndex++;
+        }
+
         query += `
             GROUP BY e.id
             ORDER BY e.scheduled_at DESC
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `;
 
-        params.push(limit, offset);
+        params.push(Number(limit), Number(offset));
 
         const result = await pool.query(query, params);
 

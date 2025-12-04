@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../contexts/AuthContext';
-import { FaCalendar, FaClock, FaUser, FaCheckCircle, FaTimesCircle, FaDownload } from 'react-icons/fa';
+import { FaCalendar, FaClock, FaUser, FaCheckCircle, FaTimesCircle, FaDownload, FaSearch } from 'react-icons/fa';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -28,10 +28,20 @@ const MisReservasPage: React.FC = () => {
     const [past, setPast] = useState<Reserva[]>([]);
     const [loading, setLoading] = useState(true);
     const [cancelling, setCancelling] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     useEffect(() => {
         fetchReservations();
-    }, [token]);
+    }, [token, debouncedSearch]);
 
     const fetchReservations = async () => {
         try {
@@ -43,8 +53,24 @@ const MisReservasPage: React.FC = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                setUpcoming(data.upcoming);
-                setPast(data.past);
+                let upcomingData = data.upcoming;
+                let pastData = data.past;
+
+                // Filter by search term if present
+                if (debouncedSearch) {
+                    const searchLower = debouncedSearch.toLowerCase();
+                    upcomingData = upcomingData.filter((r: Reserva) =>
+                        r.acompanante.toLowerCase().includes(searchLower) ||
+                        r.fecha.includes(searchLower)
+                    );
+                    pastData = pastData.filter((r: Reserva) =>
+                        r.acompanante.toLowerCase().includes(searchLower) ||
+                        r.fecha.includes(searchLower)
+                    );
+                }
+
+                setUpcoming(upcomingData);
+                setPast(pastData);
             }
         } catch (error) {
             console.error('Error fetching reservations:', error);
@@ -225,24 +251,49 @@ const MisReservasPage: React.FC = () => {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <Helmet>
                 <title>Mis Reservas | Dharma en Ruta</title>
             </Helmet>
 
             {/* Header */}
-            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                <div className="flex items-center justify-between">
+            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100 relative overflow-hidden">
+                {/* Background image with overlay */}
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                />
+
+                <div className="relative z-10 flex items-center justify-between">
                     <div>
                         <h1 className="font-serif text-2xl text-stone-800 mb-2">Mis Reservas</h1>
                         <p className="text-stone-500 text-sm">Gestiona tus sesiones de acompañamiento</p>
                     </div>
-                    <a
-                        href="/acompanamientos"
-                        className="px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
-                    >
-                        Nueva Reserva
-                    </a>
+
+                    <div className="flex items-center gap-3">
+                        {/* Search */}
+                        <div className="relative w-64">
+                            <input
+                                type="text"
+                                placeholder="Buscar reservas..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus text-sm"
+                            />
+                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={14} />
+                        </div>
+
+                        <a
+                            href="/acompanamientos"
+                            className="px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium whitespace-nowrap"
+                        >
+                            Nueva Reserva
+                        </a>
+                    </div>
                 </div>
             </div>
 

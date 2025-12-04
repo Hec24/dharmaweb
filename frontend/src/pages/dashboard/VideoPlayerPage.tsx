@@ -203,7 +203,7 @@ const VideoPlayerPage: React.FC = () => {
                     onClick={() => navigate('/dashboard/contenidos')}
                     className="mt-4 text-asparragus hover:underline"
                 >
-                    Volver a contenidos
+                    Volver a biblioteca
                 </button>
             </div>
         );
@@ -221,7 +221,7 @@ const VideoPlayerPage: React.FC = () => {
                 className="flex items-center gap-2 text-stone-600 hover:text-asparragus transition-colors"
             >
                 <FaArrowLeft />
-                <span>Volver a contenidos</span>
+                <span>Volver a biblioteca</span>
             </button>
 
             {/* Video Player */}

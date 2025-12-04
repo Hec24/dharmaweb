@@ -35,10 +35,20 @@ export default function DirectosPage() {
     const [pastEvents, setPastEvents] = useState<LiveEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedArea, setSelectedArea] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
     useEffect(() => {
         fetchEvents();
-    }, [activeTab, selectedArea]);
+    }, [activeTab, selectedArea, debouncedSearch]);
 
     const fetchEvents = async () => {
         setLoading(true);
@@ -48,6 +58,9 @@ export default function DirectosPage() {
                 : '/live-events/past';
 
             const params = selectedArea ? { area: selectedArea } : {};
+            if (debouncedSearch) {
+                (params as any).search = debouncedSearch;
+            }
             const response = await api.get(endpoint, { params });
 
             if (activeTab === 'upcoming') {
@@ -95,7 +108,7 @@ export default function DirectosPage() {
                     />
                 ) : (
                     <img
-                        src="/img/Backgrounds/background4.jpg"
+                        src="/img/Backgrounds/background2.jpg"
                         alt="Dharma en Ruta"
                         className="w-full h-full object-cover opacity-40"
                     />
@@ -159,47 +172,83 @@ export default function DirectosPage() {
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8">
             <Helmet>
                 <title>Directos | Dharma en Ruta</title>
             </Helmet>
 
             {/* Header */}
-            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="bg-white p-6 rounded-t-none rounded-b-2xl shadow-sm border border-stone-100 relative overflow-hidden">
+                {/* Background image with overlay */}
+                <div
+                    className="absolute inset-0 opacity-10"
+                    style={{
+                        backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                    }}
+                />
+
+                <div className="relative z-10 flex items-center justify-between">
                     <div>
-                        <h1 className="font-serif text-2xl text-stone-800">Directos</h1>
+                        <h1 className="font-serif text-2xl text-stone-800 mb-2">Directos</h1>
                         <p className="text-stone-500 text-sm">
                             Sesiones en vivo con la comunidad
                         </p>
                     </div>
-                </div>
 
-                {/* Tabs */}
-                <div className="flex gap-2 border-b border-stone-200">
-                    <button
-                        onClick={() => setActiveTab('upcoming')}
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'upcoming'
-                            ? 'text-asparragus border-b-2 border-asparragus'
-                            : 'text-stone-500 hover:text-stone-700'
-                            }`}
-                    >
-                        Próximos ({upcomingEvents.length})
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('past')}
-                        className={`px-6 py-3 font-medium transition-colors ${activeTab === 'past'
-                            ? 'text-asparragus border-b-2 border-asparragus'
-                            : 'text-stone-500 hover:text-stone-700'
-                            }`}
-                    >
-                        Grabaciones ({pastEvents.length})
-                    </button>
+                    {/* Search */}
+                    <div className="relative w-64">
+                        <input
+                            type="text"
+                            placeholder="Buscar directos..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus text-sm"
+                        />
+                        <FiCalendar className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+                    </div>
                 </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-2 border-b border-stone-200">
+                <button
+                    onClick={() => setActiveTab('upcoming')}
+                    className={`px-6 py-3 font-medium transition-colors ${activeTab === 'upcoming'
+                        ? 'text-asparragus border-b-2 border-asparragus'
+                        : 'text-stone-500 hover:text-stone-700'
+                        }`}
+                >
+                    Próximos ({upcomingEvents.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('past')}
+                    className={`px-6 py-3 font-medium transition-colors ${activeTab === 'past'
+                        ? 'text-asparragus border-b-2 border-asparragus'
+                        : 'text-stone-500 hover:text-stone-700'
+                        }`}
+                >
+                    Grabaciones ({pastEvents.length})
+                </button>
             </div>
 
             {/* Content */}
             <div className="px-6 pb-8">
+                {/* Area Filter Dropdown */}
+                <div className="mb-6">
+                    <select
+                        value={selectedArea}
+                        onChange={(e) => setSelectedArea(e.target.value)}
+                        className="px-4 py-2 border border-stone-200 rounded-lg text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-asparragus/20 focus:border-asparragus bg-white"
+                    >
+                        <option value="">Todas las áreas</option>
+                        {Object.entries(areaNames).map(([key, name]) => (
+                            <option key={key} value={key}>{name}</option>
+                        ))}
+                    </select>
+                </div>
+
                 {loading ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
                         {[1, 2, 3].map((n) => (
