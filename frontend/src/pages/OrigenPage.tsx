@@ -338,7 +338,7 @@ export default function OrigenPage({
                     size="md"
                     variant="secondary"
                     icon={<FiArrowRight aria-hidden />}
-                    href="/register"
+                    href="/registro"
                     className="focus-visible:ring-2 focus-visible:ring-raw focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
                     Únete a la comunidad
