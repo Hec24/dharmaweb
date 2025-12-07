@@ -996,3 +996,27 @@ app.get("/api/ocupados", (req: Request, res: Response) => {
   const out = items.map(r => ({ fecha: r.fecha, hora: r.hora }));
   return res.json({ ocupados: out });
 });
+
+// ========= MVP Purchase Routes =========
+import {
+  createMVPCheckout,
+  handleMVPPurchaseSuccess,
+  createAccountFromMVP,
+  activateMVPMemberships,
+  handleStripeWebhook as handleMVPWebhook
+} from './controllers/mvpController';
+
+// Create Stripe Checkout for MVP purchase
+app.post('/api/mvp/checkout', createMVPCheckout);
+
+// Handle successful MVP purchase (called after Stripe redirect)
+app.post('/api/mvp/purchase-success', handleMVPPurchaseSuccess);
+
+// Create user account after MVP purchase
+app.post('/api/mvp/create-account', createAccountFromMVP);
+
+// Activate memberships for MVP users (cron job for March 21)
+app.post('/api/membership/activate-mvp-members', activateMVPMemberships);
+
+// MVP Stripe webhook
+app.post('/api/mvp/webhook', express.raw({ type: 'application/json' }), handleMVPWebhook);
