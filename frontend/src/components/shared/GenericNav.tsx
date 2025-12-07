@@ -103,7 +103,7 @@ const GenericNav: React.FC<GenericNavProps> = ({
         {/* IMPORTANTE: ocultamos la barra móvil cuando el overlay está abierto */}
         {mobileMode !== "hidden" && (
           <div
-            className={`${mobileMenuOpen ? "hidden" : "flex"} lg:hidden z-[70] ${mobileMode === "logoOnly" ? "justify-center" : "justify-between"} items-center w-full rounded-xl px-3 py-2 ring-1 ring-black/5 ${mobileBg}`}
+            className={`${mobileMenuOpen ? "hidden" : "flex"} xl:hidden z-[70] ${mobileMode === "logoOnly" ? "justify-center" : "justify-between"} items-center w-full rounded-xl px-3 py-2 ring-1 ring-black/5 ${mobileBg}`}
           >
             <Link
               to="/"
@@ -139,7 +139,7 @@ const GenericNav: React.FC<GenericNavProps> = ({
 
         {/* ===================== DESKTOP ===================== */}
         <div
-          className={`hidden lg:flex ${wrapperBg} rounded-2xl ${barHeight} md:h-20 items-center mx-auto ${presetToClass(barWidth)}`}
+          className={`hidden xl:flex ${wrapperBg} rounded-2xl ${barHeight} md:h-20 items-center mx-auto ${presetToClass(barWidth)}`}
           role="navigation"
         >
           <div className="grid grid-cols-[1fr_auto_1fr] items-center w-full px-6">

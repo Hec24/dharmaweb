@@ -206,7 +206,7 @@ export default function AreaPage() {
                             className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-medium text-white border border-white/20 transition hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                           >
                             <FiUserPlus aria-hidden className="h-4 w-4" />
-                            <span>{isOpen ? "Quiero unirme: Registro" : "Unirme a la lista de espera"}</span>
+                            <span>{isOpen ? "Quiero unirme: Registro" : "Unirme a la lista prioritaria"}</span>
                           </ButtonLink>
                         </>
                       )}
