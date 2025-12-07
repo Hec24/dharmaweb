@@ -71,7 +71,7 @@ export const HeroContent: React.FC = () => {
                                 Únete a la lista de espera
                             </ButtonLink>
                             <p className="text-xs text-black/80 bg-white/30 backdrop-blur px-3 py-1.5 rounded-full font-medium">
-                                Próxima apertura: {formatDate(nextOpeningDate)}
+                                Próxima apertura: 21 de marzo de 2026
                             </p>
                         </div>
                     )}
@@ -79,10 +79,7 @@ export const HeroContent: React.FC = () => {
                 {/* Párrafos combinados - Sin fondo, responsive */}
                 <div className="w-full max-w-2xl px-2">
                     <p className="font-degular text-base sm:text-lg md:text-xl lg:text-2xl font-medium text-black leading-relaxed text-center">
-                        Yoga, autoconocimiento y vida consciente
-                        <span className="hidden sm:inline mx-2">•</span>
-                        <span className="block sm:inline mt-1 sm:mt-0"></span>
-                        Comunidad y acompañamiento para vivir con libertad
+                        Una Escuela Nómada para Vivir con Libertad y Coherencia
                     </p>
                 </div>
             </div>

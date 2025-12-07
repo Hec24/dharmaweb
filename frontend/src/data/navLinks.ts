@@ -4,7 +4,7 @@ export const leftLinks = [
 ];
 
 export const rightLinks = [
-  { label: "Lista de Espera", href: "/lista-espera" },
+  { label: "Lista Prioritaria", href: "/lista-espera" },
   { label: "Qué incluye", href: "/que-incluye" },
   { label: "Acceder", href: "/login", highlighted: true },
 ];
@@ -21,7 +21,7 @@ export const areas = [
 ];
 
 export const acercaLinks = [
-  { label: "Quiénes somos", href: "/origen" },
+  { label: "Historia de la Escuela", href: "/origen" },
   { label: "Equipo", href: "/equipo" },
   { label: "Blog", href: "https://patriciaholisticyoga.com/estudio-autoconocimiento-yoga-online/" },
   { label: "Testimonios", href: "/testimonios" },
