@@ -1,6 +1,6 @@
 // src/pages/AreaPage.tsx
 import { useEffect, useId } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { FiLogIn, FiUserPlus, FiVideo, FiMic, FiCalendar } from "react-icons/fi";
 
@@ -22,6 +22,14 @@ export default function AreaPage() {
   const cardHeadingId = useId();
   const { isOpen } = useMembershipStatus();
   const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect logged-in users to dashboard biblioteca with area filter
+  useEffect(() => {
+    if (user && area) {
+      navigate(`/dashboard/biblioteca?area=${area.nombre}`);
+    }
+  }, [user, area, navigate]);
 
   useEffect(() => {
     if (area) trackListView(slug);
