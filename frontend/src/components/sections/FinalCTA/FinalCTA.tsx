@@ -39,15 +39,29 @@ const FinalCTA: React.FC = () => {
     return (
         <section
             id="cta-final"
-            className="relative bg-raw-100"
+            className="relative isolate"
             aria-labelledby="cta-heading"
         >
+            {/* Background base */}
+            <div className="absolute inset-0 -z-20 bg-linen" aria-hidden />
+
+            {/* Background image */}
             <div
                 aria-hidden
-                className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/10 to-transparent"
+                className="absolute inset-0 -z-10 opacity-35"
+                style={{
+                    backgroundImage: 'url(/img/Backgrounds/endingPicture.jpg)',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
             />
 
-            <div className="max-w-5xl mx-auto text-center px-4 sm:px-6 py-12 md:py-16">
+            <div
+                aria-hidden
+                className="pointer-events-none absolute top-0 left-0 right-0 h-6 md:h-7 bg-gradient-to-b from-black/10 to-transparent z-10"
+            />
+
+            <div className="relative max-w-5xl mx-auto text-center px-4 sm:px-6 py-12 md:py-16">
                 <SectionHeader
                     id="cta-heading"
                     title={isOpen ? "¿Lista para dar el paso?" : "Únete cuando abramos puertas"}
@@ -83,7 +97,7 @@ const FinalCTA: React.FC = () => {
 
             <div
                 aria-hidden
-                className="h-px w-full bg-gradient-to-r from-transparent via-black/10 to-transparent"
+                className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-black/10 to-transparent z-10"
             />
         </section>
     );

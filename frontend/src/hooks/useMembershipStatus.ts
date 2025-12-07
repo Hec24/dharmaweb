@@ -10,8 +10,8 @@ interface MembershipStatus {
 export const useMembershipStatus = () => {
     const [status, setStatus] = useState<MembershipStatus>({
         isOpen: false,
-        nextOpeningDate: "2025-01-15",
-        currentPeriod: "Q1 2025",
+        nextOpeningDate: "2026-03-21",
+        currentPeriod: "Q1 2026",
     });
     const [loading, setLoading] = useState(true);
 
@@ -28,8 +28,8 @@ export const useMembershipStatus = () => {
                 // Por ahora, usar valores por defecto (inscripción cerrada)
                 setStatus({
                     isOpen: false,
-                    nextOpeningDate: "2025-01-15",
-                    currentPeriod: "Q1 2025",
+                    nextOpeningDate: "2026-03-21",
+                    currentPeriod: "Q1 2026",
                 });
             } catch (error) {
                 console.error("Failed to fetch membership status:", error);

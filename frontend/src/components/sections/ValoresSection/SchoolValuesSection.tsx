@@ -59,12 +59,11 @@ export default function SchoolValuesSection({
       {/* Patrón de imagen de fondo */}
       <div
         aria-hidden
-        className="absolute inset-0 -z-10 opacity-10"
+        className="absolute inset-0 -z-10 opacity-25"
         style={{
           backgroundImage: `url('${bgSrc}')`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          filter: "grayscale(100%)",
         }}
       />
 

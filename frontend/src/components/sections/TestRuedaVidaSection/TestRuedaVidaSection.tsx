@@ -32,7 +32,7 @@ const TestRuedaVidaSection: React.FC = () => {
 
                 <div className="mt-10 grid md:grid-cols-2 gap-8 lg:gap-12 items-center">
                     {/* Imagen/Mockup del libro */}
-                    <div className="order-2 md:order-1">
+                    <div className="order-1 md:order-1">
                         <div className="relative rounded-2xl overflow-hidden shadow-xl">
                             <img
                                 src="/img/test-rueda-mockup.png"
@@ -48,7 +48,7 @@ const TestRuedaVidaSection: React.FC = () => {
                     </div>
 
                     {/* Beneficios + CTA */}
-                    <div className="order-1 md:order-2 space-y-6">
+                    <div className="order-2 md:order-2 space-y-6">
                         <h3 className="font-gotu text-2xl md:text-3xl text-asparragus">
                             ¿Qué incluye?
                         </h3>
