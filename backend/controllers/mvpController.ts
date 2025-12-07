@@ -6,7 +6,7 @@ import Stripe from 'stripe';
 import { Pool } from 'pg';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2024-12-18.acacia',
+    // apiVersion will use the default from the installed package
 });
 
 const pool = new Pool({
@@ -228,24 +228,27 @@ export async function activateMVPMemberships(req: Request, res: Response) {
                 );
 
                 // Create subscription with first payment
+                // First create a product
+                const product = await stripe.products.create({
+                    name: 'Membresía Dharma en Ruta - Trimestral',
+                    description: 'Acceso completo a todos los contenidos y comunidad',
+                });
+
+                // Then create a price for that product
+                const price = await stripe.prices.create({
+                    product: product.id,
+                    currency: 'eur',
+                    unit_amount: discountedQuarterly,
+                    recurring: {
+                        interval: 'month',
+                        interval_count: 3,
+                    },
+                });
+
+                // Finally create the subscription
                 const subscription = await stripe.subscriptions.create({
                     customer: user.stripe_customer_id,
-                    items: [
-                        {
-                            price_data: {
-                                currency: 'eur',
-                                product_data: {
-                                    name: 'Membresía Dharma en Ruta - Trimestral',
-                                    description: 'Acceso completo a todos los contenidos y comunidad',
-                                },
-                                unit_amount: discountedQuarterly,
-                                recurring: {
-                                    interval: 'month',
-                                    interval_count: 3, // Every 3 months
-                                },
-                            },
-                        },
-                    ],
+                    items: [{ price: price.id }],
                     metadata: {
                         user_id: user.id,
                         mvp_discount_applied: 'true',
