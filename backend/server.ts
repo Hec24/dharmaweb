@@ -398,6 +398,13 @@ app.delete('/api/live-events/:id/unregister', authenticateToken, unregisterFromE
 
 // ========= Stripe Customer Portal =========
 import { createPortalSession } from './controllers/stripeController';
+import {
+  createMVPCheckout,
+  handleMVPPurchaseSuccess,
+  createAccountFromMVP,
+  activateMVPMemberships,
+  handleStripeWebhook as handleMVPWebhook
+} from './controllers/mvpController';
 
 app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
 
@@ -998,14 +1005,6 @@ app.get("/api/ocupados", (req: Request, res: Response) => {
 });
 
 // ========= MVP Purchase Routes =========
-import {
-  createMVPCheckout,
-  handleMVPPurchaseSuccess,
-  createAccountFromMVP,
-  activateMVPMemberships,
-  handleStripeWebhook as handleMVPWebhook
-} from './controllers/mvpController';
-
 // Create Stripe Checkout for MVP purchase
 app.post('/api/mvp/checkout', createMVPCheckout);
 
