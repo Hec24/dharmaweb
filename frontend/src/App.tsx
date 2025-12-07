@@ -33,6 +33,11 @@ const ListaEsperaPage = lazy(() => import("./pages/ListaEsperaPage"));
 const TestRuedaVidaPage = lazy(() => import("./pages/TestRuedaVidaPage"));
 const TestConfirmacionPage = lazy(() => import("./pages/TestConfirmacionPage"));
 
+// MVP pages
+const MVPPurchasePage = lazy(() => import("./pages/MVPPurchasePage"));
+const MVPSuccessPage = lazy(() => import("./pages/MVPSuccessPage"));
+const MVPCreateAccountPage = lazy(() => import("./pages/MVPCreateAccountPage"));
+
 // Dashboard pages
 const DashboardInicio = lazy(() => import("./pages/dashboard/DashboardInicio"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
@@ -100,6 +105,11 @@ const router = createBrowserRouter([
       { path: "lista-espera", element: <ListaEsperaPage /> },
       { path: "test-rueda-vida", element: <TestRuedaVidaPage /> },
       { path: "test-confirmacion", element: <TestConfirmacionPage /> },
+
+      // MVP Routes
+      { path: "/mvp", element: <MVPPurchasePage /> },
+      { path: "/mvp/success", element: <MVPSuccessPage /> },
+      { path: "/mvp/create-account", element: <MVPCreateAccountPage /> },
     ],
   },
   {
