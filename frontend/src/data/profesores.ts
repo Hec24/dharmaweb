@@ -1,7 +1,7 @@
 import { Profesor } from "./types";
-   
-   
-   export const profesores: Profesor[] = [
+
+
+export const profesores: Profesor[] = [
   {
     id: 1,
     name: "Patricia Pérez",
@@ -10,53 +10,38 @@ import { Profesor } from "./types";
     specialties: ["Crecimiento personal", "Sanación emocional", "Mindfulness"],
     image: "/img/Team/compressed/Paty.webp",
     calendlyLink: "https://calendly.com/dharma-en-ruta/patricia",
-    testimonial: "Más de 500 personas acompañadas en sus procesos de crecimiento",
-    approach: "Enfoque integrativo cuerpo-mente-espíritu",
-    link: "/profesores/patricia-perez",
-    acompananteEmail: "patriciaperezvicente1989@gmail.com "
-    
-    
+    acompananteEmail: "patriciaperezvicente1989@gmail.com"
   },
   {
     id: 2,
     name: "Raquel Lagoa",
-    title: "Maestro de Meditación",
+    title: "Maestra de Meditación",
     description: "¡Hola! Soy Raquel, instructora certificada en diversas tradiciones meditativas. Mi enfoque integra técnicas ancestrales con neurociencia moderna para ayudarte a cultivar paz mental y claridad. Juntos exploraremos prácticas adaptadas a tu ritmo de vida y necesidades personales.",
     specialties: ["Meditación Vipassana", "Mindfulness", "Reducción de estrés"],
-    image: "/img/Team/compressed/Raquel.webp",  
+    image: "/img/Team/compressed/Raquel.webp",
     calendlyLink: "https://calendly.com/dharma-en-ruta/raquel",
-    testimonial: "Especialista en adaptar prácticas milenarias al mundo moderno",
-    approach: "Método científico-espiritual para la paz mental",
-    link: "/profesores/raquel-lagoa",
-    acompananteEmail:"hector.24293@gmail.com"
+    acompananteEmail: "hector.24293@gmail.com"
   },
-   {
-      id: 3,
-      name: "Veronica",
-      title: "Maestra de Sexualidad y Relaciones",
-      description: "Soy Veronica, acompañante en procesos de despertar espiritual. Mi método combina sabiduría oriental y occidental, ayudándote a conectar con tu esencia y propósito. Trabajaremos con sueños, sincronicidades y prácticas contemplativas para tu evolución consciente.",
-      specialties: ["Despertar espiritual", "Interpretación de sueños", "Camino del alma"],
-      image: "/img/Team/compressed/Vero.webp",
-      calendlyLink: "https://calendly.com/dharma-en-ruta/veronica",
-      testimonial: "Especialista en adaptar prácticas milenarias al mundo moderno",
-      approach: "Método científico-espiritual para la paz mental",
-      link: "/profesores/veronica",
-      acompananteEmail:"hector@gmail.com"
-    },
-    {
-      id: 4,
-      name: "Guadalupe Fernández",
-      title: "Maestra de Astrología y Espiritualidad",
-      description: "Con más de 15 años de experiencia en terapias holísticas, te acompaño a liberar bloqueos energéticos y emocionales. Utilizo Reiki, registros akáshicos y técnicas chamánicas adaptadas al mundo moderno para restaurar tu equilibrio y vitalidad.",
-      specialties: ["Astrología", "Carta Natal", "Equilibrio energético"],
-      image: "/img/Team/compressed/guada2.webp",
-      calendlyLink: "https://calendly.com/dharma-en-ruta/guadalupe",
-      testimonial: "Especialista en adaptar prácticas milenarias al mundo moderno",
-      approach: "Método científico-espiritual para la paz mental",
-      link: "/profesores/guadalupe-fernandez",
-      acompananteEmail:"hector@gmail.com"
-    },
-
+  {
+    id: 3,
+    name: "Veronica",
+    title: "Sexóloga y Terapeuta de Pareja",
+    description: "Hola, soy Veronica. Acompaño a mujeres que, como tú, desean sentirse más conectadas con su cuerpo, su deseo y su placer. Lo hacemos en un espacio íntimo donde te sientas segura y puedas soltar el juicio y hablar con total libertad de lo que sientes, de lo que dudas y de lo que anhelas. Mi labor como sexóloga es caminar contigo: escucharte, sostenerte y ayudarte a descubrir tu forma única de vivir la sexualidad. No te daré respuestas prefabricadas; construiremos juntas un proceso personalizado que tenga sentido para ti, para tu ritmo y para tu historia. Me formé con un Máster en Sexología y Terapia de Pareja (Universidad Nebrija, 2020) y amplié mi mirada en cursos sobre energía sexual, erótica y placer. Si sientes que ha llegado el momento de escucharte, de entender tu deseo o de volver a reconocerte con tu cuerpo, te espero.",
+    specialties: ["Sexualidad femenina", "Deseo y placer", "Terapia de pareja"],
+    image: "/img/Team/compressed/Vero.webp",
+    calendlyLink: "https://calendly.com/dharma-en-ruta/veronica",
+    acompananteEmail: "hector@gmail.com"
+  },
+  {
+    id: 4,
+    name: "Guadalupe Fernández",
+    title: "Maestra de Astrología y Espiritualidad",
+    description: "Con más de 15 años de experiencia en terapias holísticas, te acompaño a liberar bloqueos energéticos y emocionales. Utilizo Reiki, registros akáshicos y técnicas chamánicas adaptadas al mundo moderno para restaurar tu equilibrio y vitalidad.",
+    specialties: ["Astrología", "Carta Natal", "Equilibrio energético"],
+    image: "/img/Team/compressed/guada2.webp",
+    calendlyLink: "https://calendly.com/dharma-en-ruta/guadalupe",
+    acompananteEmail: "hector@gmail.com"
+  },
   {
     id: 5,
     name: "Marina Romes",
@@ -65,11 +50,6 @@ import { Profesor } from "./types";
     specialties: ["Registros Akáshicos", "Limpieza energética", "Vidas pasadas"],
     image: "/img/Team/compressed/Marina.webp",
     calendlyLink: "https://calendly.com/dharma-en-ruta/marina",
-    testimonial: "Más de 500 personas acompañadas en sus procesos de crecimiento",
-    approach: "Enfoque integrativo cuerpo-mente-espíritu",
-    link: "/profesores/marina-romes",
-    acompananteEmail:"hect@gmail.com"
+    acompananteEmail: "hect@gmail.com"
   }
-  
-  // ... otros profesores
 ];

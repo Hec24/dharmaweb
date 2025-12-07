@@ -7,10 +7,6 @@ export interface Profesor {
   description?: string;
   specialties?: string[];
   calendlyLink: string;
-  testimonial?: string;
-  approach?: string;
-  link?: string;
-
 }
 export interface FormValues {
   nombre: string;
