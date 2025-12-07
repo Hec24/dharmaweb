@@ -1,4 +1,4 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import "./App.css";
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -6,45 +6,58 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { MainLayout } from "./layouts/MainLayout";
 import ScrollToTop from "./components/shared/ScrollToTop";
 
-import { LandingPage } from "./pages/LandingPage";
-import AcompañamientosPage from "./pages/AcompañamientosPage";
-import PagoDatos from "./pages/PagoDatos";
-import PasarelaPago from "./components/pago/PasarelaPago";
-import Gracias from "./components/pago/Gracias";
-import AreaPage from "./pages/AreaPage";
-import CursosPage from "./pages/CursosPage";
-import ComingSoonPage from "./pages/ComingSoonPage";
-import EditarReservaPage from "./pages/EditarReservaPage";
-import TuTestimonioPage from "./pages/TuTestimonioPage";
-import FaqsPage from "./pages/FaqsPage";
-import TerminosPage from "./pages/TerminosPage";
-import PoliticaPrivacidadPage from "./pages/PoliticaPrivacidadPage";
-import AvisoLegalPage from "./pages/AvisoLegalPage";
-import CookiesPage from "./pages/CookiesPage";
-import OrigenPage from "./pages/OrigenPage";
+// Lazy load all pages for code splitting
+const LandingPage = lazy(() => import("./pages/LandingPage").then(m => ({ default: m.LandingPage })));
+const AcompañamientosPage = lazy(() => import("./pages/AcompañamientosPage"));
+const PagoDatos = lazy(() => import("./pages/PagoDatos"));
+const PasarelaPago = lazy(() => import("./components/pago/PasarelaPago"));
+const Gracias = lazy(() => import("./components/pago/Gracias"));
+const AreaPage = lazy(() => import("./pages/AreaPage"));
+const CursosPage = lazy(() => import("./pages/CursosPage"));
+const ComingSoonPage = lazy(() => import("./pages/ComingSoonPage"));
+const EditarReservaPage = lazy(() => import("./pages/EditarReservaPage"));
+const TuTestimonioPage = lazy(() => import("./pages/TuTestimonioPage"));
+const FaqsPage = lazy(() => import("./pages/FaqsPage"));
+const TerminosPage = lazy(() => import("./pages/TerminosPage"));
+const PoliticaPrivacidadPage = lazy(() => import("./pages/PoliticaPrivacidadPage"));
+const AvisoLegalPage = lazy(() => import("./pages/AvisoLegalPage"));
+const CookiesPage = lazy(() => import("./pages/CookiesPage"));
+const OrigenPage = lazy(() => import("./pages/OrigenPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
+const TestimoniosPage = lazy(() => import("./pages/TestimoniosPage"));
+const EquipoPage = lazy(() => import("./pages/EquipoPage"));
+const MembershipRegisterPage = lazy(() => import("./pages/MembershipRegisterPage"));
+const MembershipLoginPage = lazy(() => import("./pages/MembershipLoginPage"));
+const QueIncluyePage = lazy(() => import("./pages/QueIncluyePage"));
+const ListaEsperaPage = lazy(() => import("./pages/ListaEsperaPage"));
+const TestRuedaVidaPage = lazy(() => import("./pages/TestRuedaVidaPage"));
+const TestConfirmacionPage = lazy(() => import("./pages/TestConfirmacionPage"));
+
+// Dashboard pages
+const DashboardInicio = lazy(() => import("./pages/dashboard/DashboardInicio"));
+const DashboardLayout = lazy(() => import("./layouts/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
+const ContenidosPage = lazy(() => import("./pages/dashboard/ContenidosPage"));
+const VideoPlayerPage = lazy(() => import("./pages/dashboard/VideoPlayerPage"));
+const MisReservasPage = lazy(() => import("./pages/dashboard/MisReservasPage"));
+const DirectoDetailPage = lazy(() => import("./pages/dashboard/DirectoDetailPage"));
+const ComunidadPage = lazy(() => import("./pages/dashboard/ComunidadPage"));
+const PostDetailPage = lazy(() => import("./pages/dashboard/PostDetailPage"));
+const PerfilPage = lazy(() => import("./pages/dashboard/PerfilPage"));
+const DirectosPage = lazy(() => import("./pages/dashboard/DirectosPage"));
+
+// Keep these as regular imports (small, needed immediately)
 import PrewarmBackend from "./components/PrewarmBackend";
-import ContactPage from "./pages/ContactPage"
-import TestimoniosPage from "./pages/TestimoniosPage";
-import EquipoPage from "./pages/EquipoPage";
-import MembershipRegisterPage from "./pages/MembershipRegisterPage";
-import MembershipLoginPage from "./pages/MembershipLoginPage";
-import QueIncluyePage from "./pages/QueIncluyePage";
-import ListaEsperaPage from "./pages/ListaEsperaPage";
-import TestRuedaVidaPage from "./pages/TestRuedaVidaPage";
-import TestConfirmacionPage from "./pages/TestConfirmacionPage";
-import DashboardInicio from "./pages/dashboard/DashboardInicio";
-import { DashboardLayout } from "./layouts/DashboardLayout";
-import ContenidosPage from "./pages/dashboard/ContenidosPage";
-import VideoPlayerPage from "./pages/dashboard/VideoPlayerPage";
-import MisReservasPage from "./pages/dashboard/MisReservasPage";
-import DirectoDetailPage from "./pages/dashboard/DirectoDetailPage";
-import ComunidadPage from "./pages/dashboard/ComunidadPage";
-import PostDetailPage from "./pages/dashboard/PostDetailPage";
-import PerfilPage from "./pages/dashboard/PerfilPage";
-import DirectosPage from "./pages/dashboard/DirectosPage";
-import DirectoDetailPage from "./pages/dashboard/DirectoDetailPage";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-linen">
+    <div className="text-center">
+      <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-asparragus border-r-transparent"></div>
+      <p className="mt-4 text-stone-600 font-degular">Cargando...</p>
+    </div>
+  </div>
+);
 
 // ✅ Wrapper raíz que monta ScrollToTop + MainLayout
 function RootWithScroll() {
@@ -113,7 +126,9 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => (
   <AuthProvider>
-    <RouterProvider router={router} />
+    <Suspense fallback={<PageLoader />}>
+      <RouterProvider router={router} />
+    </Suspense>
   </AuthProvider>
 );
 

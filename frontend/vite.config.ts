@@ -15,4 +15,19 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split React vendor code
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Split icon libraries
+          'icons': ['react-icons/fi', 'react-icons/fa', 'react-icons/lu'],
+          // Split Helmet
+          'helmet': ['react-helmet-async'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600, // Increase warning limit slightly
+  },
 })
