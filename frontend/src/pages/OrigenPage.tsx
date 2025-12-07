@@ -15,11 +15,11 @@ type OrigenPageProps = {
 };
 
 export default function OrigenPage({
-  heroBgSrc = "/img/Backgrounds/background5.jpg",
+  heroBgSrc = "/img/Backgrounds/tinified/background5.jpg",
   coverImageSrc = "/img/Team/patytest.webp",
   coverImageAlt = "Pat en su furgoneta junto a Thelma y Louise, en ruta",
 }: OrigenPageProps) {
-  const bgSrc = "/img/Backgrounds/background4.jpg";
+  const bgSrc = "/img/Backgrounds/tinified/background4.jpg";
 
   // SEO
   const seoTitle = "Nuestro Origen | Dharma en Ruta";

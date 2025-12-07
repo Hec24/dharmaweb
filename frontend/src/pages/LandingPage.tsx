@@ -104,7 +104,7 @@ export const LandingPage: React.FC = () => {
 
       {/* Hero with content */}
       <LandingHeader
-        bgImage="/img/TestPics/fondoheading.jpg"
+        bgImage="/img/Backgrounds/tinified/fondoheading.jpg"
         align="bottom"
         nav={
           <GenericNav

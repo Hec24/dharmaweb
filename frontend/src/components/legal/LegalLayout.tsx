@@ -46,7 +46,7 @@ export default function LegalLayout({
       </Helmet>
 
       <Header
-        bgImage="/img/Backgrounds/background5.jpg"
+        bgImage="/img/Backgrounds/tinified/background5.jpg"
         align="center"
         nav={
           <GenericNav

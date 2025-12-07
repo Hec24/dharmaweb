@@ -156,7 +156,7 @@ export default function ContactPage() {
         aria-labelledby="contact-hero-title"
       >
         <img
-          src="/img/Backgrounds/background5.jpg"
+          src="/img/Backgrounds/tinified/background5.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover"
           aria-hidden

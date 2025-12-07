@@ -14,8 +14,8 @@ import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 
 type ProfesorItem = (typeof profesores)[number];
 
-const heroBgSrc = "/img/Backgrounds/background5.jpg";
-const panelPatternSrc = "/img/Backgrounds/background4.jpg";
+const heroBgSrc = "/img/Backgrounds/tinified/background5.jpg";
+const panelPatternSrc = "/img/Backgrounds/tinified/background4.jpg";
 
 function Tag({ children }: { children: string }) {
   return (

@@ -8,7 +8,7 @@ import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 import { FiTool, FiArrowRight } from "react-icons/fi";
 
 // Puedes cambiar esta imagen si quieres un hero específico:
-const HERO_BG = "/img/Backgrounds/background5.jpg";
+const HERO_BG = "/img/Backgrounds/tinified/background5.jpg";
 
 const ComingSoonPage: React.FC = () => {
   return (

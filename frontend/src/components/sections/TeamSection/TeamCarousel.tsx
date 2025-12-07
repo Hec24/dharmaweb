@@ -55,7 +55,7 @@ const TeamCarousel: React.FC = () => {
               before:absolute before:inset-0 before:rounded-3xl
             "
             style={{
-              backgroundImage: "url('/img/Backgrounds/background2.jpg')",
+              backgroundImage: "url('/img/Backgrounds/tinified/background2.jpg')",
               backgroundRepeat: "repeat",
               backgroundSize: "320px",
               backgroundPosition: "center",

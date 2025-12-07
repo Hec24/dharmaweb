@@ -50,7 +50,7 @@ const FinalCTA: React.FC = () => {
                 aria-hidden
                 className="absolute inset-0 -z-10 opacity-35"
                 style={{
-                    backgroundImage: 'url(/img/Backgrounds/endingPicture.jpg)',
+                    backgroundImage: 'url(/img/Backgrounds/endingPic.png)',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                 }}

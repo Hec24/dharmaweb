@@ -34,7 +34,7 @@ export default function SchoolValuesSection({
   className = "",
   title = "¿Qué nos diferencia?",
   subtitle = "Nuestros valores guían cada decisión y experiencia en la escuela.",
-  bgSrc = "/img/Backgrounds/hero-new.jpg", // Usando la imagen del hero como patrón
+  bgSrc = "/img/Backgrounds/tinified/fondoheading.jpg", // Usando la imagen del hero como patrón
 }: {
   id?: string;
   className?: string;

@@ -4,7 +4,7 @@ import GenericNav from "../components/shared/GenericNav";
 import ReservaWizard from "../components/reservas/ReservaWizard";
 import { Helmet} from "react-helmet-async"
 
-const HERO_IMG = "/img/Backgrounds/background5.jpg"; // ajusta la ruta si quieres
+const HERO_IMG = "/img/Backgrounds/tinified/background5.jpg"; // ajusta la ruta si quieres
 
 export default function EditarReservaPage() {
   const { id: reservaId } = useParams<{ id: string }>();

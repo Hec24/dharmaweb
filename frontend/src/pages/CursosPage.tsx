@@ -99,7 +99,7 @@ export default function CursosPage() {
   const seoDesc =
     "Explora el catálogo de cursos: yoga, anatomía aplicada, meditación y vida consciente. Filtra por área y temática para encontrar tu próxima formación.";
   const canonical = "https://dharmaenruta.com/cursos";
-  const heroImg = "/img/Backgrounds/background5.jpg";
+  const heroImg = "/img/Backgrounds/tinified/background5.jpg";
 
   // Schema.org - ItemList para el catálogo de cursos
   const COURSES_ITEMLIST_SCHEMA = {

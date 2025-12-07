@@ -87,7 +87,7 @@ const ContenidosPage: React.FC = () => {
                     <div
                         className="absolute inset-0 opacity-10"
                         style={{
-                            backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                            backgroundImage: 'url(/img/Backgrounds/tinified/background4.jpg)',
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                         }}
@@ -134,7 +134,7 @@ const ContenidosPage: React.FC = () => {
                 <div
                     className="absolute inset-0 opacity-10"
                     style={{
-                        backgroundImage: 'url(/img/Backgrounds/background4.jpg)',
+                        backgroundImage: 'url(/img/Backgrounds/tinified/background4.jpg)',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center'
                     }}
