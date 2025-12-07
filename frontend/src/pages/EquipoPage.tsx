@@ -15,7 +15,6 @@ import { areas, leftLinks, rightLinks, acercaLinks } from "../data/navLinks";
 type ProfesorItem = (typeof profesores)[number];
 
 const heroBgSrc = "/img/Backgrounds/tinified/background5.jpg";
-const panelPatternSrc = "/img/Backgrounds/tinified/background4.jpg";
 
 function Tag({ children }: { children: string }) {
   return (
@@ -30,91 +29,54 @@ function ProfileRow({ p }: { p: ProfesorItem }) {
 
   return (
     <article
-      className="group relative isolate overflow-hidden rounded-3xl ring-1 ring-black/5 bg-linen shadow-sm"
+      className="group relative isolate overflow-hidden rounded-3xl ring-1 ring-black/5 bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
       aria-labelledby={titleId}
       role="listitem"
     >
-      {/* Altura generosa del bloque para dar presencia a imagen y patrón */}
-      <div
-        className="
-          flex flex-col md:flex-row md:items-stretch
-          min-h-[34rem] sm:min-h-[38rem] md:min-h-[44rem] lg:min-h-[48rem]
-        "
-      >
-        {/* Imagen 3:4 con presencia en móvil; 45%/55% en desktop */}
-        <div className="relative h-[22rem] sm:h-[24rem] md:h-auto md:w-1/2 lg:w-[45%]">
-          <img
-            src={p.image}
-            alt={p.name}
-            className="absolute inset-0 h-full w-full object-cover object-center md:rounded-l-3xl"
-            loading="lazy"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"
-          />
+      <div className="flex flex-col md:flex-row md:items-center p-6 sm:p-8 md:p-10 gap-6 md:gap-8">
+        {/* Avatar Circular */}
+        <div className="flex-shrink-0 mx-auto md:mx-0">
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56">
+            <img
+              src={p.image}
+              alt={p.name}
+              className="absolute inset-0 w-full h-full rounded-full object-cover object-center ring-4 ring-linen shadow-lg"
+              loading="lazy"
+            />
+            {/* Subtle gradient overlay for depth */}
+            <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent via-transparent to-black/5" />
+          </div>
         </div>
 
-        {/* Panel informativo en vertical: contenido arriba + patrón abajo */}
-        <div className="relative bg-white md:w-1/2 lg:w-[55%] overflow-hidden md:rounded-r-3xl">
-          <div className="flex h-full flex-col">
-            {/* Contenido (arriba) */}
-            <div className="flex-0 p-6 sm:p-8 md:p-10 text-raw">
-              <header className="mb-2">
-                <h3
-                  id={titleId}
-                  className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw"
-                >
-                  {p.name}
-                </h3>
-                {p.title && (
-                  <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular">
-                    {p.title}
-                  </p>
-                )}
-              </header>
-
-              {p.description && (
-                <p className="mt-3 text-sm md:text-base text-raw/85 leading-relaxed font-degular">
-                  {p.description}
-                </p>
-              )}
-
-              {p.specialties && p.specialties.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {p.specialties.map((s) => (
-                    <Tag key={`${p.id}-${s}`}>{s}</Tag>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Patrón (abajo). Solo en desktop para no recargar móvil */}
-            <div
-              className="
-                relative hidden md:block
-                basis-[45%] grow
-              "
-              aria-hidden
+        {/* Info */}
+        <div className="flex-1 text-center md:text-left text-raw">
+          <header className="mb-3">
+            <h3
+              id={titleId}
+              className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw"
             >
-              {/* Separador hairline entre contenido y patrón */}
-              <div className="absolute -top-px left-0 right-0 h-px bg-black/10" />
-              {/* Fondo patrón ocupando todo el contenedor inferior */}
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `url('${panelPatternSrc}')`,
-                  backgroundRepeat: "repeat",
-                  backgroundSize: "320px",
-                  backgroundPosition: "center",
-                  opacity: 0.45,
-                  filter: "saturate(0.9)",
-                }}
-              />
-              {/* Velo sutil por si hay imágenes con mucho contraste */}
-              <div className="absolute inset-0 bg-white/10" />
+              {p.name}
+            </h3>
+            {p.title && (
+              <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular mt-1">
+                {p.title}
+              </p>
+            )}
+          </header>
+
+          {p.description && (
+            <p className="mt-3 text-sm md:text-base text-raw/85 leading-relaxed font-degular">
+              {p.description}
+            </p>
+          )}
+
+          {p.specialties && p.specialties.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+              {p.specialties.map((s) => (
+                <Tag key={`${p.id}-${s}`}>{s}</Tag>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
     </article>

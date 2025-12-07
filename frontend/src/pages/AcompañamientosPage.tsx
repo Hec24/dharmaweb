@@ -27,7 +27,7 @@ function Tag({ children }: { children: string }) {
   );
 }
 
-// ——— Card horizontal profesional: foto 3:4 + cuadro blanco + CTA Agendar
+// ——— Card horizontal profesional: avatar circular + cuadro blanco + CTA Agendar
 function ProfileRow({
   p,
   onAgendar,
@@ -38,30 +38,33 @@ function ProfileRow({
   const titleId = React.useId();
   return (
     <article
-      className="group relative isolate rounded-3xl overflow-hidden ring-1 ring-black/5 bg-linen shadow-sm"
+      className="group relative isolate rounded-3xl overflow-hidden ring-1 ring-black/5 bg-white shadow-sm hover:shadow-md transition-shadow duration-300"
       aria-labelledby={titleId}
       role="listitem"
     >
-      <div className="flex flex-col md:flex-row md:items-stretch md:min-h-[22rem]">
-        {/* Imagen 3:4 uniforme */}
-        <div className="relative md:w-1/2 lg:w-[45%] aspect-[3/4] md:aspect-auto">
-          <img
-            src={p.image}
-            alt={p.name}
-            className="absolute inset-0 h-full w-full object-cover object-center md:rounded-l-3xl"
-            loading="lazy"
-          />
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+      <div className="flex flex-col md:flex-row md:items-center p-6 sm:p-8 md:p-10 gap-6 md:gap-8">
+        {/* Avatar Circular */}
+        <div className="flex-shrink-0 mx-auto md:mx-0">
+          <div className="relative w-40 h-40 sm:w-48 sm:h-48 md:w-56 md:h-56">
+            <img
+              src={p.image}
+              alt={p.name}
+              className="absolute inset-0 w-full h-full rounded-full object-cover object-center ring-4 ring-linen shadow-lg"
+              loading="lazy"
+            />
+            {/* Subtle gradient overlay for depth */}
+            <div aria-hidden className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent via-transparent to-black/5" />
+          </div>
         </div>
 
-        {/* Cuadro blanco con info + CTA */}
-        <div className="relative bg-white md:w-1/2 lg:w-[55%] flex flex-col justify-center p-6 sm:p-8 md:p-10 text-raw">
-          <header className="mb-2">
+        {/* Info + CTA */}
+        <div className="flex-1 text-center md:text-left text-raw">
+          <header className="mb-3">
             <h3 id={titleId} className="font-gotu text-2xl sm:text-3xl md:text-4xl leading-tight text-raw">
               {p.name}
             </h3>
             {p.title && (
-              <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular">
+              <p className="text-asparragus/80 text-sm md:text-base font-semibold font-degular mt-1">
                 {p.title}
               </p>
             )}
@@ -74,14 +77,14 @@ function ProfileRow({
           )}
 
           {p.specialties && p.specialties.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
               {p.specialties.map((s) => (
                 <Tag key={`${p.id}-${s}`}>{s}</Tag>
               ))}
             </div>
           )}
 
-          <div className="mt-5">
+          <div className="mt-5 flex justify-center md:justify-start">
             <ButtonLink
               as="button"
               size="md"
