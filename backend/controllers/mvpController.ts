@@ -347,3 +347,74 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         res.status(400).send(`Webhook Error: ${error.message}`);
     }
 }
+}
+
+// Temporary migration endpoint for production
+export async function runMigrationManually(req: Request, res: Response) {
+    const secret = req.query.secret;
+    // Simple protection using webhook secret
+    if (!process.env.STRIPE_WEBHOOK_SECRET || secret !== process.env.STRIPE_WEBHOOK_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const sql = `
+        -- Create MVP purchases table
+        CREATE TABLE IF NOT EXISTS mvp_purchases (
+            purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            email VARCHAR(255) NOT NULL,
+            stripe_customer_id VARCHAR(255),
+            stripe_payment_intent_id VARCHAR(255),
+            amount INTEGER NOT NULL, -- in cents
+            currency VARCHAR(10) DEFAULT 'eur',
+            status VARCHAR(50) DEFAULT 'completed',
+            has_account BOOLEAN DEFAULT FALSE,
+            user_id INTEGER REFERENCES users(id),
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            offer_type VARCHAR(50) DEFAULT 'mvp_access'
+        );
+
+        -- Add columns to users table if they don't exist
+        DO $$
+        BEGIN
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_customer_id') THEN
+                ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(255);
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'has_mvp_access') THEN
+                ALTER TABLE users ADD COLUMN has_mvp_access BOOLEAN DEFAULT FALSE;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'mvp_discount_applied') THEN
+                ALTER TABLE users ADD COLUMN mvp_discount_applied BOOLEAN DEFAULT FALSE;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'subscription_interval') THEN
+                ALTER TABLE users ADD COLUMN subscription_interval VARCHAR(20) DEFAULT 'none'; -- 'monthly', 'quarterly', 'biannual'
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'users' AND column_name = 'stripe_subscription_id') THEN
+                ALTER TABLE users ADD COLUMN stripe_subscription_id VARCHAR(255);
+            END IF;
+        END $$;
+
+        -- Create payment history table
+        CREATE TABLE IF NOT EXISTS payment_history (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            stripe_invoice_id VARCHAR(255),
+            amount INTEGER,
+            currency VARCHAR(10),
+            status VARCHAR(50),
+            payment_type VARCHAR(50), -- 'mvp', 'subscription', 'one_time'
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+        `;
+
+        await pool.query(sql);
+        res.json({ success: true, message: 'Migration executed successfully via SQL string' });
+    } catch (error: any) {
+        console.error('Migration failed:', error);
+        res.status(500).json({ error: error.message });
+    }
+}

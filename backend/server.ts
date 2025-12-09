@@ -1017,5 +1017,8 @@ app.post('/api/mvp/create-account', createAccountFromMVP);
 // Activate memberships for MVP users (cron job for March 21)
 app.post('/api/membership/activate-mvp-members', activateMVPMemberships);
 
+// Manual migration endpoint (Protected)
+app.get('/api/mvp/run-migration', runMigrationManually);
+
 // MVP Stripe webhook
 app.post('/api/mvp/webhook', express.raw({ type: 'application/json' }), handleMVPWebhook);
