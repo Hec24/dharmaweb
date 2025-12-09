@@ -3,14 +3,10 @@
 
 import { Request, Response } from 'express';
 import Stripe from 'stripe';
-import { Pool } from 'pg';
+import pool from '../database/db';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     // apiVersion will use the default from the installed package
-});
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
 });
 
 // Prices (in cents) - TODO: Move to environment variables

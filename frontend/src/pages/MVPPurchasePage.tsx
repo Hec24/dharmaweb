@@ -1,7 +1,6 @@
 // MVP Purchase Page
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate } from 'react-router-dom';
 import GenericNav from '../components/shared/GenericNav';
 import SectionHeader from '../components/ui/SectionHeader';
 import ButtonLink from '../components/ui/ButtonLink';
@@ -12,7 +11,6 @@ import { areas, leftLinks, rightLinks, acercaLinks } from '../data/navLinks';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 const MVPPurchasePage: React.FC = () => {
-    const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -238,6 +236,7 @@ const MVPPurchasePage: React.FC = () => {
                                     loading={loading}
                                     disabled={loading}
                                     className="text-base sm:text-lg"
+                                    onClick={() => { }}
                                 >
                                     {loading ? 'Procesando...' : 'Obtener Acceso Anticipado - €29'}
                                 </ButtonLink>

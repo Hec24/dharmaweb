@@ -231,6 +231,7 @@ const MVPCreateAccountPage: React.FC = () => {
                                 fullWidth
                                 loading={loading}
                                 disabled={loading}
+                                onClick={() => { }}
                             >
                                 {loading ? 'Creando cuenta...' : 'Crear cuenta y acceder'}
                             </ButtonLink>

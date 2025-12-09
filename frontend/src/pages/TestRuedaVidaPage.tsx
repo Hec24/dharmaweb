@@ -4,7 +4,6 @@ import { Helmet } from "react-helmet-async";
 import { FiCheckCircle, FiDownload, FiBarChart2, FiMail } from "react-icons/fi";
 import ButtonLink from "../components/ui/ButtonLink";
 import GenericNav from "../components/shared/GenericNav";
-import Footer from "../components/shared/Footer";
 import { leftLinks, rightLinks, areas, acercaLinks } from "../data/navLinks";
 
 const TestRuedaVidaPage: React.FC = () => {
@@ -18,8 +17,8 @@ const TestRuedaVidaPage: React.FC = () => {
         setLoading(true);
 
         try {
-            const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
-            const response = await fetch(`${BACKEND_URL}/api/pagos/checkout-session-test`, {
+            const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+            const response = await fetch(`${BACKEND_URL}/api/mvp/checkout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
@@ -30,7 +29,11 @@ const TestRuedaVidaPage: React.FC = () => {
             }
 
             const { url } = await response.json();
-            window.location.href = url;
+            if (url) {
+                window.location.href = url;
+            } else {
+                throw new Error("No se recibió URL de pago");
+            }
         } catch (err) {
             setError("Hubo un error al procesar tu solicitud. Por favor, inténtalo de nuevo.");
             setLoading(false);
@@ -159,14 +162,18 @@ const TestRuedaVidaPage: React.FC = () => {
                                 </ul>
                             </div>
 
-                            {/* Card de compra */}
                             <div className="bg-white/80 backdrop-blur border border-raw/10 rounded-2xl p-6 shadow-lg">
                                 <div className="flex items-baseline gap-3 mb-4">
-                                    <span className="text-4xl md:text-5xl font-gotu text-raw">14,90€</span>
-                                    <span className="text-sm text-raw/60 line-through">29,90€</span>
+                                    <span className="text-4xl md:text-5xl font-gotu text-raw">29€</span>
                                     <span className="ml-auto bg-gold/20 text-raw px-2 py-1 rounded text-xs font-medium">
-                                        -50%
+                                        Acceso Anticipado
                                     </span>
+                                </div>
+
+                                <div className="mb-4 p-3 bg-asparagus/5 rounded-lg border border-asparagus/20">
+                                    <p className="text-sm text-raw/80 font-degular">
+                                        <strong>Incluye:</strong> Test + PDF + Acceso anticipado a la membresía hasta el 21 de marzo + 20% descuento permanente
+                                    </p>
                                 </div>
 
                                 <form onSubmit={handlePurchase} className="space-y-4">
@@ -232,8 +239,6 @@ const TestRuedaVidaPage: React.FC = () => {
                     </ButtonLink>
                 </div>
             </section>
-
-            <Footer />
         </>
     );
 };

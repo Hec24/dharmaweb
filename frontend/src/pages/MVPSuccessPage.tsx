@@ -1,7 +1,7 @@
 // MVP Success Page - After Stripe payment
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import GenericNav from '../components/shared/GenericNav';
 import SectionHeader from '../components/ui/SectionHeader';
 import ButtonLink from '../components/ui/ButtonLink';
@@ -11,7 +11,6 @@ import { areas, leftLinks, rightLinks, acercaLinks } from '../data/navLinks';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 const MVPSuccessPage: React.FC = () => {
-    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const [processing, setProcessing] = useState(true);
     const [error, setError] = useState('');
@@ -19,7 +18,7 @@ const MVPSuccessPage: React.FC = () => {
 
     useEffect(() => {
         if (!sessionId) {
-            setError('No se encontró información de la compra');
+            setError('No se encontró información de la compra. Si acabas de pagar, por favor espera unos segundos y recarga la página.');
             setProcessing(false);
             return;
         }
@@ -35,14 +34,21 @@ const MVPSuccessPage: React.FC = () => {
                     body: JSON.stringify({ sessionId }),
                 });
 
+                const data = await response.json();
+
                 if (!response.ok) {
-                    throw new Error('Error al procesar la compra');
+                    throw new Error(data.error || 'Error al procesar la compra');
+                }
+
+                // Store email for account creation
+                if (data.email) {
+                    localStorage.setItem('mvp_email', data.email);
                 }
 
                 setProcessing(false);
             } catch (err: any) {
                 console.error('Error:', err);
-                setError(err.message || 'Ocurrió un error al procesar tu compra');
+                setError(err.message || 'Ocurrió un error al procesar tu compra. Por favor, contacta con soporte.');
                 setProcessing(false);
             }
         };
