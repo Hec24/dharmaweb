@@ -347,7 +347,6 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         res.status(400).send(`Webhook Error: ${error.message}`);
     }
 }
-}
 
 // Temporary migration endpoint for production
 export async function runMigrationManually(req: Request, res: Response) {
