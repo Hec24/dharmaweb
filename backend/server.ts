@@ -403,7 +403,8 @@ import {
   handleMVPPurchaseSuccess,
   createAccountFromMVP,
   activateMVPMemberships,
-  handleStripeWebhook as handleMVPWebhook
+  handleStripeWebhook as handleMVPWebhook,
+  runMigrationManually
 } from './controllers/mvpController';
 
 app.post('/api/stripe/create-portal-session', authenticateToken, createPortalSession);
