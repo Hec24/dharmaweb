@@ -10,7 +10,7 @@ import Input from '../components/ui/Input';
 import { FiAlertCircle } from 'react-icons/fi';
 import { areas, leftLinks, rightLinks, acercaLinks } from '../data/navLinks';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
 
 const MVPCreateAccountPage: React.FC = () => {
     const navigate = useNavigate();

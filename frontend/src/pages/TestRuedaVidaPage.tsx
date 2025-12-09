@@ -17,7 +17,7 @@ const TestRuedaVidaPage: React.FC = () => {
         setLoading(true);
 
         try {
-            const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+            const BACKEND_URL = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
             const response = await fetch(`${BACKEND_URL}/api/mvp/checkout`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
