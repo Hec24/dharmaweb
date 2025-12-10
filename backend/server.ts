@@ -1051,11 +1051,49 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
 });
 
 const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Servidor Express en puerto ${PORT}`);
   console.log("[GCAL] IMPERSONATED_USER:", process.env.GCAL_IMPERSONATED_USER || "(no definido)");
   console.log("[GCAL] CALENDAR_ID:", process.env.GCAL_CALENDAR_ID || "primary");
   console.log("[CORS] ORIGINS:", ORIGINS);
+
+  // 🔄 Hydrate memory cache from DB
+  try {
+    console.log("[INIT] Hydrating reservation cache from DB...");
+    const today = new Date().toISOString().split('T')[0];
+    // Traer futuras y recientes (p.ej. desde hoy o ayer) con estado pagada o pendiente
+    const res = await pool.query(
+      `SELECT * FROM reservations 
+       WHERE fecha >= $1 
+       AND estado IN ('pagada', 'pendiente')`,
+      [today]
+    );
+
+    res.rows.forEach(row => {
+      // Evitar duplicados si ya existen (aunque al inicio debería estar vacío)
+      if (!reservas.find(r => r.id === row.id)) {
+        reservas.push({
+          id: row.id,
+          nombre: row.nombre,
+          apellidos: row.apellidos,
+          email: row.email,
+          telefono: row.telefono,
+          acompanante: row.acompanante,
+          acompananteEmail: row.acompanante_email,
+          fecha: row.fecha,
+          hora: row.hora,
+          duracionMin: row.duracion_min,
+          estado: row.estado,
+          eventId: row.event_id,
+          // holdExpiresAt no se persiste en DB, asumimos undefined o re-calculamos si fuera crítico
+          // para este caso, solo nos interesa que ocupen slot.
+        });
+      }
+    });
+    console.log(`[INIT] Cache hydrated with ${res.rows.length} reservations.`);
+  } catch (err) {
+    console.error("[INIT] Failed to hydrate cache:", err);
+  }
 });
 
 // Slots ocupados (pagados o pendientes con hold) para un profe entre fechas
