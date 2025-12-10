@@ -361,7 +361,11 @@ Un abrazo,
               duracionMin: actualizada.duracionMin ?? 60,
             };
 
+            console.log("[WEBHOOK] Intentando crear evento en Calendar para reserva:", reservaId);
             const result = await upsertEvento(normalized) as { eventId?: string } | undefined;
+
+            console.log("[WEBHOOK] Resultado upsertEvento:", JSON.stringify(result));
+
             if (result?.eventId) {
               // Actualizar event_id en PostgreSQL
               await pool.query(
@@ -369,6 +373,9 @@ Un abrazo,
                 [result.eventId, reservaId]
               );
               updateReserva(actualizada.id, { eventId: result.eventId });
+              console.log("[WEBHOOK] Event ID guardado en DB:", result.eventId);
+            } else {
+              console.warn("[WEBHOOK] upsertEvento no devolvió eventId. Respuesta:", result);
             }
             console.log("[WEBHOOK] Reserva confirmada y evento Calendar ok:", {
               reservaId,
