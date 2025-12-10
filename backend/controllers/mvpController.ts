@@ -115,9 +115,9 @@ export async function handleMVPPurchaseSuccess(req: Request, res: Response) {
         // Save MVP purchase to database
         const result = await pool.query(
             `INSERT INTO mvp_purchases 
-       (email, stripe_customer_id, stripe_payment_intent_id, amount_paid, purchased_at)
+       (email, stripe_customer_id, stripe_payment_intent_id, amount, created_at)
        VALUES ($1, $2, $3, $4, NOW())
-       RETURNING id`,
+       RETURNING purchase_id`,
             [customer.email, customer.id, paymentIntent.id, session.amount_total]
         );
 
@@ -126,7 +126,7 @@ export async function handleMVPPurchaseSuccess(req: Request, res: Response) {
 
         res.json({
             success: true,
-            purchaseId: result.rows[0].id,
+            purchaseId: result.rows[0].purchase_id,
             email: customer.email,
             message: 'MVP purchase recorded successfully',
         });
@@ -150,7 +150,7 @@ export async function createAccountFromMVP(req: Request, res: Response) {
 
         // Check if MVP purchase exists
         const mvpPurchase = await pool.query(
-            'SELECT * FROM mvp_purchases WHERE email = $1 AND account_created = FALSE',
+            'SELECT * FROM mvp_purchases WHERE email = $1 AND has_account = FALSE',
             [email]
         );
 
@@ -177,8 +177,8 @@ export async function createAccountFromMVP(req: Request, res: Response) {
 
         // Update MVP purchase record
         await pool.query(
-            'UPDATE mvp_purchases SET account_created = TRUE, user_id = $1 WHERE id = $2',
-            [userId, purchase.id]
+            'UPDATE mvp_purchases SET has_account = TRUE, user_id = $1 WHERE purchase_id = $2',
+            [userId, purchase.purchase_id]
         );
 
         res.json({
