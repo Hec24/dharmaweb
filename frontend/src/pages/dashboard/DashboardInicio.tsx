@@ -107,9 +107,13 @@ export default function DashboardInicio() {
                     <div>
                         <h2 className="text-xl font-gotu mb-2">Estado de membresía</h2>
                         <p className="text-white/90 mb-4">
-                            {user?.membershipStatus === 'active' ? 'Tu membresía está activa' : 'Membresía inactiva'}
+                            {user?.membershipStatus === 'active'
+                                ? 'Tu membresía está activa'
+                                : user?.membershipStatus === 'mvp_only'
+                                    ? 'Acceso Anticipado (MVP) Activo'
+                                    : 'Membresía inactiva'}
                         </p>
-                        {user?.membershipStatus !== 'active' && (
+                        {user?.membershipStatus !== 'active' && user?.membershipStatus !== 'mvp_only' && (
                             <Link
                                 to="/registro"
                                 className="inline-block bg-white text-asparragus px-4 py-2 rounded-lg font-medium hover:bg-white/90 transition-colors"
@@ -117,10 +121,23 @@ export default function DashboardInicio() {
                                 Activar membresía
                             </Link>
                         )}
+                        {user?.membershipStatus === 'mvp_only' && (
+                            <p className="text-sm text-white/80">
+                                Disfruta de tu acceso anticipado. La suscripción completa comenzará el 21 de marzo de 2026.
+                            </p>
+                        )}
                     </div>
-                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${user?.membershipStatus === 'active' ? 'bg-green-500' : 'bg-white/20'
+                    <div className={`px-3 py-1 rounded-full text-sm font-medium ${user?.membershipStatus === 'active'
+                            ? 'bg-green-500'
+                            : user?.membershipStatus === 'mvp_only'
+                                ? 'bg-gold text-white'
+                                : 'bg-white/20'
                         }`}>
-                        {user?.membershipStatus === 'active' ? 'Activo' : 'Inactivo'}
+                        {user?.membershipStatus === 'active'
+                            ? 'Activo'
+                            : user?.membershipStatus === 'mvp_only'
+                                ? 'MVP / Anticipado'
+                                : 'Inactivo'}
                     </div>
                 </div>
             </div>
