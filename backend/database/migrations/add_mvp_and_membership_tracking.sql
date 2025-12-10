@@ -15,18 +15,17 @@ CREATE INDEX IF NOT EXISTS idx_users_stripe_subscription ON users(stripe_subscri
 
 -- Create table for MVP purchases (before account creation)
 CREATE TABLE IF NOT EXISTS mvp_purchases (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) NOT NULL,
-  stripe_customer_id VARCHAR(255) NOT NULL,
-  stripe_payment_intent_id VARCHAR(255),
-  amount_paid INTEGER NOT NULL, -- in cents
-  purchased_at TIMESTAMP DEFAULT NOW(),
-  account_created BOOLEAN DEFAULT FALSE,
-  user_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  membership_activated BOOLEAN DEFAULT FALSE,
-  membership_activation_date TIMESTAMP,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+    purchase_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email VARCHAR(255) NOT NULL,
+    stripe_customer_id VARCHAR(255),
+    stripe_payment_intent_id VARCHAR(255),
+    amount INTEGER NOT NULL, -- in cents
+    currency VARCHAR(10) DEFAULT 'eur',
+    status VARCHAR(50) DEFAULT 'completed',
+    has_account BOOLEAN DEFAULT FALSE,
+    user_id UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    offer_type VARCHAR(50) DEFAULT 'mvp_access'
 );
 
 CREATE INDEX IF NOT EXISTS idx_mvp_email ON mvp_purchases(email);

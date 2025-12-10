@@ -368,7 +368,7 @@ export async function runMigrationManually(req: Request, res: Response) {
             currency VARCHAR(10) DEFAULT 'eur',
             status VARCHAR(50) DEFAULT 'completed',
             has_account BOOLEAN DEFAULT FALSE,
-            user_id INTEGER REFERENCES users(id),
+            user_id UUID REFERENCES users(id),
             created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
             offer_type VARCHAR(50) DEFAULT 'mvp_access'
         );
@@ -400,7 +400,7 @@ export async function runMigrationManually(req: Request, res: Response) {
         -- Create payment history table
         CREATE TABLE IF NOT EXISTS payment_history (
             id SERIAL PRIMARY KEY,
-            user_id INTEGER REFERENCES users(id),
+            user_id UUID REFERENCES users(id),
             stripe_invoice_id VARCHAR(255),
             amount INTEGER,
             currency VARCHAR(10),
