@@ -253,8 +253,35 @@ Un abrazo,
               console.log("[WEBHOOK] Reconstituida reserva en memoria desde metadata:", reservaId);
             }
           }
+
+          // Fallback: Buscar en DB si no está en memoria
           if (!r) {
-            console.error("[WEBHOOK] Reserva no encontrada ni en metadata:", reservaId);
+            try {
+              const resDb = await pool.query('SELECT * FROM reservations WHERE id = $1', [reservaId]);
+              if (resDb.rows.length > 0) {
+                const row = resDb.rows[0];
+                r = ensureReservaInMemory({
+                  id: row.id,
+                  nombre: row.nombre,
+                  apellidos: row.apellidos,
+                  email: row.email,
+                  telefono: row.telefono,
+                  acompanante: row.acompanante,
+                  acompananteEmail: row.acompanante_email,
+                  fecha: row.fecha,
+                  hora: row.hora,
+                  duracionMin: row.duracion_min,
+                  estado: row.estado // Mantener estado actual (probablemente 'pendiente')
+                });
+                console.log("[WEBHOOK] Recuperada reserva desde DB:", reservaId);
+              }
+            } catch (dbErr) {
+              console.error("[WEBHOOK] Error buscando en DB:", dbErr);
+            }
+          }
+
+          if (!r) {
+            console.error("[WEBHOOK] Reserva no encontrada ni en memoria, ni metadata, ni DB:", reservaId);
             continue;
           }
 
