@@ -79,9 +79,11 @@ try {
 }
 
 // === Auth ===
-const auth = credentials
+const hasCredentials = credentials || process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+const auth = hasCredentials
   ? new GoogleAuth({
-    credentials,
+    credentials, // si es undefined, GoogleAuth busca en el env
     scopes: SCOPES,
     clientOptions: { subject: IMPERSONATED_USER },
   })

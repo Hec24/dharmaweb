@@ -262,12 +262,24 @@ Un abrazo,
           let userId: string | null = null;
           try {
             const userResult = await pool.query(
-              'SELECT id FROM users WHERE email = $1 LIMIT 1',
+              'SELECT id, stripe_customer_id FROM users WHERE email = $1 LIMIT 1',
               [r.email]
             );
             if (userResult.rows.length > 0) {
               userId = userResult.rows[0].id;
               console.log("[WEBHOOK] Usuario encontrado:", userId);
+
+              // ✅ NUEVO: Si el usuario no tiene stripe_customer_id, guárdalo ahora
+              const existingStripeId = userResult.rows[0].stripe_customer_id;
+              const sessionCustomerId = session.customer as string;
+
+              if (!existingStripeId && sessionCustomerId) {
+                await pool.query(
+                  'UPDATE users SET stripe_customer_id = $1 WHERE id = $2',
+                  [sessionCustomerId, userId]
+                );
+                console.log("[WEBHOOK] Guardado stripe_customer_id para usuario:", userId);
+              }
             }
           } catch (err) {
             console.error("[WEBHOOK] Error buscando usuario:", err);
@@ -791,17 +803,46 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     //   duracionMin: r.duracionMin ?? 60,
     // }));
 
-    const first = found[0]!;
+    // 7.1) Check for existing customer/user to save card
+    let customerId: string | undefined;
+    let setupFutureUsage: Stripe.Checkout.SessionCreateParams.PaymentIntentData.SetupFutureUsage | undefined;
+    const email = first.email;
+
+    // Try to find user by email to get their stripe_customer_id
+    try {
+      const userResult = await pool.query('SELECT stripe_customer_id FROM users WHERE email = $1', [email]);
+      if (userResult.rows.length > 0 && userResult.rows[0].stripe_customer_id) {
+        customerId = userResult.rows[0].stripe_customer_id;
+        setupFutureUsage = 'off_session'; // Save card for future reuse
+      } else {
+        // If not a registered user, we could create a customer, but typically we wait for registration.
+        // HOWEVER, for MVP/Reservations, we want to save it if possible.
+        // Let's create a customer if one doesn't exist to allow saving the card.
+        const customers = await stripe.customers.list({ email: email, limit: 1 });
+        if (customers.data.length > 0) {
+          customerId = customers.data[0].id;
+        } else {
+          const newCustomer = await stripe.customers.create({ email: email, name: `${first.nombre} ${first.apellidos}` });
+          customerId = newCustomer.id;
+        }
+        setupFutureUsage = 'off_session';
+      }
+    } catch (e) {
+      console.warn("Error looking up user for Stripe customer:", e);
+    }
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       locale: "es",
-      customer_email: first.email,
-      // NOTE: en APIs recientes no hace falta payment_method_types
+      customer: customerId, // If undefined, Stripe will collect email
+      customer_email: customerId ? undefined : first.email, // Can't set both
       line_items,
+      payment_intent_data: {
+        setup_future_usage: setupFutureUsage,
+      },
       success_url: `${FRONTEND_URL}/gracias?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${FRONTEND_URL}/pagoDatos/${ids[0]}?cancelled=1`,
       metadata: {
-        // ✅ deja solo esto (corto y suficiente para el webhook y /gracias)
         reservaIds: JSON.stringify(ids),
       },
     });

@@ -31,3 +31,6 @@ dist-ssr
 /node_modules
 /.vercel
 /frontend/.vercel
+
+# Credentials
+backend/credenciales/

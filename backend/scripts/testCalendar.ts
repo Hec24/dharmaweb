@@ -1,47 +1,17 @@
-import { google } from "googleapis";
-import { JWT } from "google-auth-library";
-import * as path from "path";
+import "dotenv/config"; // Load env before other imports
+import { _debugImpersonationAndAccess } from "../googleCalendar";
 
 async function main() {
-  const keyPath = path.resolve(__dirname, "../credenciales/dharmabookings-63805b9a99e5.json");
-  const credentials = require(keyPath);
-
-  // Tipamos GoogleAuth a JWT para mayor claridad
-  const auth = new google.auth.GoogleAuth<JWT>({
-    credentials,
-    scopes: [
-      "https://www.googleapis.com/auth/calendar",
-      "https://www.googleapis.com/auth/calendar.events",
-    ],
-    clientOptions: {
-      subject: "info@dharmaenruta.com", // impersonation (DWD)
-    },
-  });
-
-  // 👇 PASA *EL GoogleAuth*, no el cliente
-  google.options({ auth });
-
-  const calendar = google.calendar("v3");
-
-  const res = await calendar.events.insert({
-    calendarId: "primary",
-    sendUpdates: "all",
-    requestBody: {
-      summary: "Prueba DWD (auth global con GoogleAuth)",
-      start: { dateTime: "2025-09-22T17:00:00", timeZone: "Europe/Madrid" },
-      end:   { dateTime: "2025-09-22T18:00:00", timeZone: "Europe/Madrid" },
-      attendees: [{ email: "tuemail@ejemplo.com" }],
-      guestsCanInviteOthers: false,
-      guestsCanModify: false,
-      guestsCanSeeOtherGuests: false,
-      reminders: { useDefault: true },
-    },
-  });
-
-  console.log("OK →", res.data.htmlLink);
+  console.log("Testing Google Calendar Integration...");
+  const result = await _debugImpersonationAndAccess();
+  if (result.ok) {
+    console.log("SUCCESS! Connected to Calendar.");
+    console.log("Calendars found:", result.calendars?.length);
+    console.log("Target Calendar access:", "OK");
+  } else {
+    console.error("FAILURE:", result.error);
+    process.exit(1);
+  }
 }
 
-main().catch(e => {
-  console.error("Fallo:", e?.response?.data || e);
-  process.exit(1);
-});
+main().catch(console.error);
