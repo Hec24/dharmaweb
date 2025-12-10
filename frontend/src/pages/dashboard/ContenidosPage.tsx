@@ -74,8 +74,8 @@ const ContenidosPage: React.FC = () => {
 
     const { user } = useAuth();
 
-    // Si el usuario no tiene membresía activa, mostrar estado bloqueado
-    if (user?.membershipStatus !== 'active') {
+    // Si el usuario no tiene membresía activa ni acceso MVP, mostrar estado bloqueado
+    if (user?.membershipStatus !== 'active' && user?.membershipStatus !== 'mvp_only' && !user?.isMember) {
         return (
             <div className="space-y-8">
                 <Helmet>

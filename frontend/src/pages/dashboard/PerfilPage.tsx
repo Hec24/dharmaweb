@@ -340,8 +340,19 @@ export default function PerfilPage() {
                         <div>
                             <p className="text-sm text-asparragus/70 mb-1">Estado actual</p>
                             <p className="text-lg font-medium text-asparragus">
-                                {user?.membershipStatus === 'active' ? 'Membresía Activa' : 'Membresía Inactiva'}
+                                {user?.membershipStatus === 'active'
+                                    ? 'Membresía Activa'
+                                    : user?.membershipStatus === 'mvp_only'
+                                        ? 'Acceso Anticipado (MVP)'
+                                        : 'Membresía Inactiva'}
                             </p>
+                            {user?.membershipStatus === 'mvp_only' && (
+                                <p className="text-sm text-asparragus/60 mt-2">
+                                    Tu membresía completa se activará automáticamente el 21 de marzo de 2026.
+                                    <br />
+                                    <span className="font-medium text-asparragus/80">Método de pago:</span> Tarjeta guardada para futuro cargo.
+                                </p>
+                            )}
                             {user?.membershipStartDate && (
                                 <p className="text-sm text-asparragus/60 mt-2">
                                     Inicio: {new Date(user.membershipStartDate).toLocaleDateString('es-ES')}
@@ -354,14 +365,20 @@ export default function PerfilPage() {
                             )}
                         </div>
                         <div className={`px-4 py-2 rounded-full text-sm font-medium ${user?.membershipStatus === 'active'
-                            ? 'bg-green-500 text-white'
-                            : 'bg-gray-300 text-gray-700'
+                                ? 'bg-green-500 text-white'
+                                : user?.membershipStatus === 'mvp_only'
+                                    ? 'bg-gold text-white'
+                                    : 'bg-gray-300 text-gray-700'
                             }`}>
-                            {user?.membershipStatus === 'active' ? 'Activo' : 'Inactivo'}
+                            {user?.membershipStatus === 'active'
+                                ? 'Activo'
+                                : user?.membershipStatus === 'mvp_only'
+                                    ? 'MVP / Anticipado'
+                                    : 'Inactivo'}
                         </div>
                     </div>
 
-                    {user?.membershipStatus !== 'active' && (
+                    {user?.membershipStatus !== 'active' && user?.membershipStatus !== 'mvp_only' && (
                         <div className="mt-4">
                             <p className="text-sm text-asparragus/70 mb-3">
                                 Activa tu membresía para acceder a todo el contenido exclusivo
