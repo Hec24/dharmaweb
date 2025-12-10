@@ -804,6 +804,7 @@ app.post("/api/pagos/checkout-session", async (req: Request, res: Response) => {
     // }));
 
     // 7.1) Check for existing customer/user to save card
+    const first = found[0]!;
     let customerId: string | undefined;
     let setupFutureUsage: Stripe.Checkout.SessionCreateParams.PaymentIntentData.SetupFutureUsage | undefined;
     const email = first.email;
