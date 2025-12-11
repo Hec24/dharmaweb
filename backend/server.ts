@@ -1082,6 +1082,15 @@ app.delete("/api/debug/reservas/nuke", async (req, res) => {
   }
 });
 
+// 🔥 DEBUG: Version check
+app.get("/api/version", (req, res) => {
+  res.json({
+    version: "1.0.1",
+    deployedAt: new Date().toISOString(),
+    features: ["nuke", "auto-migration"]
+  });
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, async () => {
   console.log(`Servidor Express en puerto ${PORT}`);
@@ -1092,12 +1101,17 @@ app.listen(PORT, async () => {
   // 🔄 Hydrate memory cache from DB
   try {
     // 🔥 HOTFIX: Ensure table has columns (migration)
-    await pool.query(`
-      ALTER TABLE reservations
-      ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS precio_pagado NUMERIC(10, 2);
-    `);
-    console.log("[INIT] Database schema updated (columns check).");
+    // Wrap in its own try/catch so it doesn't block startup if fails
+    try {
+      await pool.query(`
+        ALTER TABLE reservations
+        ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS precio_pagado NUMERIC(10, 2);
+      `);
+      console.log("[INIT] Database schema updated (columns check).");
+    } catch (migErr: any) {
+      console.error("[INIT] Warning: Migration failed but continuing startup.", migErr.message);
+    }
 
     console.log("[INIT] Hydrating reservation cache from DB...");
     const today = new Date().toISOString().split('T')[0];
