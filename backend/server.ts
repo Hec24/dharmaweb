@@ -1041,21 +1041,33 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
   const r = getReserva(req.params.id);
   if (!r) return res.status(404).json({ error: "Reserva no encontrada." });
 
-  try {
-    await cancelarEvento({ reservaId: r.id, eventId: r.eventId, notify: true });
-  } catch (err: any) {
-    console.error("Error cancelando en Google Calendar:", err?.message || err);
-  }
-  // Delete from DB
-  try {
-    await pool.query('DELETE FROM reservations WHERE id = $1', [r.id]);
-  } catch (err: any) {
-    console.error("Error borrando reserva de DB:", err);
-    // Continue cleanup in memory even if DB fails (though unlikely)
-  }
+  const now = new Date();
+  const reservaDate = new Date(`${r.fecha}T${r.hora}`);
+  const hoursDiff = (reservaDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+  const canRefund = hoursDiff >= 24;
 
-  deleteReserva(r.id);
-  return res.json({ ok: true });
+  try {
+    // 1) Cancelar en Google Calendar
+    await cancelarEvento({ reservaId: r.id, eventId: r.eventId, notify: true });
+
+    // 2) Actualizar DB a 'cancelada' (mantener historial)
+    await pool.query(
+      "UPDATE reservations SET estado = 'cancelada', cancelled_at = NOW() WHERE id = $1",
+      [r.id]
+    );
+
+    // 3) Actualizar memoria
+    r.estado = "cancelada";
+    r.eventId = undefined; // Desvinculamos evento
+    // Nota: al ser 'cancelada', isSlotTaken devolverá false.
+
+    // 4) (TODO) Trigger refund in Stripe if canRefund
+
+    return res.json({ ok: true, canRefund });
+  } catch (err: any) {
+    console.error("Error cancelando reserva:", err?.message || err);
+    return res.status(500).json({ error: "Error interno al cancelar." });
+  }
 });
 
 const PORT = process.env.PORT || 4000;

@@ -94,7 +94,11 @@ const MisReservasPage: React.FC = () => {
             });
 
             if (response.ok) {
-                alert('Reserva cancelada correctamente. Se ha enviado la solicitud de reembolso si corresponde.');
+                const data = await response.json();
+                alert(data.canRefund
+                    ? 'Reserva cancelada. Se procesará el reembolso en 5-10 días hábiles.'
+                    : 'Reserva cancelada. No se aplicará reembolso (menos de 24h de antelación).'
+                );
                 fetchReservations(); // Refresh list
             } else {
                 const error = await response.json();
@@ -216,7 +220,7 @@ const MisReservasPage: React.FC = () => {
             </div>
 
             <div className="flex gap-2 pt-4 border-t border-stone-100">
-                {isUpcoming && reserva.estado === 'pagada' && (
+                {isUpcoming && reserva.estado?.toLowerCase() === 'pagada' && (
                     <>
                         <button
                             onClick={() => alert('Funcionalidad de reprogramar próximamente')}
@@ -234,6 +238,11 @@ const MisReservasPage: React.FC = () => {
                             {cancelling === reserva.id ? 'Cancelando...' : 'Cancelar'}
                         </button>
                     </>
+                )}
+                {isUpcoming && reserva.estado === 'pendiente' && (
+                    <span className="text-yellow-600 text-sm flex items-center">
+                        Pendiente de pago
+                    </span>
                 )}
                 <button
                     onClick={() => downloadICS(reserva)}
