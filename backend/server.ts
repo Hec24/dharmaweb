@@ -1079,6 +1079,14 @@ app.listen(PORT, async () => {
 
   // 🔄 Hydrate memory cache from DB
   try {
+    // 🔥 HOTFIX: Ensure table has columns (migration)
+    await pool.query(`
+      ALTER TABLE reservations
+      ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS precio_pagado NUMERIC(10, 2);
+    `);
+    console.log("[INIT] Database schema updated (columns check).");
+
     console.log("[INIT] Hydrating reservation cache from DB...");
     const today = new Date().toISOString().split('T')[0];
     // Traer futuras y recientes (p.ej. desde hoy o ayer) con estado pagada o pendiente
