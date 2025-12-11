@@ -1070,6 +1070,18 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
   }
 });
 
+// 🔥 DEBUG: Nuke reservations
+app.delete("/api/debug/reservas/nuke", async (req, res) => {
+  try {
+    await pool.query("DELETE FROM reservations");
+    reservas.length = 0; // Clear memory
+    console.log("[DEBUG] Reservations nuked!");
+    return res.json({ ok: true, message: "Reservations deleted" });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, async () => {
   console.log(`Servidor Express en puerto ${PORT}`);
