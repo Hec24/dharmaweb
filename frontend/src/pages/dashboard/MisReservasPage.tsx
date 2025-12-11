@@ -86,7 +86,7 @@ const MisReservasPage: React.FC = () => {
 
         setCancelling(id);
         try {
-            const response = await fetch(`${BACKEND_URL}/api/reservas/${id}/cancel`, {
+            const response = await fetch(`${BACKEND_URL}/api/reservas/${id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -94,11 +94,7 @@ const MisReservasPage: React.FC = () => {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                alert(data.canRefund
-                    ? 'Reserva cancelada. Se procesará el reembolso en 5-10 días hábiles.'
-                    : 'Reserva cancelada. No se aplicará reembolso (menos de 24h de antelación).'
-                );
+                alert('Reserva cancelada correctamente. Se ha enviado la solicitud de reembolso si corresponde.');
                 fetchReservations(); // Refresh list
             } else {
                 const error = await response.json();

@@ -101,12 +101,12 @@ function sumarMinutos(horaHHMM: string, minutos: number) {
   const d = new Date(2000, 0, 1, h ?? 0, (m ?? 0) + minutos);
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${hh}:${mm} `;
+  return `${hh}:${mm}`;
 }
 
 function toRFC3339(date: string, time: string) {
   const safeTime = /^\d{2}:\d{2}$/.test(time) ? `${time}:00` : time;
-  return `${date}T${safeTime} `;
+  return `${date}T${safeTime}`;
 }
 
 async function withBackoff<T>(fn: () => Promise<T>, tries = 5): Promise<T> {

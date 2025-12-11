@@ -1046,6 +1046,14 @@ app.delete("/api/reservas/:id", async (req: Request, res: Response) => {
   } catch (err: any) {
     console.error("Error cancelando en Google Calendar:", err?.message || err);
   }
+  // Delete from DB
+  try {
+    await pool.query('DELETE FROM reservations WHERE id = $1', [r.id]);
+  } catch (err: any) {
+    console.error("Error borrando reserva de DB:", err);
+    // Continue cleanup in memory even if DB fails (though unlikely)
+  }
+
   deleteReserva(r.id);
   return res.json({ ok: true });
 });
