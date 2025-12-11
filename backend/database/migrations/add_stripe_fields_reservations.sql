@@ -1,3 +1,0 @@
-ALTER TABLE reservations
-ADD COLUMN IF NOT EXISTS stripe_session_id VARCHAR(255),
-ADD COLUMN IF NOT EXISTS precio_pagado NUMERIC(10, 2);
