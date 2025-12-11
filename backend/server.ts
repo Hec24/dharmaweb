@@ -1001,7 +1001,8 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
   }
 
   // ✅ SOLO sincronizamos con Calendar si la reserva está pagada
-  if (actualizada.estado === "pagada" && (justPaid || relevantChanges)) {
+  // Eliminado check estricto (justPaid || relevantChanges) para asegurar que siempre devolvemos link
+  if (actualizada.estado === "pagada") {
     try {
       const normalized: Reserva & { eventId?: string } = {
         ...actualizada,
