@@ -37,6 +37,8 @@ const MisReservasPage: React.FC = () => {
     const [rescheduleTarget, setRescheduleTarget] = useState<Reserva | null>(null);
     const [newDate, setNewDate] = useState<{ fecha: string; hora: string } | null>(null);
     const [updating, setUpdating] = useState(false);
+    const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
+    const [rescheduleError, setRescheduleError] = useState<string | null>(null);
 
     // Debounce search
     useEffect(() => {
@@ -89,13 +91,23 @@ const MisReservasPage: React.FC = () => {
     const openReschedule = (reserva: Reserva) => {
         setRescheduleTarget(reserva);
         setNewDate(null);
+        setRescheduleSuccess(false);
+        setRescheduleError(null);
         setRescheduleModalOpen(true);
+    };
+
+    const closeRescheduleModal = () => {
+        setRescheduleModalOpen(false);
+        if (rescheduleSuccess) {
+            fetchReservations(); // Refresh only if successful
+        }
     };
 
     const confirmReschedule = async () => {
         if (!rescheduleTarget || !newDate) return;
 
         setUpdating(true);
+        setRescheduleError(null);
         try {
             const response = await fetch(`${BACKEND_URL}/api/reservas/${rescheduleTarget.id}`, {
                 method: 'PATCH',
@@ -110,21 +122,21 @@ const MisReservasPage: React.FC = () => {
             });
 
             if (response.ok) {
-                alert('¡Reserva reprogramada con éxito!\nSe ha actualizado tu calendario y enviado una notificación.');
-                setRescheduleModalOpen(false);
-                setRescheduleTarget(null);
-                fetchReservations();
+                setRescheduleSuccess(true);
+                setRescheduleError(null);
             } else {
                 const err = await response.json();
                 if (err.error === 'SLOT_TAKEN') {
-                    alert('Lo sentimos, ese horario ya no está disponible. Por favor elige otro.');
+                    setRescheduleError('Lo sentimos, ese horario ya no está disponible. Por favor elige otro.');
+                } else if (err.error === 'POLICY_VIOLATION') {
+                    setRescheduleError('No se puede reprogramar con menos de 24h de antelación.');
                 } else {
-                    alert(err.error || 'Error al reprogramar la reserva');
+                    setRescheduleError(err.message || 'Error al reprogramar la reserva');
                 }
             }
         } catch (error) {
             console.error('Error rescheduling:', error);
-            alert('Error de conexión al reprogramar');
+            setRescheduleError('Error de conexión. Por favor, inténtalo de nuevo.');
         } finally {
             setUpdating(false);
         }
@@ -420,54 +432,98 @@ const MisReservasPage: React.FC = () => {
             {rescheduleModalOpen && rescheduleTarget && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
-                        <div className="p-6 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white z-10">
-                            <div>
-                                <h2 className="text-xl font-serif text-stone-800">Reprogramar Sesión</h2>
-                                <p className="text-sm text-stone-500">Con {rescheduleTarget.acompanante}</p>
-                            </div>
-                            <button
-                                onClick={() => setRescheduleModalOpen(false)}
-                                className="text-stone-400 hover:text-stone-600 transition-colors"
-                            >
-                                <FaTimesCircle size={24} />
-                            </button>
-                        </div>
+                        {!rescheduleSuccess ? (
+                            <>
+                                <div className="p-6 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white z-10">
+                                    <div>
+                                        <h2 className="text-xl font-serif text-stone-800">Reprogramar Sesión</h2>
+                                        <p className="text-sm text-stone-500">Con {rescheduleTarget.acompanante}</p>
+                                    </div>
+                                    <button
+                                        onClick={closeRescheduleModal}
+                                        className="text-stone-400 hover:text-stone-600 transition-colors"
+                                    >
+                                        <FaTimesCircle size={24} />
+                                    </button>
+                                </div>
 
-                        <div className="p-6 flex-1">
-                            <div className="mb-4 bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-100">
-                                <p><strong>Nota:</strong> Estás cambiando tu cita del <strong>{formatDate(rescheduleTarget.fecha)} a las {formatTime(rescheduleTarget.hora)}</strong>.</p>
-                            </div>
+                                <div className="p-6 flex-1">
+                                    <div className="mb-4 bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-100">
+                                        <p><strong>Nota:</strong> Estás cambiando tu cita del <strong>{formatDate(rescheduleTarget.fecha)} a las {formatTime(rescheduleTarget.hora)}</strong>.</p>
+                                        <p className="mt-1 text-xs">Política: No se permite reprogramar con menos de 24h de antelación.</p>
+                                    </div>
 
-                            <SelectorCalendario
-                                profesor={{ name: rescheduleTarget.acompanante }}
-                                sesionesYaReservadas={[]} // SelectorCalendario fetches internally
-                                value={newDate}
-                                onChange={setNewDate}
-                            />
-                        </div>
+                                    {rescheduleError && (
+                                        <div className="mb-4 bg-red-50 text-red-800 text-sm p-3 rounded-lg border border-red-200 flex items-start gap-2">
+                                            <FaTimesCircle className="mt-0.5 flex-shrink-0" />
+                                            <p>{rescheduleError}</p>
+                                        </div>
+                                    )}
 
-                        <div className="p-6 border-t border-stone-100 bg-stone-50 rounded-b-2xl sticky bottom-0">
-                            <div className="flex gap-3 justify-end">
-                                <button
-                                    onClick={() => setRescheduleModalOpen(false)}
-                                    className="px-4 py-2 text-stone-600 hover:bg-stone-200 rounded-lg transition-colors font-medium"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={confirmReschedule}
-                                    disabled={!newDate || updating}
-                                    className="px-6 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                >
-                                    {updating ? 'Guardando...' : 'Confirmar cambio'}
-                                </button>
-                            </div>
-                        </div>
+                                    <SelectorCalendario
+                                        profesor={{ name: rescheduleTarget.acompanante }}
+                                        sesionesYaReservadas={[]} // SelectorCalendario fetches internally
+                                        value={newDate}
+                                        onChange={setNewDate}
+                                    />
+                                </div>
+
+                                <div className="p-6 border-t border-stone-100 bg-stone-50 rounded-b-2xl sticky bottom-0">
+                                    <div className="flex gap-3 justify-end">
+                                        <button
+                                            onClick={closeRescheduleModal}
+                                            className="px-4 py-2 text-stone-600 hover:bg-stone-200 rounded-lg transition-colors font-medium"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={confirmReschedule}
+                                            disabled={!newDate || updating}
+                                            className="px-6 py-2 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        >
+                                            {updating ? 'Guardando...' : 'Confirmar cambio'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Success State */}
+                                <div className="p-8 text-center">
+                                    <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
+                                        <FaCheckCircle className="text-green-600 text-3xl" />
+                                    </div>
+                                    <h2 className="text-2xl font-serif text-stone-800 mb-3">¡Sesión Reprogramada!</h2>
+                                    <p className="text-stone-600 mb-2">
+                                        Tu sesión con <strong>{rescheduleTarget.acompanante}</strong> ha sido actualizada.
+                                    </p>
+                                    <p className="text-sm text-stone-500 mb-6">
+                                        Recibirás un correo de confirmación con la nueva fecha y hora.
+                                    </p>
+
+                                    <div className="bg-linen rounded-xl p-4 mb-6">
+                                        <p className="text-xs text-stone-500 mb-2">Nueva fecha</p>
+                                        <p className="text-lg font-medium text-stone-800">
+                                            {newDate && formatDate(newDate.fecha)}
+                                        </p>
+                                        <p className="text-2xl font-serif text-asparragus mt-1">
+                                            {newDate && formatTime(newDate.hora)}
+                                        </p>
+                                    </div>
+
+                                    <button
+                                        onClick={closeRescheduleModal}
+                                        className="w-full px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
+                                    >
+                                        Entendido
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
-            )
-            }
-        </div >
+            )}
+        </div>
     );
 };
 

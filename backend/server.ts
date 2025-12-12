@@ -987,6 +987,22 @@ app.patch("/api/reservas/:id", async (req: Request, res: Response) => {
 
   const patch = req.body as Partial<Reserva>;
   const previa = { ...actual };
+
+  // ✅ Política de reprogramación (24h)
+  // Si cambia fecha/hora, verificar antelación
+  if ((patch.fecha && patch.fecha !== previa.fecha) || (patch.hora && patch.hora !== previa.hora)) {
+    const now = new Date();
+    const reservaDate = new Date(`${previa.fecha}T${previa.hora}`);
+    const diffHours = (reservaDate.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    if (diffHours < 24) {
+      return res.status(400).json({
+        error: "POLICY_VIOLATION",
+        message: "No se puede reprogramar con menos de 24h de antelación."
+      });
+    }
+  }
+
   const actualizada = updateReserva(actual.id, patch)!;
 
   let calendar: any = null;
