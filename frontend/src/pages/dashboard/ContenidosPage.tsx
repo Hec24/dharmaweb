@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Video } from '../../data/types';
 import { VideoCard } from '../../components/dashboard/VideoCard';
-import { FaSearch, FaFilter } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaLock } from 'react-icons/fa';
+import LevelBadge from '../../components/levels/LevelBadge';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -21,13 +22,14 @@ const areas = [
 ];
 
 const ContenidosPage: React.FC = () => {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const navigate = useNavigate();
     const [videos, setVideos] = useState<Video[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedArea, setSelectedArea] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [showLocked, setShowLocked] = useState(false);
 
     // Debounce search
     useEffect(() => {
@@ -66,13 +68,23 @@ const ContenidosPage: React.FC = () => {
         }
     };
 
-
-
     const handleVideoClick = (video: Video) => {
+        // Check if video is locked
+        const userLevel = user?.current_level || 1;
+        const requiredLevel = (video as any).required_level || 1;
+
+        if (requiredLevel > userLevel) {
+            // Video is locked, don't navigate
+            return;
+        }
+
         navigate(`/dashboard/contenidos/${video.id}`);
     };
 
-    const { user } = useAuth();
+    // Filter videos by level
+    const userLevel = user?.current_level || 1;
+    const availableVideos = videos.filter(v => ((v as any).required_level || 1) <= userLevel);
+    const lockedVideos = videos.filter(v => ((v as any).required_level || 1) > userLevel);
 
     // Si el usuario no tiene membresía activa ni acceso MVP, mostrar estado bloqueado
     if (user?.membershipStatus !== 'active' && user?.membershipStatus !== 'mvp_only' && !user?.isMember) {
@@ -182,26 +194,80 @@ const ContenidosPage: React.FC = () => {
                             <div key={n} className="bg-white rounded-xl h-64 shadow-sm"></div>
                         ))}
                     </div>
-                ) : videos.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {videos.map((video) => (
-                            <VideoCard
-                                key={video.id}
-                                video={video}
-                                onClick={handleVideoClick}
-                            />
-                        ))}
-                    </div>
                 ) : (
-                    <div className="text-center py-12 bg-white rounded-2xl border border-stone-100 border-dashed">
-                        <p className="text-stone-500">No se encontraron vídeos con estos filtros.</p>
-                        <button
-                            onClick={() => { setSelectedArea('all'); setSearchTerm(''); }}
-                            className="mt-2 text-asparragus font-medium hover:underline"
-                        >
-                            Limpiar filtros
-                        </button>
-                    </div>
+                    <>
+                        {/* Available Videos */}
+                        {availableVideos.length > 0 && (
+                            <div className="mb-8">
+                                <h2 className="text-lg font-semibold text-stone-800 mb-4">
+                                    Contenido Disponible ({availableVideos.length})
+                                </h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {availableVideos.map((video) => (
+                                        <VideoCard
+                                            key={video.id}
+                                            video={video}
+                                            onClick={handleVideoClick}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Locked Videos */}
+                        {lockedVideos.length > 0 && (
+                            <div>
+                                <div className="flex items-center gap-2 mb-4">
+                                    <FaLock className="text-stone-400" />
+                                    <h2 className="text-lg font-semibold text-stone-800">
+                                        Contenido Bloqueado ({lockedVideos.length})
+                                    </h2>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {lockedVideos.map((video) => (
+                                        <div
+                                            key={video.id}
+                                            className="relative bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden opacity-60 cursor-not-allowed"
+                                        >
+                                            <VideoCard
+                                                video={video}
+                                                onClick={() => { }} // No action for locked videos
+                                            />
+                                            {/* Lock overlay */}
+                                            <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-[2px] flex flex-col items-center justify-center">
+                                                <div className="bg-white/90 rounded-full p-4 mb-3">
+                                                    <FaLock className="text-stone-600 text-2xl" />
+                                                </div>
+                                                <div className="bg-white/90 px-4 py-2 rounded-lg">
+                                                    <LevelBadge
+                                                        level={(video as any).required_level || 1}
+                                                        size="sm"
+                                                        showName={false}
+                                                    />
+                                                    <p className="text-xs text-stone-600 mt-1">
+                                                        Nivel {(video as any).required_level} requerido
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* No videos found */}
+                        {availableVideos.length === 0 && lockedVideos.length === 0 && (
+                            <div className="text-center py-12 bg-white rounded-2xl border border-stone-100 border-dashed">
+                                <p className="text-stone-500">No se encontraron vídeos con estos filtros.</p>
+                                <button
+                                    onClick={() => { setSelectedArea('all'); setSearchTerm(''); }}
+                                    className="mt-2 text-asparragus font-medium hover:underline"
+                                >
+                                    Limpiar filtros
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </div>
@@ -209,3 +275,4 @@ const ContenidosPage: React.FC = () => {
 };
 
 export default ContenidosPage;
+```
