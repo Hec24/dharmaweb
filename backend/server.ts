@@ -537,7 +537,8 @@ import {
   deleteResourceAdmin,
   migrateQuestions,
   markQuestionAnswered,
-  deleteQuestionAdmin
+  deleteQuestionAdmin,
+  initializeUserLevels
 } from './routes/adminRoutes';
 
 app.post('/api/admin/migrate', runMigration);
@@ -566,6 +567,9 @@ app.delete('/api/admin/resources/:id', deleteResourceAdmin);
 app.post('/api/admin/migrate-questions', migrateQuestions);
 app.put('/api/admin/questions/:id/status', markQuestionAnswered);
 app.delete('/api/admin/questions/:id', deleteQuestionAdmin);
+
+// User levels initialization
+app.post('/api/admin/initialize-user-levels', initializeUserLevels);
 
 // ========= “DB” en memoria =========
 const reservas: Reserva[] = [];

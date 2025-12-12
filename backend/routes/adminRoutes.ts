@@ -930,3 +930,47 @@ export async function deleteQuestionAdmin(req: Request, res: Response) {
         });
     }
 }
+
+// ========= User Levels Initialization =========
+
+export async function initializeUserLevels(req: Request, res: Response) {
+    try {
+        const adminToken = req.headers['x-admin-token'];
+
+        if (adminToken !== process.env.ADMIN_TOKEN) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        console.log('🔧 Initializing user levels...');
+
+        // Update all users who don't have level data
+        const result = await pool.query(`
+            UPDATE users
+            SET 
+                current_level = 1,
+                total_xp = 0,
+                daily_xp = 0
+            WHERE current_level IS NULL OR total_xp IS NULL
+            RETURNING id, email, nombre
+        `);
+
+        console.log(`✅ Initialized level data for ${result.rowCount} users`);
+
+        const updatedUsers = result.rows.map(u => ({
+            email: u.email,
+            nombre: u.nombre
+        }));
+
+        return res.json({
+            success: true,
+            message: `Initialized level data for ${result.rowCount} users`,
+            updatedUsers
+        });
+    } catch (error: any) {
+        console.error('❌ Initialize levels error:', error);
+        return res.status(500).json({
+            error: 'Failed to initialize user levels',
+            details: error.message
+        });
+    }
+}

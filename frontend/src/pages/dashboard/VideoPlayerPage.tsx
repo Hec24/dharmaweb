@@ -29,13 +29,14 @@ const areaNames: Record<string, string> = {
 const VideoPlayerPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { token, user } = useAuth();
+    const { token, user, refreshUserData } = useAuth();
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
     const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null);
     const playerRef = useRef<any>(null);
     const [playerReady, setPlayerReady] = useState(false);
     const [currentProgress, setCurrentProgress] = useState<{ watched: number; total: number } | null>(null);
+    const [xpNotification, setXpNotification] = useState<{ xp: number; leveledUp: boolean; newLevel?: number } | null>(null);
 
     // Load YouTube API
     useEffect(() => {
@@ -177,7 +178,7 @@ const VideoPlayerPage: React.FC = () => {
 
             const duration = playerRef.current?.getDuration() || video.duration_minutes * 60;
 
-            await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
+            const response = await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -190,8 +191,29 @@ const VideoPlayerPage: React.FC = () => {
                 })
             });
 
-            setVideo({ ...video, is_completed: true });
-            console.log('[VIDEO] Marked as complete');
+            if (response.ok) {
+                const result = await response.json();
+
+                // Update video state
+                setVideo({ ...video, is_completed: true });
+
+                // Show XP notification if XP was awarded
+                if (result.xpAwarded && result.xpAwarded > 0) {
+                    setXpNotification({
+                        xp: result.xpAwarded,
+                        leveledUp: result.leveledUp || false,
+                        newLevel: result.newLevel
+                    });
+
+                    // Hide notification after 5 seconds
+                    setTimeout(() => setXpNotification(null), 5000);
+                }
+
+                // Refresh user data to update XP/level in UI
+                await refreshUserData();
+
+                console.log('[VIDEO] Marked as complete, XP awarded:', result.xpAwarded);
+            }
         } catch (error) {
             console.error('[VIDEO] Error marking complete:', error);
         }
@@ -369,6 +391,21 @@ const VideoPlayerPage: React.FC = () => {
                     Próximamente: recomendaciones personalizadas
                 </p>
             </div>
+
+            {/* XP Notification */}
+            {xpNotification && (
+                <div className="fixed bottom-8 right-8 bg-gradient-to-r from-asparragus to-green-600 text-white px-6 py-4 rounded-xl shadow-2xl animate-bounce z-50">
+                    <div className="flex items-center gap-3">
+                        <div className="text-3xl">🎉</div>
+                        <div>
+                            <div className="font-bold text-lg">+{xpNotification.xp} XP</div>
+                            {xpNotification.leveledUp && (
+                                <div className="text-sm">¡Subiste al nivel {xpNotification.newLevel}!</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

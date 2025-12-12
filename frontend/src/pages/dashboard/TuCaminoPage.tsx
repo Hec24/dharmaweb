@@ -160,9 +160,9 @@ const TuCaminoPage: React.FC = () => {
                         <h3 className="font-semibold text-stone-800">Nivel Actual</h3>
                     </div>
                     <div className="text-3xl font-bold text-amber-600 mb-1">
-                        {user.current_level}
+                        Nivel {user.current_level}
                     </div>
-                    <p className="text-sm text-stone-600">de 10 niveles</p>
+                    <p className="text-sm text-stone-600">de 10 niveles totales</p>
                 </div>
 
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-100">
