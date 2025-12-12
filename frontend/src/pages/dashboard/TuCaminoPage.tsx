@@ -8,6 +8,7 @@ import { VideoCard } from '../../components/dashboard/VideoCard';
 import LevelBadge from '../../components/levels/LevelBadge';
 import XPProgressBar from '../../components/levels/XPProgressBar';
 import { FaTrophy, FaStar, FaFire } from 'react-icons/fa';
+import { getLevelName } from '../../data/levelDefinitions';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
@@ -48,7 +49,9 @@ const TuCaminoPage: React.FC = () => {
     };
 
     const handleVideoClick = (video: Video) => {
-        navigate(`/dashboard/contenidos/${video.id}`);
+        navigate(`/dashboard/contenidos/${video.id}`, {
+            state: { from: '/dashboard/tu-camino' }
+        });
     };
 
     if (!user) return null;
@@ -162,7 +165,8 @@ const TuCaminoPage: React.FC = () => {
                     <div className="text-3xl font-bold text-amber-600 mb-1">
                         Nivel {user.current_level}
                     </div>
-                    <p className="text-sm text-stone-600">de 10 niveles totales</p>
+                    <p className="text-sm text-stone-600">{getLevelName(user.current_level || 1)}</p>
+                    <p className="text-xs text-stone-500 mt-1">de 10 niveles totales</p>
                 </div>
 
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-100">

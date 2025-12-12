@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../contexts/AuthContext';
 import { Video } from '../../data/types';
@@ -29,6 +29,7 @@ const areaNames: Record<string, string> = {
 const VideoPlayerPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
     const { token, user, refreshUserData } = useAuth();
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
@@ -37,6 +38,11 @@ const VideoPlayerPage: React.FC = () => {
     const [playerReady, setPlayerReady] = useState(false);
     const [currentProgress, setCurrentProgress] = useState<{ watched: number; total: number } | null>(null);
     const [xpNotification, setXpNotification] = useState<{ xp: number; leveledUp: boolean; newLevel?: number } | null>(null);
+    const [isAutoCompleting, setIsAutoCompleting] = useState(false);
+
+    // Get referrer from location state, default to biblioteca
+    const referrer = (location.state as any)?.from || '/dashboard/contenidos';
+    const referrerName = referrer === '/dashboard/tu-camino' ? 'Tu Camino' : 'biblioteca';
 
     // Load YouTube API
     useEffect(() => {
@@ -144,6 +150,15 @@ const VideoPlayerPage: React.FC = () => {
             if (!currentTime || !duration) return;
 
             console.log('[VIDEO] Saving progress:', Math.floor(currentTime), '/', Math.floor(duration));
+
+            // Check for auto-completion at 98% to account for timing variations
+            const progressPercent = (currentTime / duration) * 100;
+            if (progressPercent >= 98 && !video.is_completed && !isAutoCompleting) {
+                console.log('[VIDEO] Auto-completing at', progressPercent.toFixed(1), '%');
+                setIsAutoCompleting(true);
+                await handleMarkComplete();
+                return;
+            }
 
             await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
@@ -292,11 +307,11 @@ const VideoPlayerPage: React.FC = () => {
 
             {/* Back button */}
             <button
-                onClick={() => navigate('/dashboard/contenidos')}
+                onClick={() => navigate(referrer)}
                 className="flex items-center gap-2 text-stone-600 hover:text-asparragus transition-colors"
             >
                 <FaArrowLeft />
-                <span>Volver a biblioteca</span>
+                <span>Volver a {referrerName}</span>
             </button>
 
             {/* Video Player */}
