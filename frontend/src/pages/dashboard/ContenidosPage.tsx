@@ -274,5 +274,3 @@ const ContenidosPage: React.FC = () => {
     );
 };
 
-export default ContenidosPage;
-```
