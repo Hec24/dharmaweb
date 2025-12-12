@@ -28,7 +28,6 @@ const MisReservasPage: React.FC = () => {
     const [upcoming, setUpcoming] = useState<Reserva[]>([]);
     const [past, setPast] = useState<Reserva[]>([]);
     const [loading, setLoading] = useState(true);
-    const [cancelling, setCancelling] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
@@ -39,6 +38,14 @@ const MisReservasPage: React.FC = () => {
     const [updating, setUpdating] = useState(false);
     const [rescheduleSuccess, setRescheduleSuccess] = useState(false);
     const [rescheduleError, setRescheduleError] = useState<string | null>(null);
+
+    // Cancellation State
+    const [cancelModalOpen, setCancelModalOpen] = useState(false);
+    const [cancelTarget, setCancelTarget] = useState<Reserva | null>(null);
+    const [cancelling, setCancelling] = useState(false);
+    const [cancelSuccess, setCancelSuccess] = useState(false);
+    const [cancelRefundEligible, setCancelRefundEligible] = useState(false);
+    const [cancelError, setCancelError] = useState<string | null>(null);
 
     // Debounce search
     useEffect(() => {
@@ -142,14 +149,27 @@ const MisReservasPage: React.FC = () => {
         }
     };
 
-    const handleCancel = async (id: string) => {
-        if (!confirm('¿Estás seguro de que quieres cancelar esta reserva?\n\nPolítica de cancelación:\n- Más de 24h: Reembolso completo\n- Menos de 24h: Sin reembolso')) {
-            return;
-        }
+    const openCancelModal = (reserva: Reserva) => {
+        setCancelTarget(reserva);
+        setCancelSuccess(false);
+        setCancelError(null);
+        setCancelModalOpen(true);
+    };
 
-        setCancelling(id);
+    const closeCancelModal = () => {
+        setCancelModalOpen(false);
+        if (cancelSuccess) {
+            fetchReservations();
+        }
+    };
+
+    const confirmCancel = async () => {
+        if (!cancelTarget) return;
+
+        setCancelling(true);
+        setCancelError(null);
         try {
-            const response = await fetch(`${BACKEND_URL}/api/reservas/${id}`, {
+            const response = await fetch(`${BACKEND_URL}/api/reservas/${cancelTarget.id}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -158,22 +178,26 @@ const MisReservasPage: React.FC = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                alert(data.canRefund
-                    ? 'Reserva cancelada. Se procesará el reembolso en 5-10 días hábiles.'
-                    : 'Reserva cancelada. No se aplicará reembolso (menos de 24h de antelación).'
-                );
-                fetchReservations(); // Refresh list
+                setCancelSuccess(true);
+                setCancelRefundEligible(data.canRefund || false);
+                setCancelError(null);
             } else {
                 const error = await response.json();
-                alert(error.error || 'Error al cancelar la reserva');
+                setCancelError(error.error || 'Error al cancelar la reserva');
             }
         } catch (error) {
             console.error('Error cancelling reservation:', error);
-            alert('Error al cancelar la reserva');
+            setCancelError('Error de conexión. Por favor, inténtalo de nuevo.');
         } finally {
-            setCancelling(null);
+            setCancelling(false);
         }
     };
+
+
+    const handleCancel = async (reserva: Reserva) => {
+        openCancelModal(reserva);
+    };
+
 
     const formatDate = (fecha: string) => {
         const date = new Date(fecha);
@@ -293,12 +317,12 @@ const MisReservasPage: React.FC = () => {
                             Reprogramar
                         </button>
                         <button
-                            onClick={() => handleCancel(reserva.id)}
-                            disabled={cancelling === reserva.id}
+                            onClick={() => handleCancel(reserva)}
+                            disabled={cancelling}
                             className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                         >
                             <FaTimesCircle />
-                            {cancelling === reserva.id ? 'Cancelando...' : 'Cancelar'}
+                            {cancelling ? 'Cancelando...' : 'Cancelar'}
                         </button>
                     </>
                 )}
@@ -513,6 +537,104 @@ const MisReservasPage: React.FC = () => {
 
                                     <button
                                         onClick={closeRescheduleModal}
+                                        className="w-full px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
+                                    >
+                                        Entendido
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Cancellation Modal */}
+            {cancelModalOpen && cancelTarget && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+                        {!cancelSuccess ? (
+                            <>
+                                {/* Confirmation Screen */}
+                                <div className="p-6 border-b border-stone-100">
+                                    <h2 className="text-xl font-serif text-stone-800 mb-2">Cancelar Sesión</h2>
+                                    <p className="text-sm text-stone-500">Con {cancelTarget.acompanante}</p>
+                                </div>
+
+                                <div className="p-6">
+                                    <div className="mb-4 bg-yellow-50 text-yellow-800 text-sm p-3 rounded-lg border border-yellow-100">
+                                        <p className="font-medium mb-1">Política de cancelación:</p>
+                                        <ul className="text-xs space-y-1 ml-4 list-disc">
+                                            <li>Más de 24h de antelación: Reembolso completo</li>
+                                            <li>Menos de 24h: Sin reembolso</li>
+                                        </ul>
+                                    </div>
+
+                                    {cancelError && (
+                                        <div className="mb-4 bg-red-50 text-red-800 text-sm p-3 rounded-lg border border-red-200 flex items-start gap-2">
+                                            <FaTimesCircle className="mt-0.5 flex-shrink-0" />
+                                            <p>{cancelError}</p>
+                                        </div>
+                                    )}
+
+                                    <div className="bg-stone-50 rounded-lg p-4 mb-4">
+                                        <p className="text-xs text-stone-500 mb-1">Sesión a cancelar</p>
+                                        <p className="text-sm font-medium text-stone-800">
+                                            {formatDate(cancelTarget.fecha)}
+                                        </p>
+                                        <p className="text-lg font-serif text-stone-800">
+                                            {formatTime(cancelTarget.hora)}
+                                        </p>
+                                    </div>
+
+                                    <p className="text-sm text-stone-600">
+                                        ¿Estás seguro de que deseas cancelar esta reserva?
+                                    </p>
+                                </div>
+
+                                <div className="p-6 border-t border-stone-100 bg-stone-50 rounded-b-2xl">
+                                    <div className="flex gap-3 justify-end">
+                                        <button
+                                            onClick={closeCancelModal}
+                                            className="px-4 py-2 text-stone-600 hover:bg-stone-200 rounded-lg transition-colors font-medium"
+                                        >
+                                            No, mantener
+                                        </button>
+                                        <button
+                                            onClick={confirmCancel}
+                                            disabled={cancelling}
+                                            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {cancelling ? 'Cancelando...' : 'Sí, cancelar'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                {/* Success State */}
+                                <div className="p-8 text-center">
+                                    <div className="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100">
+                                        <FaCheckCircle className="text-green-600 text-3xl" />
+                                    </div>
+                                    <h2 className="text-2xl font-serif text-stone-800 mb-3">Reserva Cancelada</h2>
+                                    <p className="text-stone-600 mb-2">
+                                        Tu sesión con <strong>{cancelTarget.acompanante}</strong> ha sido cancelada.
+                                    </p>
+
+                                    {cancelRefundEligible ? (
+                                        <div className="bg-green-50 text-green-800 text-sm p-4 rounded-lg border border-green-200 mb-6">
+                                            <p className="font-medium mb-1">✓ Reembolso aprobado</p>
+                                            <p className="text-xs">Se procesará en 5-10 días hábiles.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="bg-orange-50 text-orange-800 text-sm p-4 rounded-lg border border-orange-200 mb-6">
+                                            <p className="font-medium mb-1">Sin reembolso</p>
+                                            <p className="text-xs">Cancelación con menos de 24h de antelación.</p>
+                                        </div>
+                                    )}
+
+                                    <button
+                                        onClick={closeCancelModal}
                                         className="w-full px-6 py-3 bg-asparragus text-white rounded-lg hover:bg-asparragus/90 transition-colors font-medium"
                                     >
                                         Entendido
