@@ -35,6 +35,7 @@ const VideoPlayerPage: React.FC = () => {
     const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null);
     const playerRef = useRef<any>(null);
     const [playerReady, setPlayerReady] = useState(false);
+    const [currentProgress, setCurrentProgress] = useState<{ watched: number; total: number } | null>(null);
 
     // Load YouTube API
     useEffect(() => {
@@ -156,12 +157,11 @@ const VideoPlayerPage: React.FC = () => {
                 })
             });
 
-            // Update local state to reflect progress
-            setVideo(prev => prev ? {
-                ...prev,
-                watched_seconds: Math.floor(currentTime),
-                total_seconds: Math.floor(duration)
-            } : null);
+            // Update local progress state (without triggering player reinitialization)
+            setCurrentProgress({
+                watched: Math.floor(currentTime),
+                total: Math.floor(duration)
+            });
 
             console.log('[VIDEO] Progress saved');
         } catch (error) {
@@ -333,16 +333,26 @@ const VideoPlayerPage: React.FC = () => {
                     </div>
 
                     {/* Progress indicator */}
-                    {video.watched_seconds && video.total_seconds && !video.is_completed && (
+                    {(currentProgress || (video.watched_seconds && video.total_seconds)) && !video.is_completed && (
                         <div className="pt-4 border-t border-stone-100">
                             <div className="flex items-center justify-between text-sm text-stone-500 mb-2">
                                 <span>Progreso</span>
-                                <span>{Math.round((video.watched_seconds / video.total_seconds) * 100)}%</span>
+                                <span>
+                                    {Math.round(
+                                        ((currentProgress?.watched || video.watched_seconds || 0) /
+                                            (currentProgress?.total || video.total_seconds || 1)) * 100
+                                    )}%
+                                </span>
                             </div>
                             <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
                                 <div
                                     className="h-full bg-asparragus transition-all"
-                                    style={{ width: `${(video.watched_seconds / video.total_seconds) * 100}%` }}
+                                    style={{
+                                        width: `${(
+                                            (currentProgress?.watched || video.watched_seconds || 0) /
+                                            (currentProgress?.total || video.total_seconds || 1)
+                                        ) * 100}%`
+                                    }}
                                 />
                             </div>
                         </div>
