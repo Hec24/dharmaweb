@@ -10,6 +10,9 @@ interface User {
     membershipStatus: string;
     membershipStartDate?: string;
     membershipEndDate?: string;
+    current_level?: number;
+    total_xp?: number;
+    daily_xp?: number;
 }
 
 interface AuthContextType {

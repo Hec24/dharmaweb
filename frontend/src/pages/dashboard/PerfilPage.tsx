@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../lib/api';
 import { FiUser, FiLock, FiCheck, FiAlertCircle, FiCreditCard, FiExternalLink } from 'react-icons/fi';
+import LevelBadge from '../../components/levels/LevelBadge';
+import XPProgressBar from '../../components/levels/XPProgressBar';
 
 export default function PerfilPage() {
     const { user, updateUser } = useAuth();
@@ -102,6 +104,49 @@ export default function PerfilPage() {
                     Gestiona tu información personal y configuración de cuenta
                 </p>
             </div>
+
+            {/* Level & XP Section */}
+            {user?.current_level && (
+                <div className="bg-gradient-to-br from-asparragus/5 to-green-50 rounded-xl p-6 shadow-sm border border-asparragus/10">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-xl font-gotu text-asparragus">Tu Progreso</h2>
+                        <span className="text-sm text-stone-600">
+                            {user.daily_xp || 0} XP ganados hoy
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-6 mb-6">
+                        <LevelBadge level={user.current_level} size="lg" />
+                        <div className="flex-1">
+                            <XPProgressBar
+                                currentXp={user.total_xp || 0}
+                                level={user.current_level}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="bg-white/50 rounded-lg p-3">
+                            <div className="text-2xl font-bold text-asparragus">
+                                {user.total_xp?.toLocaleString() || 0}
+                            </div>
+                            <div className="text-xs text-stone-600">XP Total</div>
+                        </div>
+                        <div className="bg-white/50 rounded-lg p-3">
+                            <div className="text-2xl font-bold text-asparragus">
+                                {user.current_level}
+                            </div>
+                            <div className="text-xs text-stone-600">Nivel Actual</div>
+                        </div>
+                        <div className="bg-white/50 rounded-lg p-3">
+                            <div className="text-2xl font-bold text-asparragus">
+                                {user.daily_xp || 0}
+                            </div>
+                            <div className="text-xs text-stone-600">XP Hoy</div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-6">
                 {/* Personal Information */}
@@ -365,10 +410,10 @@ export default function PerfilPage() {
                             )}
                         </div>
                         <div className={`px-4 py-2 rounded-full text-sm font-medium ${user?.membershipStatus === 'active'
-                                ? 'bg-green-500 text-white'
-                                : user?.membershipStatus === 'mvp_only'
-                                    ? 'bg-gold text-white'
-                                    : 'bg-gray-300 text-gray-700'
+                            ? 'bg-green-500 text-white'
+                            : user?.membershipStatus === 'mvp_only'
+                                ? 'bg-gold text-white'
+                                : 'bg-gray-300 text-gray-700'
                             }`}>
                             {user?.membershipStatus === 'active'
                                 ? 'Activo'
