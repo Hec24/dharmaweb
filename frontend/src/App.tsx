@@ -42,6 +42,7 @@ const MVPCreateAccountPage = lazy(() => import("./pages/MVPCreateAccountPage"));
 const DashboardInicio = lazy(() => import("./pages/dashboard/DashboardInicio"));
 const DashboardLayout = lazy(() => import("./layouts/DashboardLayout").then(m => ({ default: m.DashboardLayout })));
 const ContenidosPage = lazy(() => import("./pages/dashboard/ContenidosPage"));
+const TuCaminoPage = lazy(() => import("./pages/dashboard/TuCaminoPage"));
 const VideoPlayerPage = lazy(() => import("./pages/dashboard/VideoPlayerPage"));
 const MisReservasPage = lazy(() => import("./pages/dashboard/MisReservasPage"));
 const DirectoDetailPage = lazy(() => import("./pages/dashboard/DirectoDetailPage"));
@@ -122,6 +123,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardInicio /> },
       { path: "contenidos", element: <ContenidosPage /> },
+      { path: "tu-camino", element: <TuCaminoPage /> },
       { path: "contenidos/:id", element: <VideoPlayerPage /> },
       { path: "directos/:id", element: <DirectoDetailPage /> },
       { path: "comunidad", element: <ComunidadPage /> },
