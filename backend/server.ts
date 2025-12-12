@@ -419,6 +419,22 @@ app.get('/api/contenidos/last-watched', authenticateToken, getLastWatchedVideo);
 app.get('/api/contenidos/:id', optionalAuth, getVideoById);
 app.post('/api/contenidos/:id/progress', authenticateToken, saveProgress);
 
+// ========= Level System =========
+import {
+  getLevelDefinitions,
+  getUserLevelProgress,
+  getXPHistory,
+  getExercises,
+  completeExercise
+} from './controllers/levelController';
+
+app.get('/api/levels/definitions', getLevelDefinitions);
+app.get('/api/levels/progress', authenticateToken, getUserLevelProgress);
+app.get('/api/xp/history', authenticateToken, getXPHistory);
+app.get('/api/exercises/:area', authenticateToken, getExercises);
+app.post('/api/exercises/:id/complete', authenticateToken, completeExercise);
+
+
 // ========= Mis Reservas (Dashboard) =========
 import { getMisReservas, cancelReservation } from './controllers/reservasController';
 

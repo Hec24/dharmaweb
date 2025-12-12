@@ -104,6 +104,14 @@ export async function saveProgress(req: Request, res: Response) {
             return res.status(401).json({ error: 'No autorizado' });
         }
 
+        // Check if video was already completed
+        const existingProgress = await pool.query(
+            'SELECT is_completed FROM video_progress WHERE user_id = $1 AND video_id = $2',
+            [userId, id]
+        );
+
+        const wasAlreadyCompleted = existingProgress.rows.length > 0 && existingProgress.rows[0].is_completed;
+
         // Upsert progreso
         const query = `
             INSERT INTO video_progress (user_id, video_id, watched_seconds, total_seconds, is_completed, last_watched_at)
@@ -118,8 +126,34 @@ export async function saveProgress(req: Request, res: Response) {
 
         await pool.query(query, [userId, id, watchedSeconds, totalSeconds, isCompleted]);
 
+        // Award XP if video is newly completed
+        let xpResult = null;
+        if (isCompleted && !wasAlreadyCompleted) {
+            // Get video details for XP reward
+            const videoResult = await pool.query(
+                'SELECT xp_reward, title FROM videos WHERE id = $1',
+                [id]
+            );
+
+            if (videoResult.rows.length > 0) {
+                const video = videoResult.rows[0];
+                const xpReward = video.xp_reward || 10; // Default 10 XP if not set
+
+                // Import and use awardXP function
+                const { awardXP } = await import('./levelController');
+                xpResult = await awardXP(userId, 'video_complete', xpReward, id);
+
+                console.log('[VIDEOS] XP awarded:', xpResult);
+            }
+        }
+
         console.log('[VIDEOS] Progress saved successfully');
-        return res.json({ success: true });
+        return res.json({
+            success: true,
+            xpAwarded: xpResult?.success ? xpResult.xpEarned : 0,
+            leveledUp: xpResult?.leveledUp || false,
+            newLevel: xpResult?.newLevel
+        });
     } catch (error) {
         console.error('[VIDEOS] Error saving progress:', error);
         return res.status(500).json({ error: 'Error al guardar el progreso' });
