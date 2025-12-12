@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { useAuth } from '../../contexts/AuthContext';
@@ -6,6 +6,14 @@ import { Video } from '../../data/types';
 import { FaArrowLeft, FaCheck, FaClock } from 'react-icons/fa';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
+
+// YouTube Player API types
+declare global {
+    interface Window {
+        YT: any;
+        onYouTubeIframeAPIReady: () => void;
+    }
+}
 
 const areaNames: Record<string, string> = {
     elsenderodelyo: 'Sendero del Yo',
@@ -25,7 +33,18 @@ const VideoPlayerPage: React.FC = () => {
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState(true);
     const [progressInterval, setProgressInterval] = useState<NodeJS.Timeout | null>(null);
-    const iframeRef = React.useRef<HTMLIFrameElement>(null);
+    const playerRef = useRef<any>(null);
+    const [playerReady, setPlayerReady] = useState(false);
+
+    // Load YouTube API
+    useEffect(() => {
+        if (!window.YT) {
+            const tag = document.createElement('script');
+            tag.src = 'https://www.youtube.com/iframe_api';
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
+        }
+    }, []);
 
     useEffect(() => {
         if (id) {
@@ -55,15 +74,52 @@ const VideoPlayerPage: React.FC = () => {
         }
     };
 
-    // Start tracking when video loads
+    // Initialize YouTube player when video data is loaded
     useEffect(() => {
-        if (!video || !token) return;
+        if (!video || video.video_provider !== 'youtube') return;
+
+        const initPlayer = () => {
+            if (!window.YT || !window.YT.Player) {
+                setTimeout(initPlayer, 100);
+                return;
+            }
+
+            playerRef.current = new window.YT.Player('youtube-player', {
+                videoId: video.video_id,
+                playerVars: {
+                    start: video.watched_seconds && !video.is_completed && video.watched_seconds > 10
+                        ? Math.floor(video.watched_seconds)
+                        : 0,
+                    autoplay: 0,
+                    rel: 0,
+                },
+                events: {
+                    onReady: () => {
+                        console.log('[VIDEO] Player ready');
+                        setPlayerReady(true);
+                    },
+                },
+            });
+        };
+
+        initPlayer();
+
+        return () => {
+            if (playerRef.current) {
+                playerRef.current.destroy();
+            }
+        };
+    }, [video]);
+
+    // Start tracking when player is ready
+    useEffect(() => {
+        if (!playerReady || !video || !token) return;
 
         console.log('[VIDEO] Setting up progress tracking');
 
-        // Start saving progress every 15 seconds
+        // Save progress every 15 seconds
         const interval = setInterval(() => {
-            saveProgressFromIframe();
+            saveProgressFromPlayer();
         }, 15000);
 
         setProgressInterval(interval);
@@ -74,18 +130,18 @@ const VideoPlayerPage: React.FC = () => {
                 console.log('[VIDEO] Cleaning up progress tracking');
             }
         };
-    }, [video, token]);
+    }, [playerReady, video, token]);
 
-    const saveProgressFromIframe = async () => {
-        if (!video || !token || !iframeRef.current) return;
+    const saveProgressFromPlayer = async () => {
+        if (!video || !token || !playerRef.current) return;
 
         try {
-            // For YouTube, we'll use a simple approach: save based on duration
-            // Since we can't easily get current time without API, we'll mark as "in progress"
-            const totalSeconds = video.duration_minutes * 60;
+            const currentTime = playerRef.current.getCurrentTime();
+            const duration = playerRef.current.getDuration();
 
-            // Save with a placeholder watched time (will be updated by manual mark complete)
-            console.log('[VIDEO] Auto-saving progress marker');
+            if (!currentTime || !duration) return;
+
+            console.log('[VIDEO] Saving progress:', Math.floor(currentTime), '/', Math.floor(duration));
 
             await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
@@ -94,13 +150,20 @@ const VideoPlayerPage: React.FC = () => {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    watchedSeconds: Math.floor(totalSeconds * 0.1), // 10% as placeholder
-                    totalSeconds: totalSeconds,
+                    watchedSeconds: Math.floor(currentTime),
+                    totalSeconds: Math.floor(duration),
                     isCompleted: false
                 })
             });
 
-            console.log('[VIDEO] Progress marker saved');
+            // Update local state to reflect progress
+            setVideo(prev => prev ? {
+                ...prev,
+                watched_seconds: Math.floor(currentTime),
+                total_seconds: Math.floor(duration)
+            } : null);
+
+            console.log('[VIDEO] Progress saved');
         } catch (error) {
             console.error('[VIDEO] Error saving progress:', error);
         }
@@ -112,6 +175,8 @@ const VideoPlayerPage: React.FC = () => {
         try {
             console.log('[VIDEO] Marking as complete');
 
+            const duration = playerRef.current?.getDuration() || video.duration_minutes * 60;
+
             await fetch(`${BACKEND_URL}/api/contenidos/${id}/progress`, {
                 method: 'POST',
                 headers: {
@@ -119,8 +184,8 @@ const VideoPlayerPage: React.FC = () => {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    watchedSeconds: video.duration_minutes * 60,
-                    totalSeconds: video.duration_minutes * 60,
+                    watchedSeconds: Math.floor(duration),
+                    totalSeconds: Math.floor(duration),
                     isCompleted: true
                 })
             });
@@ -132,24 +197,12 @@ const VideoPlayerPage: React.FC = () => {
         }
     };
 
-    const getEmbedUrl = (video: Video) => {
-        let url = '';
+    const getVimeoEmbedUrl = (video: Video) => {
+        let url = `https://player.vimeo.com/video/${video.video_id}`;
 
-        if (video.video_provider === 'youtube') {
-            url = `https://www.youtube.com/embed/${video.video_id}`;
-
-            // If video has progress and is not completed, start from where user left off
-            if (video.watched_seconds && !video.is_completed && video.watched_seconds > 10) {
-                url += `?start=${Math.floor(video.watched_seconds)}`;
-                console.log('[VIDEO] Resuming from', Math.floor(video.watched_seconds), 'seconds');
-            }
-        } else if (video.video_provider === 'vimeo') {
-            url = `https://player.vimeo.com/video/${video.video_id}`;
-
-            // Vimeo uses #t= for time
-            if (video.watched_seconds && !video.is_completed && video.watched_seconds > 10) {
-                url += `#t=${Math.floor(video.watched_seconds)}s`;
-            }
+        // Vimeo uses #t= for time
+        if (video.watched_seconds && !video.is_completed && video.watched_seconds > 10) {
+            url += `#t=${Math.floor(video.watched_seconds)}s`;
         }
 
         return url;
@@ -210,7 +263,7 @@ const VideoPlayerPage: React.FC = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto space-y-6 pt-6">{/* Added pt-6 */}
+        <div className="max-w-6xl mx-auto space-y-6 pt-6">
             <Helmet>
                 <title>{video.title} | Dharma en Ruta</title>
             </Helmet>
@@ -227,13 +280,16 @@ const VideoPlayerPage: React.FC = () => {
             {/* Video Player */}
             <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="aspect-video bg-black">
-                    <iframe
-                        ref={iframeRef}
-                        src={getEmbedUrl(video)}
-                        className="w-full h-full"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                    />
+                    {video.video_provider === 'youtube' ? (
+                        <div id="youtube-player" className="w-full h-full"></div>
+                    ) : (
+                        <iframe
+                            src={getVimeoEmbedUrl(video)}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                        />
+                    )}
                 </div>
 
                 {/* Video Info */}
