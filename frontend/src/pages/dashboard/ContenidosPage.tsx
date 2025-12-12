@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Video } from '../../data/types';
 import { VideoCard } from '../../components/dashboard/VideoCard';
-import { FaSearch, FaFilter, FaLock } from 'react-icons/fa';
+import { FaSearch, FaLock } from 'react-icons/fa';
 import LevelBadge from '../../components/levels/LevelBadge';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
@@ -29,7 +29,6 @@ const ContenidosPage: React.FC = () => {
     const [selectedArea, setSelectedArea] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [showLocked, setShowLocked] = useState(false);
 
     // Debounce search
     useEffect(() => {
@@ -81,10 +80,14 @@ const ContenidosPage: React.FC = () => {
         navigate(`/dashboard/contenidos/${video.id}`);
     };
 
-    // Filter videos by level
-    const userLevel = user?.current_level || 1;
-    const availableVideos = videos.filter(v => ((v as any).required_level || 1) <= userLevel);
-    const lockedVideos = videos.filter(v => ((v as any).required_level || 1) > userLevel);
+    // Filter videos by level (only if level system is active)
+    const userLevel = user?.current_level ?? 1;
+    const availableVideos = user?.current_level !== undefined
+        ? videos.filter(v => ((v as any).required_level || 1) <= userLevel)
+        : videos; // Show all videos if level system not active yet
+    const lockedVideos = user?.current_level !== undefined
+        ? videos.filter(v => ((v as any).required_level || 1) > userLevel)
+        : []; // No locked videos if level system not active yet
 
     // Si el usuario no tiene membresía activa ni acceso MVP, mostrar estado bloqueado
     if (user?.membershipStatus !== 'active' && user?.membershipStatus !== 'mvp_only' && !user?.isMember) {
@@ -274,3 +277,4 @@ const ContenidosPage: React.FC = () => {
     );
 };
 
+export default ContenidosPage;
