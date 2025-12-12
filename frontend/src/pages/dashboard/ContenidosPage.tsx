@@ -77,7 +77,9 @@ const ContenidosPage: React.FC = () => {
             return;
         }
 
-        navigate(`/dashboard/contenidos/${video.id}`);
+        navigate(`/dashboard/contenidos/${video.id}`, {
+            state: { from: '/dashboard/contenidos' }
+        });
     };
 
     // Filter videos by level (only if level system is active)
