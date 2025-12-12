@@ -106,7 +106,7 @@ export default function PerfilPage() {
             </div>
 
             {/* Level & XP Section */}
-            {user?.current_level && (
+            {user && (
                 <div className="bg-gradient-to-br from-asparragus/5 to-green-50 rounded-xl p-6 shadow-sm border border-asparragus/10">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-gotu text-asparragus">Tu Progreso</h2>
@@ -116,11 +116,11 @@ export default function PerfilPage() {
                     </div>
 
                     <div className="flex items-center gap-6 mb-6">
-                        <LevelBadge level={user.current_level} size="lg" />
+                        <LevelBadge level={user.current_level || 1} size="lg" />
                         <div className="flex-1">
                             <XPProgressBar
                                 currentXp={user.total_xp || 0}
-                                level={user.current_level}
+                                level={user.current_level || 1}
                             />
                         </div>
                     </div>
@@ -134,7 +134,7 @@ export default function PerfilPage() {
                         </div>
                         <div className="bg-white/50 rounded-lg p-3">
                             <div className="text-2xl font-bold text-asparragus">
-                                {user.current_level}
+                                {user.current_level || 1}
                             </div>
                             <div className="text-xs text-stone-600">Nivel Actual</div>
                         </div>

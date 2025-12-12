@@ -46,12 +46,12 @@ export async function register(req: Request, res: Response) {
         // Hash de la contraseña
         const passwordHash = await bcrypt.hash(password, 10);
 
-        // Crear usuario
+        // Crear usuario con nivel inicial
         const result = await pool.query(
-            `INSERT INTO users (email, password_hash, nombre, apellidos, is_member, membership_status)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, email, nombre, apellidos, is_member, membership_status, created_at`,
-            [email.toLowerCase(), passwordHash, nombre, apellidos, false, 'inactive']
+            `INSERT INTO users (email, password_hash, nombre, apellidos, is_member, membership_status, current_level, total_xp, daily_xp)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+       RETURNING id, email, nombre, apellidos, is_member, membership_status, current_level, total_xp, daily_xp, created_at`,
+            [email.toLowerCase(), passwordHash, nombre, apellidos, false, 'inactive', 1, 0, 0]
         );
 
         const user = result.rows[0];
@@ -72,6 +72,9 @@ export async function register(req: Request, res: Response) {
                 apellidos: user.apellidos,
                 isMember: user.is_member,
                 membershipStatus: user.membership_status,
+                current_level: user.current_level,
+                total_xp: user.total_xp,
+                daily_xp: user.daily_xp,
             },
         });
     } catch (error: any) {
@@ -92,7 +95,8 @@ export async function login(req: Request, res: Response) {
 
         // Buscar usuario
         const result = await pool.query(
-            `SELECT id, email, password_hash, nombre, apellidos, is_member, membership_status
+            `SELECT id, email, password_hash, nombre, apellidos, is_member, membership_status,
+                    current_level, total_xp, daily_xp
        FROM users WHERE email = $1`,
             [email.toLowerCase()]
         );
@@ -126,6 +130,9 @@ export async function login(req: Request, res: Response) {
                 apellidos: user.apellidos,
                 isMember: user.is_member,
                 membershipStatus: user.membership_status,
+                current_level: user.current_level || 1,
+                total_xp: user.total_xp || 0,
+                daily_xp: user.daily_xp || 0,
             },
         });
     } catch (error: any) {
@@ -151,7 +158,8 @@ export async function me(req: Request, res: Response) {
         // Buscar usuario
         const result = await pool.query(
             `SELECT id, email, nombre, apellidos, is_member, membership_status, 
-              membership_start_date, membership_end_date
+              membership_start_date, membership_end_date,
+              current_level, total_xp, daily_xp
        FROM users WHERE id = $1`,
             [decoded.userId]
         );
@@ -171,6 +179,9 @@ export async function me(req: Request, res: Response) {
             membershipStatus: user.membership_status,
             membershipStartDate: user.membership_start_date,
             membershipEndDate: user.membership_end_date,
+            current_level: user.current_level || 1,
+            total_xp: user.total_xp || 0,
+            daily_xp: user.daily_xp || 0,
         });
     } catch (error: any) {
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
@@ -202,7 +213,8 @@ export async function updateProfile(req: Request, res: Response) {
              SET nombre = $1, apellidos = $2, updated_at = NOW()
              WHERE id = $3
              RETURNING id, email, nombre, apellidos, is_member, membership_status, 
-                       membership_start_date, membership_end_date`,
+                       membership_start_date, membership_end_date,
+                       current_level, total_xp, daily_xp`,
             [nombre.trim(), apellidos.trim(), userId]
         );
 
@@ -221,6 +233,9 @@ export async function updateProfile(req: Request, res: Response) {
             membershipStatus: user.membership_status,
             membershipStartDate: user.membership_start_date,
             membershipEndDate: user.membership_end_date,
+            current_level: user.current_level || 1,
+            total_xp: user.total_xp || 0,
+            daily_xp: user.daily_xp || 0,
         });
     } catch (error: any) {
         console.error('[AUTH] Error actualizando perfil:', error);

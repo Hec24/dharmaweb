@@ -24,6 +24,7 @@ interface AuthContextType {
     logout: () => void;
     isAuthenticated: boolean;
     updateUser: (userData: Partial<User>) => void;
+    refreshUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -140,6 +141,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
+    const refreshUserData = async () => {
+        const savedToken = localStorage.getItem(TOKEN_KEY);
+        if (!savedToken) return;
+
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/auth/me`, {
+                headers: {
+                    'Authorization': `Bearer ${savedToken}`,
+                },
+            });
+
+            if (response.ok) {
+                const userData = await response.json();
+                setUser(userData);
+            }
+        } catch (error) {
+            console.error('[AUTH] Error refreshing user data:', error);
+        }
+    };
+
     const value: AuthContextType = {
         user,
         token,
@@ -149,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         logout,
         isAuthenticated: !!user,
         updateUser,
+        refreshUserData,
     };
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
